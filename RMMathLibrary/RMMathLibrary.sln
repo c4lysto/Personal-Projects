@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MathLibraryTester", "MathLibraryTester\MathLibraryTester.vcxproj", "{D99254E4-29FB-4C6B-9720-621D84DF909B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RMMathLibrary", "RMMathLibrary\RMMathLibrary.vcxproj", "{E8E2A7E3-BE4F-4A3A-BB29-3831C4886455}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D99254E4-29FB-4C6B-9720-621D84DF909B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D99254E4-29FB-4C6B-9720-621D84DF909B}.Debug|Win32.Build.0 = Debug|Win32
+		{D99254E4-29FB-4C6B-9720-621D84DF909B}.Release|Win32.ActiveCfg = Release|Win32
+		{D99254E4-29FB-4C6B-9720-621D84DF909B}.Release|Win32.Build.0 = Release|Win32
+		{E8E2A7E3-BE4F-4A3A-BB29-3831C4886455}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E8E2A7E3-BE4F-4A3A-BB29-3831C4886455}.Debug|Win32.Build.0 = Debug|Win32
+		{E8E2A7E3-BE4F-4A3A-BB29-3831C4886455}.Release|Win32.ActiveCfg = Release|Win32
+		{E8E2A7E3-BE4F-4A3A-BB29-3831C4886455}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
