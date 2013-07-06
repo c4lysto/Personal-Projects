@@ -348,5 +348,7 @@ struct Vec3f
 };
 
 typedef Vec3f float3;
+typedef Vec3f vec3f;
+typedef Vec3f vec3;
 
 #endif

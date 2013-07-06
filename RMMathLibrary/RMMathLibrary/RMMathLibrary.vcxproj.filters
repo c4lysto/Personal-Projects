@@ -27,6 +27,12 @@
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Vec3f.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Vec2f.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Vec4f.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Timer.cpp">

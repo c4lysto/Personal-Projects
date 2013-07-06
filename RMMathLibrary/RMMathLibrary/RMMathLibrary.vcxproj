@@ -14,7 +14,9 @@
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\MathDeclarations.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Matrix4f.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Timer.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Vec2f.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Vec3f.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Vec4f.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Timer.cpp" />
