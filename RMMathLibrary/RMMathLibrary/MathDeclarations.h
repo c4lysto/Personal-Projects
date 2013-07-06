@@ -13,10 +13,6 @@ using std::move;
 #define SSE_MATH_AVAILABLE
 #endif
 
-#ifdef WORLD_UP
-#define WORLD_UP
-#endif
-
 #ifndef PI
 #define PI 3.14159265359f
 #endif

@@ -166,15 +166,6 @@ struct Vec3f
 		return *this;
 	}
 
-	inline Vec3f& operator+=(float fScalar)
-	{
-		x -= fScalar;
-		y -= fScalar;
-		z -= fScalar;
-
-		return *this;
-	}
-
 	inline Vec3f operator+(const Vec3f& vVector) const
 	{
 		Vec3f tmp(*this);
@@ -182,17 +173,6 @@ struct Vec3f
 		tmp.x += vVector.x;
 		tmp.y += vVector.y;
 		tmp.z += vVector.z;
-
-		return tmp;
-	}
-
-	inline Vec3f operator+(const float fScalar) const
-	{
-		Vec3f tmp(*this);
-
-		tmp.x += fScalar;
-		tmp.y += fScalar;
-		tmp.z += fScalar;
 
 		return tmp;
 	}
@@ -206,15 +186,6 @@ struct Vec3f
 		return *this;
 	}
 
-	inline Vec3f& operator-=(const float fScalar)
-	{
-		x -= fScalar;
-		y -= fScalar;
-		z -= fScalar;
-
-		return *this;
-	}
-
 	inline Vec3f operator-(const Vec3f& vVector) const
 	{
 		Vec3f tmp(*this);
@@ -222,17 +193,6 @@ struct Vec3f
 		tmp.x -= vVector.x;
 		tmp.y -= vVector.y;
 		tmp.z -= vVector.z;
-
-		return tmp;
-	}
-
-	inline Vec3f operator-(const float fScalar) const
-	{
-		Vec3f tmp(*this);
-
-		tmp.x -= fScalar;
-		tmp.y -= fScalar;
-		tmp.z -= fScalar;
 
 		return tmp;
 	}
@@ -269,11 +229,13 @@ struct Vec3f
 
 	inline Vec3f& normalize()
 	{
-		float mag = 1 / magnitude();
+		float mag = magnitude();
 
 		// protection against divide by zero
-		if(mag != std::numeric_limits<float>::infinity())
+		if(mag)
 		{
+			mag = 1 / mag;
+
 #ifdef SSE_MATH_AVAILABLE
 			*this = _mm_mul_ps(_mm_set_ps(x, y, z, 0), _mm_set1_ps(mag));
 #else 
@@ -331,7 +293,7 @@ struct Vec3f
 		return vec;
 	}
 
-	inline friend Vec3f cross_product(const Vec3f& vVectorA, const Vec3f vVectorB)
+	inline friend Vec3f cross_product(const Vec3f& vVectorA, const Vec3f& vVectorB)
 	{
 		Vec3f vec;
 		vec.x = vVectorA.y * vVectorB.z - vVectorA.z * vVectorB.y;

@@ -33,10 +33,8 @@
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Vec4f.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Timer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\FPSTimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

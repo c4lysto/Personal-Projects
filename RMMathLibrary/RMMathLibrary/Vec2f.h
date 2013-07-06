@@ -175,9 +175,15 @@ struct Vec2f
 
 	inline Vec2f& normalize()
 	{
-		float mag = 1 / magnitude();
-		x *= mag;
-		y *= mag;
+		float mag = magnitude();
+
+		if(mag)
+		{
+			mag = 1 / mag;
+
+			x *= mag;
+			y *= mag;
+		}
 
 		return *this;
 	}

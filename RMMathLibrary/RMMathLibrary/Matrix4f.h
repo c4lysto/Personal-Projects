@@ -81,7 +81,15 @@ struct Matrix4f
 
 	inline Matrix4f& make_identity()
 	{
-		*this = XMMatrixIdentity();
+#ifdef SSE_MATH_AVAILABLE
+		_mm_storeu_ps(m, _mm_set_ss(1.0f));
+		_mm_storeu_ps(m + 4, _mm_set_ps(0.0f, 0.0f, 1.0f, 0.0f));
+		_mm_storeu_ps(m + 8, _mm_set_ps(0.0f, 1.0f, 0.0f, 0.0f));
+		_mm_storeu_ps(m + 12, _mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f));
+#else
+		ZeroMemory(this, sizeof(Matrix4f));
+		Xx = Yy = Zz = Ww = 1.0f;
+#endif
 
 		return *this;
 	}
@@ -104,10 +112,17 @@ struct Matrix4f
 	{
 		if(this != &mMatrix)
 		{
+#ifdef SSE_MATH_AVAILABLE
 			_mm_storeu_ps(m, _mm_loadu_ps(mMatrix.m));
 			_mm_storeu_ps(m + 4, _mm_loadu_ps(mMatrix.m + 4));
 			_mm_storeu_ps(m + 8, _mm_loadu_ps(mMatrix.m + 8));
 			_mm_storeu_ps(m + 12, _mm_loadu_ps(mMatrix.m + 12));
+#else
+			xAxis = mMatrix.xAxis; Xw = mMatrix.Xw;
+			yAxis = mMatrix.yAxis; Yw = mMatrix.Yw;
+			zAxis = mMatrix.zAxis; Zw = mMatrix.Zw;
+			wAxis = mMatrix.wAxis; Ww = mMatrix.Ww;
+#endif
 		}
 
 		return *this;

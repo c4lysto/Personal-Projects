@@ -130,14 +130,62 @@ struct Vec4f
 		return XMVectorMultiply(XMLoadFloat4((XMFLOAT4*)&vVector), XMVectorSet(fScalar, fScalar, fScalar, fScalar));
 	}
 
+	inline float magnitude() const
+	{
+#ifdef SSE_MATH_AVAILABLE
+		__m128 vec = _mm_set_ps(x, y, z, w);
+
+		vec = _mm_mul_ps(vec, vec);
+
+		__m128 tmp = _mm_shuffle_ps(vec, vec, _MM_SHUFFLE(1, 0, 3, 2));
+
+		vec = _mm_add_ps(vec, tmp);
+
+		return sqrt(_mm_add_ss(vec, _mm_shuffle_ps(vec, vec, _MM_SHUFFLE(2, 2, 0, 0))).m128_f32[0]);
+#else
+		return sqrt(x*x + y*y + z*z + w*w);
+#endif
+	}
+
+	inline Vec4f& normalize()
+	{
+		float mag = magnitude();
+
+		if(mag)
+		{
+			mag = 1 / mag;
+
+#ifdef SSE_MATH_AVAILABLE
+			*this = _mm_mul_ps(_mm_set_ps(x, y, z, w), _mm_set1_ps(mag));
+#else
+			x *= mag;
+			y *= mag;
+			z *= mag;
+			w *= mag;
+#endif
+		}
+
+		return *this;
+	}
+
 	inline Vec4f& zero_out()
 	{
-		return *this = XMVectorZero();
+#ifdef SSE_MATH_AVAILABLE
+		_mm_storeu_ps(color, _mm_setzero_ps());
+#else
+		x = y = z = w = 0;
+#endif
+		return *this;
 	}
 
 	inline Vec4f& full_color()
 	{
-		return *this = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
+#ifdef SSE_MATH_AVAILABLE
+		_mm_storeu_ps(color, _mm_set1_ps(1.0f));
+#else
+		x = y = z = w = 1;
+#endif
+		return *this;
 	}
 
 	friend Vec4f Lerp(const Vec4f& vVectorA, const Vec4f& vVectorB, const float fLambda)
