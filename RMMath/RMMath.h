@@ -1,5 +1,8 @@
 #include "MathDeclarations.h"
 
+#ifndef RMMATH_H
+#define RMMATH_H
+
 namespace RMMath
 {
 #pragma region Vec2f Definition
@@ -138,6 +141,8 @@ inline Vec3f Lerp(const Vec3f& vVectorA, const Vec3f& vVectorB, const float fLam
 typedef Vec3f float3;
 typedef Vec3f vec3f;
 typedef Vec3f vec3;
+
+extern const __declspec(selectany) Vec3f g_WorldUp = Vec3f(0.0f, 1.0f, 0.0f);
 #pragma endregion
 
 #pragma region Vec4f Definition
@@ -174,8 +179,8 @@ struct Vec4f
 	Vec4f(float fR, float fG, float fB, float fA);
 	Vec4f(Vec3f vVector, float fA);
 
-	Vec4f& operator=(const Vec4f&& vVector);
-	Vec4f& operator=(const XMVECTOR&& vVector);
+	inline Vec4f& operator=(const Vec4f&& vVector);
+	inline Vec4f& operator=(const XMVECTOR&& vVector);
 
 	inline Vec4f operator-(const Vec4f& vVector) const;
 	inline Vec4f& operator-=(const Vec4f& vVector);
@@ -270,6 +275,8 @@ struct Matrix4f
 			 const Vec4f&& vZAxis,
 			 const Vec4f&& vWAxis);
 
+	inline XMMATRIX toXMMatrix();
+
 	inline float operator[](size_t ucIndex) const;
 
 	inline Matrix4f& make_identity();
@@ -282,7 +289,7 @@ struct Matrix4f
 	inline Matrix4f& operator*=(const Matrix4f& mMatrix);
 
 	// actually faster than DirectX Version :)
-	Matrix4f& Rotate_GlobalX_Radians(float fRadians);
+	inline Matrix4f& Rotate_GlobalX_Radians(float fRadians);
 	inline Matrix4f& Rotate_GlobalY_Radians(float fRadians);
 	inline Matrix4f& Rotate_GlobalZ_Radians(float fRadians);
 
@@ -350,3 +357,5 @@ typedef Matrix4f float4x4;
 #include "Vec4f.inl"
 #include "Matrix4f.inl"
 };
+
+#endif // RMMATH_H

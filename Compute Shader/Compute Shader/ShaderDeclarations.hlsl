@@ -16,6 +16,7 @@ cbuffer CAMERA : register(b1)
 	float4x4 ViewProjectionMatrix;
 	float4x4 InvViewProjMatrix;
 	float3 CameraPos;
+	float3 fillData;
 }
 
 cbuffer OBJECT : register(b2)

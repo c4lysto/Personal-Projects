@@ -53,6 +53,11 @@ inline Matrix4f::Matrix4f(const Vec4f&& vXAxis,
 #pragma endregion
 
 #pragma region Matrix4f Operators
+inline XMMATRIX Matrix4f::toXMMatrix()
+{
+	return XMLoadFloat4x4((XMFLOAT4X4*)this);
+}
+
 inline float Matrix4f::operator[](size_t ucIndex) const 
 {
 	return m[ucIndex]; 
@@ -129,7 +134,7 @@ inline Matrix4f& Matrix4f::make_identity_3x3()
 }
 
 // actually faster than DirectX Version :)
-Matrix4f& Matrix4f::Rotate_GlobalX_Radians(float fRadians)
+inline Matrix4f& Matrix4f::Rotate_GlobalX_Radians(float fRadians)
 {
 	float fSinAngle = sin(fRadians);
 	float fCosAngle = cos(fRadians);

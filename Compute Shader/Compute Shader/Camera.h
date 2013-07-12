@@ -4,16 +4,14 @@
 #include <d3d11.h>
 #pragma comment(lib, "d3d11.lib")
 
-#include <DirectXMath.h>
-using namespace DirectX;
+#include <RMMath.h>
+using namespace RMMath;
+
 #include <atlbase.h>
 
 //class Renderer;
 class DirectXCore;
 class GameObject;
-
-typedef XMMATRIX Matrix4f;
-typedef XMFLOAT3 Vec3f;
 
 #define CAMERA_CONST_BUFF_REGISTER 1
 #define OBJECT_CONST_BUFF_REGISTER 2
@@ -25,7 +23,8 @@ private:
 	{
 		Matrix4f m_mViewProjectionMatrix;
 		Matrix4f m_mInvViewProjMatrix;
-		XMFLOAT3 m_CameraPos;
+		Vec3f m_CameraPos;
+		float m_fFillData;
 	};
 
 	struct ShaderObjectBuffer
@@ -77,7 +76,7 @@ public:
 	//Vec3f GetCameraMovement() const {return m_mWorldMatrix.position - m_vPrevPos;}
 
 	void SetMVPAndWorldMatrices(GameObject* pObject);
-	void SetMVPAndWorldMatrices(const XMMATRIX& matrix);
+	void SetMVPAndWorldMatrices(const Matrix4f& matrix);
 
 	inline void SetFOV(float fFOV) {m_fFOV = fFOV; m_bDirty = true;}
 	inline void SetNearClip(float fNearClip) {m_fNearClip = fNearClip; m_bDirty = true;}
@@ -104,7 +103,7 @@ public:
 	void RotateCameraMouseMovement(POINT movement, double fElapsedTime);
 
 	// depth is a 0-1 value
-	XMVECTOR Unproject(POINT screenPos, float depth);
+	Vec3f Unproject(POINT screenPos);
 
 	void UpdateMatrices();
 };

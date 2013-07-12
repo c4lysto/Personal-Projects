@@ -28,7 +28,7 @@ inline Vec4f::Vec4f(Vec3f vVector, float fA)
 #pragma endregion
 
 #pragma region Vec4f Operators
-Vec4f& Vec4f::operator=(const Vec4f&& vVector)
+inline Vec4f& Vec4f::operator=(const Vec4f&& vVector)
 {
 	if(this != &vVector)
 	{
@@ -45,7 +45,7 @@ Vec4f& Vec4f::operator=(const Vec4f&& vVector)
 	return *this;
 }
 
-Vec4f& Vec4f::operator=(const XMVECTOR&& vVector)
+inline Vec4f& Vec4f::operator=(const XMVECTOR&& vVector)
 {
 	if(this != (Vec4f*)&vVector)
 		XMStoreFloat4((XMFLOAT4*)this, vVector);

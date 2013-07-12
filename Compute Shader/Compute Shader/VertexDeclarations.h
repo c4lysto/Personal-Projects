@@ -8,7 +8,7 @@ namespace VertexDecl
 {
 	struct VertNormUV
 	{
-		XMFLOAT3 position, normal;
+		Vec3f position, normal;
 	
 		union
 		{
@@ -16,7 +16,7 @@ namespace VertexDecl
 		
 			struct
 			{
-				XMFLOAT2 uv;
+				Vec2f uv;
 			};		
 		};
 	};
@@ -34,8 +34,8 @@ namespace VertexDecl
 
 	struct VertClr
 	{
-		XMFLOAT3 position;
-		XMFLOAT4 color;
+		Vec3f position;
+		Vec4f color;
 	};
 
 #define VERTCLR_SIZE sizeof(VertClr)

@@ -1,8 +1,8 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
 
-#include <DirectXMath.h>
-using namespace DirectX;
+#include <RMMath.h>
+using namespace RMMath;
 
 #include "Model.h"
 
@@ -10,8 +10,8 @@ class GameObject
 {
 private:
 	Model m_Model;
-	XMMATRIX m_Matrix;
-	XMFLOAT3 m_Velocity;
+	Matrix4f m_Matrix;
+	Vec3f m_Velocity;
 
 public:
 	GameObject(void);
@@ -19,7 +19,7 @@ public:
 
 	Model* GetModel() {return &m_Model;}
 
-	XMMATRIX GetMatrix() const {return m_Matrix;}
+	Matrix4f GetMatrix() const {return m_Matrix;}
 
 	void Update(float fElapsedTime);
 };

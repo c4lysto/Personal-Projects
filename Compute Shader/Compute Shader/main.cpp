@@ -76,22 +76,22 @@ private:
 	struct GameShaderBuffer
 	{
 		float fElapsedTime;
-		XMFLOAT3 gravityPos; // find something to fill this with if you can
-		XMFLOAT3 CameraToGravity;
+		Vec3f gravityPos; // find something to fill this with if you can
+		Vec3f CameraToGravity;
 		float FillData;
 	};
 
 	struct ParticleData
 	{
-		XMFLOAT4 color;
-		XMFLOAT3 position;
-		XMFLOAT3 velocity;
+		Vec4f color;
+		Vec3f position;
+		Vec3f velocity;
 	};
 
 	struct ParticleVertex
 	{
-		XMFLOAT4 color;
-		XMFLOAT3 position;
+		Vec4f color;
+		Vec3f position;
 	};
 
 private:
@@ -186,7 +186,7 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 
 	coreObjects.Initialize(window, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT, true);
 	renderController.Initialize(&coreObjects);
-	camera.Initialize(&coreObjects, DEG_TO_RAD(75.0f), 0.1f, 200.0f);
+	camera.Initialize(&coreObjects, DEG_TO_RAD(42.0f), 0.1f, 200.0f);
 	m_fParticleFadeTimer = PARTICLE_FADE_TIME;
 
 	D3D11_BUFFER_DESC shaderConstBuffDesc;
@@ -344,24 +344,19 @@ void DEMO_APP::OnMouseMove(HWND hWnd, LPARAM lParam)
 	}
 	else if(m_bLButtonDown)
 	{
-		XMVECTOR result = camera.Unproject(currMousePos, 0.5f);
+		Vec3f result = camera.Unproject(currMousePos);
 
-		result = XMVector4Normalize(result);
+		result.normalize();// = XMVector4Normalize(result);
 
-		XMStoreFloat3(&m_GameConstBuffer.CameraToGravity, result);
+		//XMStoreFloat3(&m_GameConstBuffer.CameraToGravity, result);
+		m_GameConstBuffer.CameraToGravity = result;
 
 		result *= 10.0f;
 
 		// camera pos
-		result += camera.GetWorldMatrix().r[3];
+		result += camera.GetWorldMatrix().position;
 
-		XMFLOAT4 pos;
-
-		XMStoreFloat4(&pos, result);
-
-		m_GameConstBuffer.gravityPos.x = pos.x;
-		m_GameConstBuffer.gravityPos.y = pos.y;
-		m_GameConstBuffer.gravityPos.z = pos.z;
+		m_GameConstBuffer.gravityPos = result;
 	}
 		
 	m_PrevMousePos = currMousePos;
@@ -379,6 +374,9 @@ void DEMO_APP::UpdateGameConstBuff()
 	else if(m_fParticleFadeTimer > 0.0f)
 	{
 		m_fParticleFadeTimer = max(m_fParticleFadeTimer - (float)timer.Delta(), 0.0f);
+
+		if(!m_fParticleFadeTimer)
+			int x = 0;
 
 		m_GameConstBuffer.fElapsedTime = (float)timer.Delta() * (m_fParticleFadeTimer / PARTICLE_FADE_TIME);
 	}
@@ -405,10 +403,17 @@ bool DEMO_APP::Run()
 #pragma region Setup And Run Compute Shader
 	coreObjects.GetContext()->CSSetUnorderedAccessViews(0, 1, &m_UnorderedAccessView.p, 0);
 
-	if(!m_bLButtonDown && m_fParticleFadeTimer > 0.0f)
-		coreObjects.GetContext()->CSSetShader(pParticleFloatCS.p, 0, 0);
-	else
+	if(m_bLButtonDown)
+	{
 		coreObjects.GetContext()->CSSetShader(pComputeShader.p, 0, 0);
+	}
+	else
+	{
+		if(m_fParticleFadeTimer > 0.0f)
+			coreObjects.GetContext()->CSSetShader(pParticleFloatCS.p, 0, 0);
+		else
+			coreObjects.GetContext()->CSSetShader(NULL, 0, 0);
+	}
 
 	UINT threadgroups = MAX_PARTICLES / MAX_COMPUTE_THREADS;
 	coreObjects.GetContext()->Dispatch(threadgroups, 1, 1);
@@ -420,10 +425,10 @@ bool DEMO_APP::Run()
 	coreObjects.Clear();
 	
 	// TODO: PART 2 STEP 9a
-	UINT strides = 0;//[] = {VERTCLR_SIZE};
-	UINT offsets = 0;//[] = {0};
-	ID3D11Buffer* pNUllBuffer = NULL; 
-	coreObjects.GetContext()->IASetVertexBuffers(0, 1, &pNUllBuffer, &strides, &offsets);
+	//UINT strides = 0;//[] = {VERTCLR_SIZE};
+	//UINT offsets = 0;//[] = {0};
+	//ID3D11Buffer* pNUllBuffer = NULL; 
+	//coreObjects.GetContext()->IASetVertexBuffers(0, 1, &pNUllBuffer, &strides, &offsets);
 	
 	// TODO: PART 2 STEP 9b
 	coreObjects.GetContext()->VSSetShader(pVertexShader.p, 0, 0);
@@ -432,8 +437,8 @@ bool DEMO_APP::Run()
 	
 	// TODO: PART 2 STEP 9c
 	//coreObjects.GetContext()->IASetInputLayout(pInputLayout.p);
-	ID3D11InputLayout *pNULLInputLayout = NULL;
-	coreObjects.GetContext()->IASetInputLayout(pNULLInputLayout);
+	//ID3D11InputLayout *pNULLInputLayout = NULL;
+	//coreObjects.GetContext()->IASetInputLayout(pNULLInputLayout);
 	coreObjects.GetContext()->VSSetShaderResources(0, 1, &m_ParticleSRV.p);
 	
 	// TODO: PART 2 STEP 9d
@@ -442,7 +447,7 @@ bool DEMO_APP::Run()
 	// NOTE: parameter 1 is the register number in the shader
 	coreObjects.GetContext()->PSSetShaderResources(0, 1, &pTextureView.p);
 	
-	camera.SetMVPAndWorldMatrices(XMMatrixIdentity());
+	camera.SetMVPAndWorldMatrices(Matrix4f());
 
 	// TODO: PART 2 STEP 10
 	coreObjects.GetContext()->Draw(MAX_PARTICLES, 0);

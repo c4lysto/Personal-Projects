@@ -19,10 +19,10 @@ void main( uint ThreadID : SV_GroupIndex , uint3 GroupID : SV_GroupID)
 
 		float3 particlePos = particles[index].position;
 
-		//float3 camToParticle = particlePos - CameraPos;
-		//float dotVal = dot(CameraToGravity, camToParticle);
+		float3 camToParticle = particlePos - CameraPos;
+		float dotVal = dot(CameraToGravity, camToParticle);
 
-		//particlePos = CameraPos + normalize(camToParticle) * CAMERA_OFFSET;//CameraPos + (camToParticle * dotVal);*/
+		particlePos = CameraPos + normalize(camToParticle) * CAMERA_OFFSET;//CameraPos + (camToParticle * dotVal);*/
 
 		float3 vecToGravity = normalize(gravityPos - particlePos);
 		vecToGravity *= GRAVITY_STRENGTH;
