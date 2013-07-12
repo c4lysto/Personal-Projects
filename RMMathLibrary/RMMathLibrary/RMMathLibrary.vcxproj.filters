@@ -15,26 +15,31 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\MathDeclarations.h">
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMath\FPSTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Matrix4f.h">
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMath\MathDeclarations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Timer.h">
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMath\RMMath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Vec3f.h">
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMath\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Vec2f.h">
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Matrix4f.inl">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Vec4f.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\FPSTimer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    </None>
+    <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Vec2f.inl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Vec3f.inl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Vec4f.inl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -11,13 +11,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\FPSTimer.h" />
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\MathDeclarations.h" />
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Matrix4f.h" />
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Timer.h" />
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Vec2f.h" />
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Vec3f.h" />
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary\Vec4f.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMath\FPSTimer.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMath\MathDeclarations.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMath\RMMath.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMath\Timer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Matrix4f.inl" />
+    <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Vec2f.inl" />
+    <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Vec3f.inl" />
+    <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Vec4f.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E8E2A7E3-BE4F-4A3A-BB29-3831C4886455}</ProjectGuid>
