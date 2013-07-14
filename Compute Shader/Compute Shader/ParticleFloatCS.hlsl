@@ -15,6 +15,9 @@ void main( uint ThreadID : SV_GroupIndex , uint3 GroupID : SV_GroupID)
 		uint index = GroupID.x * MAX_PARTICLES + ThreadID;
 
 		particles[index].position += particles[index].velocity * fElapsedTime;
+
+		if(fElapsedTime == 0)
+			particles[index].velocity = 0;
 	}
 }
 

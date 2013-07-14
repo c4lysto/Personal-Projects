@@ -237,7 +237,7 @@ inline Vec3f& Vec3f::normalize()
 		mag = 1 / mag;
 
 #ifdef SSE_MATH_AVAILABLE
-		*this = _mm_mul_ps(_mm_set_ps(x, y, z, 0), _mm_set1_ps(mag));
+		*this = _mm_mul_ps(_mm_set_ps(0, z, y, x), _mm_set1_ps(mag));
 #else 
 		x *= mag;
 		y *= mag;

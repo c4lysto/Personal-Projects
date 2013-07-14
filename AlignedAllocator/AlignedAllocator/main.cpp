@@ -13,31 +13,18 @@ _declspec(align(16)) struct TestStruct
 
 struct TestStruct2
 {
-	float thrice[2];
 	TestStruct yup;
-	float derp;
 };
 
 struct TestStruct3 : public TestStruct2
 {
-	float another[3];
 };
 
 int main()
 {
-	vector<TestStruct3> oYea;
+	float* testing = nullptr;
 
-	oYea.push_back(TestStruct3());
-	oYea.push_back(TestStruct3());
-
-	oYea.pop_back();
-
-	oYea.push_back(TestStruct3());
-	oYea.push_back(TestStruct3());
-	oYea.push_back(TestStruct3());
-	oYea.push_back(TestStruct3());
-
-	oYea.erase(oYea.begin() + 2, oYea.end());
+	SAFE_DELETE(testing);
 
 	return 0;
 }

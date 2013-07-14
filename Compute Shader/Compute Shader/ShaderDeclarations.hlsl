@@ -8,7 +8,7 @@ cbuffer GAME : register(b0)
 	float fElapsedTime;
 	float3 gravityPos;
 	float3 CameraToGravity;
-	float FillData;
+	uint GameTime;
 }
 
 cbuffer CAMERA : register(b1)

@@ -100,5 +100,8 @@
     <FxCompile Include="ParticleFloatCS.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\Compute Shader\Compute Shader\ExplodeCS.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

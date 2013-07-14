@@ -42,6 +42,7 @@ using namespace DirectX;
 #include "ComputeParticle.csh"
 #include "PointToQuadGS.csh"
 #include "ParticleFloatCS.csh"
+#include "ExplodeCS.csh"
 
 #ifdef _DEBUG
 #define BACKBUFFER_WIDTH	1280
@@ -78,7 +79,7 @@ private:
 		float fElapsedTime;
 		Vec3f gravityPos; // find something to fill this with if you can
 		Vec3f CameraToGravity;
-		float FillData;
+		DWORD GameTime;
 	};
 
 	struct ParticleData
@@ -120,6 +121,7 @@ private:
 	CComPtr<ID3D11GeometryShader> pGeometryShader;
 	CComPtr<ID3D11ComputeShader> pComputeShader;
 	CComPtr<ID3D11ComputeShader> pParticleFloatCS;
+	CComPtr<ID3D11ComputeShader> pExplodeCS;
 
 	CComPtr<ID3D11ShaderResourceView> pTextureView;
 	CComPtr<ID3D11ShaderResourceView> pCubeMapTextureView;
@@ -142,6 +144,7 @@ public:
 	DEMO_APP() {}
 	void Initialize(HINSTANCE hinst, WNDPROC proc);
 	void OnMouseMove(HWND hWnd, LPARAM lParam);
+	void Explode(LPARAM lParam);
 	void ResetParticleFadeTimer();
 	bool Run();
 	bool ShutDown();
@@ -254,6 +257,9 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 		MessageBox(window, L"Failed to create ComputeParticle Shader", L"", MB_OK | MB_ICONERROR);
 
 	if(FAILED(coreObjects.GetDevice()->CreateComputeShader(ParticleFloatCS, ARRAYSIZE(ParticleFloatCS), NULL, &pParticleFloatCS.p)))
+		MessageBox(window, L"Failed to create ParticleFloat Shader", L"", MB_OK | MB_ICONERROR);
+
+	if(FAILED(coreObjects.GetDevice()->CreateComputeShader(ExplodeCS, ARRAYSIZE(ExplodeCS), NULL, &pExplodeCS.p)))
 		MessageBox(window, L"Failed to create ParticleFloat Shader", L"", MB_OK | MB_ICONERROR);
 
 	// TODO: PART 2 STEP 8a
@@ -381,6 +387,8 @@ void DEMO_APP::UpdateGameConstBuff()
 		m_GameConstBuffer.fElapsedTime = (float)timer.Delta() * (m_fParticleFadeTimer / PARTICLE_FADE_TIME);
 	}
 
+	m_GameConstBuffer.GameTime = GetTickCount();
+
 	D3D11_MAPPED_SUBRESOURCE gameSubresource;
 
 	if(FAILED(coreObjects.GetContext()->Map(pGameConstBuffer.p, 0, D3D11_MAP_WRITE_DISCARD, 0, &gameSubresource)))
@@ -461,6 +469,38 @@ bool DEMO_APP::Run()
 	
 	// END OF PART 1
 	return true; 
+}
+
+void DEMO_APP::Explode(LPARAM lParam)
+{
+	POINT currMousePos = {LOWORD(lParam), HIWORD(lParam)};
+
+	Vec3f result = camera.Unproject(currMousePos);
+
+	result.normalize();// = XMVector4Normalize(result);
+
+	//XMStoreFloat3(&m_GameConstBuffer.CameraToGravity, result);
+	m_GameConstBuffer.CameraToGravity = result;
+
+	result *= 10.0f;
+
+	// camera pos
+	result += camera.GetWorldMatrix().position;
+
+	m_GameConstBuffer.gravityPos = result;
+
+	ResetParticleFadeTimer();
+	UpdateGameConstBuff();
+
+	coreObjects.GetContext()->CSSetUnorderedAccessViews(0, 1, &m_UnorderedAccessView.p, 0);
+
+	coreObjects.GetContext()->CSSetShader(pExplodeCS.p, 0, 0);
+
+	UINT threadgroups = MAX_PARTICLES / MAX_COMPUTE_THREADS;
+	coreObjects.GetContext()->Dispatch(threadgroups, 1, 1);
+
+	ID3D11UnorderedAccessView *pNULLuav = NULL;
+	coreObjects.GetContext()->CSSetUnorderedAccessViews(0, 1, &pNULLuav, 0);
 }
 
 void DEMO_APP::Update()
@@ -561,6 +601,12 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 			{
 				m_bLButtonDown = false;
 				myApp.ResetParticleFadeTimer();
+			}
+			break;
+
+		case WM_MBUTTONDOWN:
+			{
+				myApp.Explode(lParam);
 			}
 			break;
 
