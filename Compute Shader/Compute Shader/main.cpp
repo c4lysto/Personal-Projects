@@ -54,18 +54,10 @@ using namespace DirectX;
 
 #define GAME_CONST_BUFF_REGISTER 0
 #define MAX_PARTICLES 512000
-#define MAX_COMPUTE_THREADS D3D11_CS_THREAD_GROUP_MAX_THREADS_PER_GROUP 
-
-#define APPEND_CONSUME_BUFFER 0
+#define MAX_COMPUTE_THREADS D3D11_CS_THREAD_GROUP_MAX_THREADS_PER_GROUP
 
 #define PARTICLE_FADE_TIME 3.0f
 #define FAST_CAMERA_MODIFIER 3.0f
-
-#if APPEND_CONSUME_BUFFER
-#define UAV_BUFFER 0
-#else
-#define UAV_BUFFER 1
-#endif
 
 //************************************************************
 //************ SIMPLE WINDOWS APP CLASS **********************
@@ -104,31 +96,24 @@ private:
 	RenderController				renderController;
 	GameShaderBuffer				m_GameConstBuffer;
 	
-	CComPtr<ID3D11Buffer> pVertexBuffer;
 	CComPtr<ID3D11Buffer> pGameConstBuffer;
 	CComPtr<ID3D11Buffer> pStructuredBuffer;
 	CComPtr<ID3D11BlendState> pBlendState;
 
-#if APPEND_CONSUME_BUFFER
-#elif UAV_BUFFER
 	CComPtr<ID3D11UnorderedAccessView> m_UnorderedAccessView;
-#endif
 
 	CComPtr<ID3D11InputLayout> pInputLayout;
 
 	CComPtr<ID3D11VertexShader> pVertexShader;
 	CComPtr<ID3D11PixelShader> pPixelShader;
 	CComPtr<ID3D11GeometryShader> pGeometryShader;
+
 	CComPtr<ID3D11ComputeShader> pComputeShader;
 	CComPtr<ID3D11ComputeShader> pParticleFloatCS;
 	CComPtr<ID3D11ComputeShader> pExplodeCS;
 
 	CComPtr<ID3D11ShaderResourceView> pTextureView;
-	CComPtr<ID3D11ShaderResourceView> pCubeMapTextureView;
 	CComPtr<ID3D11ShaderResourceView> m_ParticleSRV;
-
-	std::vector<VertClr> vertices;
-	std::vector<ParticleData> particles;
 
 	POINT m_PrevMousePos;
 	float m_fParticleFadeTimer;
@@ -205,7 +190,7 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 	coreObjects.GetContext()->CSSetConstantBuffers(GAME_CONST_BUFF_REGISTER, 1, &pGameConstBuffer.p);
 	coreObjects.GetContext()->CSSetConstantBuffers(CAMERA_CONST_BUFF_REGISTER, 1, &camera.GetCamConstBuff().p);
 
-	vertices.resize(MAX_PARTICLES);
+	std::vector<ParticleData> particles;
 	particles.resize(MAX_PARTICLES);
 	for(unsigned int i = 0; i < MAX_PARTICLES; ++i)
 	{
@@ -221,26 +206,7 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 		particles[i].velocity.x = (rand() % 501 - 250) * 0.01f;
 		particles[i].velocity.y = (rand() % 501 - 250) * 0.01f;
 		particles[i].velocity.z = (rand() % 501 - 250) * 0.01f;
-
-		vertices[i].position = particles[i].position;
-		vertices[i].color = particles[i].color;
 	}
-	
-	D3D11_BUFFER_DESC vertBuffDesc;
-	ZeroMemory(&vertBuffDesc, sizeof(D3D11_BUFFER_DESC));
-	vertBuffDesc.Usage = D3D11_USAGE_DYNAMIC;
-	vertBuffDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertBuffDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	vertBuffDesc.ByteWidth = vertices.size() * sizeof(VertClr);
-	
-    // TODO: PART 2 STEP 3c
-	D3D11_SUBRESOURCE_DATA initialVertData;
-	ZeroMemory(&initialVertData, sizeof(D3D11_SUBRESOURCE_DATA));
-	initialVertData.pSysMem = vertices.data();
-
-	// TODO: PART 2 STEP 3d
-	if(FAILED(coreObjects.GetDevice()->CreateBuffer(&vertBuffDesc, &initialVertData, &pVertexBuffer.p)))
-		MessageBox(window, L"Failed to create Vertex Buffer", L"", MB_OK | MB_ICONERROR);
 	
 	// TODO: PART 2 STEP 7
 	// NOTE: ask about 2nd parameter
@@ -312,9 +278,6 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 	//NOTE!!! Dont forget to finish this
 	coreObjects.GetContext()->OMSetBlendState(pBlendState.p, NULL, UINT_MAX);
 
-#if APPEND_CONSUME_BUFFER
-
-#elif UAV_BUFFER
 	D3D11_UNORDERED_ACCESS_VIEW_DESC UAVDesc;
 	ZeroMemory(&UAVDesc, sizeof(D3D11_UNORDERED_ACCESS_VIEW_DESC));
 	UAVDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -323,7 +286,6 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 
 	if(FAILED(coreObjects.GetDevice()->CreateUnorderedAccessView(pStructuredBuffer.p, &UAVDesc, &m_UnorderedAccessView.p)))
 		MessageBox(window, L"Failed to create Unordered Access View", L"", MB_OK | MB_ICONERROR);
-#endif
 
 	ZeroMemory(&m_GameConstBuffer, sizeof(GameShaderBuffer));
 
@@ -482,7 +444,7 @@ void DEMO_APP::Explode(LPARAM lParam)
 	//XMStoreFloat3(&m_GameConstBuffer.CameraToGravity, result);
 	m_GameConstBuffer.CameraToGravity = result;
 
-	result *= 10.0f;
+	result *= 20.0f;
 
 	// camera pos
 	result += camera.GetWorldMatrix().position;
