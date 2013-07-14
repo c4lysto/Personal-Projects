@@ -53,7 +53,7 @@ using namespace DirectX;
 #endif
 
 #define GAME_CONST_BUFF_REGISTER 0
-#define MAX_PARTICLES 512000
+#define MAX_PARTICLES 1024000
 #define MAX_COMPUTE_THREADS D3D11_CS_THREAD_GROUP_MAX_THREADS_PER_GROUP
 
 #define PARTICLE_FADE_TIME 3.0f
@@ -319,7 +319,7 @@ void DEMO_APP::OnMouseMove(HWND hWnd, LPARAM lParam)
 		//XMStoreFloat3(&m_GameConstBuffer.CameraToGravity, result);
 		m_GameConstBuffer.CameraToGravity = result;
 
-		result *= 10.0f;
+		result *= 40.0f;
 
 		// camera pos
 		result += camera.GetWorldMatrix().position;
