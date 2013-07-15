@@ -30,7 +30,7 @@ inline Matrix4f::Matrix4f(const Matrix4f&& mMatrix)
 
 inline Matrix4f::Matrix4f(const XMMATRIX&& mMatrix)
 {
-	*this = move(mMatrix);
+	XMStoreFloat4x4((XMFLOAT4X4*)this, mMatrix);
 }
 
 inline Matrix4f::Matrix4f(const Vec4f&& vXAxis,
@@ -56,6 +56,11 @@ inline Matrix4f::Matrix4f(const Vec4f&& vXAxis,
 inline XMMATRIX Matrix4f::toXMMatrix()
 {
 	return XMLoadFloat4x4((XMFLOAT4X4*)this);
+}
+
+inline Matrix3f Matrix4f::Get3x3()
+{
+	return Matrix3f(xAxis, yAxis, zAxis);
 }
 
 inline float Matrix4f::operator[](size_t ucIndex) const 

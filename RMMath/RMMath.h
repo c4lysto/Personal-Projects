@@ -223,6 +223,56 @@ typedef Vec4f vec4;
 typedef Vec4f float4;
 #pragma endregion
 
+#pragma region Matrix3f
+struct Matrix3f
+{
+	union
+	{
+		float m[9];
+		float ma[3][3];
+
+		struct
+		{
+			float Xx, Xy, Xz,
+				  Yx, Yy, Yz,
+				  Zx, Zy, Zz;
+		};
+
+		struct
+		{
+			Vec3f xAxis,
+				  yAxis,
+				  zAxis;
+		};
+	};
+
+	Matrix3f();
+	Matrix3f(float fXx, float fXy, float fXz, 
+			 float fYx, float fYy, float fYz, 
+			 float fZx, float fZy, float fZz);
+	Matrix3f(const Matrix3f&& mMatrix);
+	Matrix3f(const XMMATRIX&& mMatrix);
+	Matrix3f(const Vec3f& vXAxis,
+			 const Vec3f& vYAxis,
+			 const Vec3f& vZAxis);
+
+	inline Matrix3f& make_identity();
+
+	inline Matrix3f& operator=(const Matrix3f&& mMatrix);
+	inline Matrix3f& operator=(const XMMATRIX&& mMatrix);
+
+	inline Matrix3f operator*(const Matrix3f& mMatrix) const;
+	inline Matrix3f& operator*=(const Matrix3f& mMatrix);
+
+	inline Matrix3f& Transpose();
+};
+
+typedef Matrix3f Matrix33;
+typedef Matrix3f Mat3f;
+typedef Matrix3f float3x3;
+
+#pragma endregion
+
 #pragma region Matrix4f Definition
 struct Matrix4f
 {
@@ -276,6 +326,7 @@ struct Matrix4f
 			 const Vec4f&& vWAxis);
 
 	inline XMMATRIX toXMMatrix();
+	inline Matrix3f Get3x3();
 
 	inline float operator[](size_t ucIndex) const;
 
@@ -347,7 +398,7 @@ inline Matrix4f MatrixScale(const Matrix4f& mMatrix, float fXScale, float fYScal
 inline Matrix4f MatrixInverse(const Matrix4f& mMatrix);
 inline Matrix4f Lerp(const Matrix4f& MatrixA, const Matrix4f& MatrixB, float fLambda);
 
-typedef Matrix4f Matrix;
+typedef Matrix4f Matrix44;
 typedef Matrix4f Mat4f;
 typedef Matrix4f float4x4;
 #pragma endregion
@@ -355,6 +406,7 @@ typedef Matrix4f float4x4;
 #include "Vec2f.inl"
 #include "Vec3f.inl"
 #include "Vec4f.inl"
+#include "Matrix3f.inl"
 #include "Matrix4f.inl"
 };
 
