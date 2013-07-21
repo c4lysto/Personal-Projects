@@ -17,6 +17,7 @@
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\RMMath\Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Matrix34f.inl" />
     <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Matrix3f.inl" />
     <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Matrix4f.inl" />
     <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Vec2f.inl" />

@@ -44,5 +44,8 @@
     <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Matrix3f.inl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Matrix34f.inl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

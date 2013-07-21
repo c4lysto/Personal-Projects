@@ -8,15 +8,19 @@ using std::vector;
 _declspec(align(16)) struct TestStruct
 {
 	__m128 tst1, tst2, tst3;
-	float yada;
+	char yada;
 };
 
 struct TestStruct2
 {
+<<<<<<< .mine
+	short thrice;
+=======
+>>>>>>> .r20
 	TestStruct yup;
 };
 
-struct TestStruct3 : public TestStruct2
+_declspec(align(16)) struct TestStruct3 : public TestStruct2
 {
 };
 

@@ -82,6 +82,16 @@ inline Vec3f& Vec3f::operator*=(const Vec3f& vScale)
 	return *this;
 }
 
+inline Vec3f Vec3f::operator*(const Matrix3f& mMatrix)
+{
+	return XMVector3Transform(XMLoadFloat3((XMFLOAT3*)this), XMLoadFloat3x3((XMFLOAT3X3*)&mMatrix));
+}
+
+inline Vec3f& Vec3f::operator*=(const Matrix3f& mMatrix)
+{
+	return *this = *this * mMatrix;
+}
+
 inline Vec3f Vec3f::operator/(const float fScalar) const
 {
 	Vec3f tmp(*this);

@@ -112,10 +112,10 @@ inline Matrix4f& Matrix4f::operator*=(const Matrix4f& mMatrix)
 inline Matrix4f& Matrix4f::make_identity()
 {
 #ifdef SSE_MATH_AVAILABLE
-	_mm_storeu_ps(m, _mm_set_ss(1.0f));
-	_mm_storeu_ps(m + 4, _mm_set_ps(0.0f, 0.0f, 1.0f, 0.0f));
-	_mm_storeu_ps(m + 8, _mm_set_ps(0.0f, 1.0f, 0.0f, 0.0f));
-	_mm_storeu_ps(m + 12, _mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f));
+	_mm_storeu_ps(m, g_IdentityX4);
+	_mm_storeu_ps(m + 4, g_IdentityY4);
+	_mm_storeu_ps(m + 8, g_IdentityZ4);
+	_mm_storeu_ps(m + 12, g_IdentityW4);
 #else
 	ZeroMemory(this, sizeof(Matrix4f));
 	Xx = Yy = Zz = Ww = 1.0f;

@@ -66,6 +66,9 @@ typedef Vec2f float2;
 #pragma endregion
 
 #pragma region Vec3f Definition
+
+struct Matrix3f;
+
 struct Vec3f
 {
 	union
@@ -93,6 +96,9 @@ struct Vec3f
 
 	inline Vec3f& operator*=(const float fScalar);
 	inline Vec3f& operator*=(const Vec3f& vScale);
+
+	inline Vec3f operator*(const Matrix3f& mMatrix);
+	inline Vec3f& operator*=(const Matrix3f& mMatrix);
 
 	inline Vec3f operator/(const float fScalar) const;
 	inline Vec3f operator/(const Vec3f& vScale) const;
@@ -142,7 +148,10 @@ typedef Vec3f float3;
 typedef Vec3f vec3f;
 typedef Vec3f vec3;
 
-extern const __declspec(selectany) Vec3f g_WorldUp = Vec3f(0.0f, 1.0f, 0.0f);
+extern const __declspec(selectany) Vec3f g_IdentityX3 = Vec3f(1.0f, 0.0f, 0.0f);
+extern const __declspec(selectany) Vec3f g_IdentityY3 = Vec3f(0.0f, 1.0f, 0.0f);
+extern const __declspec(selectany) Vec3f g_IdentityZ3 = Vec3f(0.0f, 0.0f, 1.0f);
+extern const __declspec(selectany) Vec3f g_IdentityW3 = Vec3f(0.0f, 0.0f, 0.0f);
 #pragma endregion
 
 #pragma region Vec4f Definition
@@ -221,6 +230,18 @@ inline Vec4f Lerp(const Vec4f& vVectorA, const Vec4f& vVectorB, const float fLam
 typedef Vec4f vec4f;
 typedef Vec4f vec4;
 typedef Vec4f float4;
+
+#ifdef SSE_MATH_AVAILABLE
+extern const __declspec(selectany) __m128 g_IdentityX4 = _mm_setr_ps(1.0f, 0.0f, 0.0f, 0.0f);
+extern const __declspec(selectany) __m128 g_IdentityY4 = _mm_setr_ps(0.0f, 1.0f, 0.0f, 0.0f);
+extern const __declspec(selectany) __m128 g_IdentityZ4 = _mm_setr_ps(0.0f, 0.0f, 1.0f, 0.0f);
+extern const __declspec(selectany) __m128 g_IdentityW4 = _mm_setr_ps(0.0f, 0.0f, 0.0f, 1.0f);
+#else
+extern const __declspec(selectany) Vec4f g_IdentityX4 = Vec4f(1.0f, 0.0f, 0.0f, 0.0f);
+extern const __declspec(selectany) Vec4f g_IdentityY4 = Vec4f(0.0f, 1.0f, 0.0f, 0.0f);
+extern const __declspec(selectany) Vec4f g_IdentityZ4 = Vec4f(0.0f, 0.0f, 1.0f, 0.0f);
+extern const __declspec(selectany) Vec4f g_IdentityW4 = Vec4f(0.0f, 0.0f, 0.0f, 1.0f);
+#endif
 #pragma endregion
 
 #pragma region Matrix3f
@@ -271,6 +292,50 @@ typedef Matrix3f Matrix33;
 typedef Matrix3f Mat3f;
 typedef Matrix3f float3x3;
 
+#pragma endregion
+
+#pragma region Matrix34f
+struct Matrix34f
+{
+	union
+	{
+		float m[12];
+		float ma[3][4];
+
+		struct
+		{
+			float Xx, Xy, Xz,
+				  Yx, Yy, Yz,
+				  Zx, Zy, Zz,
+				  Wx, Wy, Wz;
+		};
+
+		struct
+		{
+			Vec3f xAxis, 
+				  yAxis, 
+				  zAxis, 
+				  wAxis;
+		};
+	};
+
+	Matrix34f();
+	Matrix34f(float fXx, float fXy, float fXz, 
+			  float fYx, float fYy, float fYz, 
+			  float fZx, float fZy, float fZz,
+			  float fWx, float fWy, float fWz);
+	Matrix34f(const Matrix34f&& mMatrix);
+	Matrix34f(const XMMATRIX&& mMatrix);
+	Matrix34f(const Vec3f& vXAxis,
+			  const Vec3f& vYAxis,
+			  const Vec3f& vZAxis,
+			  const Vec3f& vWAxis);
+
+	inline Matrix34f& make_identity();
+};
+
+typedef Matrix34f Matrix34;
+typedef Matrix34f float3x4;
 #pragma endregion
 
 #pragma region Matrix4f Definition
@@ -407,6 +472,7 @@ typedef Matrix4f float4x4;
 #include "Vec3f.inl"
 #include "Vec4f.inl"
 #include "Matrix3f.inl"
+#include "Matrix34f.inl"
 #include "Matrix4f.inl"
 };
 
