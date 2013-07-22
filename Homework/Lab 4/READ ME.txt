@@ -1,0 +1,6 @@
+Growing Grass Controls
+
+UP ARROW 	= Grow Grass
+DOWN ARROW	= Un...grow? grass?
+LEFT ARROW	= Decrease grass blade thickness
+RIGHT ARROW	= Increase grass blade thickness
