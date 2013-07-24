@@ -17,22 +17,6 @@ using namespace RMMath;
 #define SAFE_DELETE(del) if(del) delete del; del = nullptr;
 #endif
 
-#define PI 3.14159265359f
-
-#define FLT_EPSILON     1.192092896e-07F
-
-#define DEG_TO_RAD(deg) ((deg) * PI / 180.0f)
-
-#define RAD_TO_DEG(rad) ((rad) * 180.0f / PI)
-
-#ifndef max
-	#define max(a,b)	(((a) > (b) ? (a) : (b)))
-#endif
-
-#ifndef min
-	#define min(a,b)	(((a) < (b) ? (a) : (b)))
-#endif
-
 #include "RenderTarget.h"
 
 #ifdef _DEBUG

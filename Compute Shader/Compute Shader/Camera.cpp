@@ -188,7 +188,7 @@ void Camera::RotateCameraMouseMovement(POINT movement, double fElapsedTime)
 
 		m_mWorldMatrix.position.zero_out();
 
-		float fDotProduct = m_mWorldMatrix.yAxis.dot_product(g_WorldUp);
+		float fDotProduct = m_mWorldMatrix.yAxis.dot_product(Vec3f(0.0f, 1.0f, 0.0f));
 		//XMStoreFloat(&fDotProduct, XMVector3Dot(m_mWorldMatrix.toXMMatrix().r[1], XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
 
 		if(fDotProduct > 0.0f)

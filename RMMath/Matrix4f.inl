@@ -44,10 +44,10 @@ inline Matrix4f::Matrix4f(const Vec4f&& vXAxis,
 	_mm_storeu_ps(m + 8, _mm_loadu_ps(vZAxis.vector));
 	_mm_storeu_ps(m + 12, _mm_loadu_ps(vWAxis.vector));
 #else
-	xAxis = vXAxis; Xw = vXAxis.w;
-	yAxis = vXAxis; Yw = vYAxis.w;
-	zAxis = vXAxis; Zw = vZAxis.w;
-	wAxis = vXAxis; Ww = vWAxis.w;
+	xAxis = vXAxis.position; Xw = vXAxis.w;
+	yAxis = vYAxis.position; Yw = vYAxis.w;
+	zAxis = vZAxis.position; Zw = vZAxis.w;
+	wAxis = vWAxis.position; Ww = vWAxis.w;
 #endif
 }
 #pragma endregion

@@ -25,7 +25,7 @@ void main( uint ThreadID : SV_GroupIndex , uint3 GroupID : SV_GroupID)
 		particlePos = CameraPos + normalize(camToParticle) * CAMERA_OFFSET;//CameraPos + (camToParticle * dotVal);*/
 
 		float3 vecToGravity = normalize(gravityPos - particlePos);
-		vecToGravity *= GRAVITY_STRENGTH;
+		vecToGravity *= (GRAVITY_STRENGTH * (GRAVITY_STRENGTH * 0.5f));
 
 		float3 particleVelocity = particles[index].velocity + vecToGravity * fElapsedTime;
 

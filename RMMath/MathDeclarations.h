@@ -9,7 +9,7 @@ using namespace DirectX;
 #include <utility>
 using std::move;
 
-#if defined(_XM_SSE_INTRINSICS_) && !defined(_XM_NO_INTRINSICS_)
+#if defined(_M_IX86) || defined(_M_AMD64)
 #define SSE_MATH_AVAILABLE
 #endif
 
@@ -21,20 +21,20 @@ using std::move;
 #define FLT_EPSILON     1.192092896e-07F
 #endif
 
-#ifndef PI_OVER_180
-#define PI_OVER_180 0.0174532925f
+#ifndef _PI_OVER_180
+#define _PI_OVER_180 0.0174532925f
 #endif
 
-#ifndef PI_UNDER_180
-#define PI_UNDER_180 57.2957795131f
+#ifndef _180_OVER_PI
+#define _180_OVER_PI 57.2957795131f
 #endif
 
 #ifndef DEG_TO_RAD
-#define DEG_TO_RAD(deg) ((deg) * PI_OVER_180)
+#define DEG_TO_RAD(deg) ((deg) * _PI_OVER_180)
 #endif
 
 #ifndef RAD_TO_DEG
-#define RAD_TO_DEG(rad) ((rad) * PI_UNDER_180)
+#define RAD_TO_DEG(rad) ((rad) * _180_OVER_PI)
 #endif
 
 #ifndef max

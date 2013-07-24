@@ -5,6 +5,7 @@
 
 namespace RMMath
 {
+#pragma region Unaligned Math Structures
 #pragma region Vec2f Definition
 struct Vec2f
 {
@@ -19,13 +20,17 @@ struct Vec2f
 	};
 
 	Vec2f();
-	Vec2f(const Vec2f&& vVector);
-	Vec2f(const XMVECTOR&& vVector);
+	Vec2f(const Vec2f& vVector);
+	Vec2f(Vec2f&& vVector);
+	Vec2f(XMVECTOR&& vVector);
 	Vec2f(float fX, float fY);
 
-	inline Vec2f& operator=(const Vec2f&& vVector);
+	inline Vec2f& operator-(const Vec2f& vVector);
+
+	inline Vec2f& operator=(const Vec2f& vVector);
+	inline Vec2f& operator=(Vec2f&& vVector);
 	inline Vec2f& operator=(const POINT vVector);
-	inline Vec2f& operator=(const XMVECTOR&& vVector);
+	inline Vec2f& operator=(XMVECTOR&& vVector);
 	inline Vec2f& operator=(const XMVECTOR& vVector);
 
 	inline Vec2f operator+(const Vec2f& vVector) const;
@@ -34,11 +39,11 @@ struct Vec2f
 	inline Vec2f operator-(const Vec2f& vVector) const;
 	inline Vec2f& operator-=(const Vec2f& vVector);
 
-	inline Vec2f operator*(const float fScalar) const;
-	inline Vec2f& operator*=(const float fScalar);
+	inline Vec2f operator*(float fScalar) const;
+	inline Vec2f& operator*=(float fScalar);
 
-	inline Vec2f operator/(const float fScalar) const;
-	inline Vec2f& operator/=(const float fScalar);
+	inline Vec2f operator/(float fScalar) const;
+	inline Vec2f& operator/=(float fScalar);
 
 	inline float dot_product(const Vec2f& vVector) const;
 
@@ -53,7 +58,6 @@ struct Vec2f
 	inline float angle_between(const Vec2f& vVector) const;
 };
 
-inline Vec2f operator-(const Vec2f& vVector);
 inline Vec2f operator*(float fScalar, const Vec2f& vVector);
 inline Vec2f Normalize(const Vec2f& vVector);
 inline float Dot_Product(const Vec2f& vVectorA, const Vec2f& vVectorB);
@@ -85,28 +89,32 @@ struct Vec3f
 	Vec3f(float fX, float fY, float fZ);
 	Vec3f(float val);
 
-	Vec3f(const Vec3f&& vVector);
+	Vec3f(const Vec3f& vVector);
+	Vec3f(Vec3f&& vVector);
 
-	Vec3f(const XMVECTOR&& vVector);
+	Vec3f(XMVECTOR&& vVector);
 
-	inline Vec3f& operator=(const Vec3f&& vVector);
-	inline Vec3f& operator=(const XMVECTOR&& vVector);
+	inline Vec3f operator-();
+
+	inline Vec3f& operator=(const Vec3f& vVector);
+	inline Vec3f& operator=(Vec3f&& vVector);
+	inline Vec3f& operator=(XMVECTOR&& vVector);
 	inline Vec3f& operator=(const XMVECTOR& vVector);
-	inline Vec3f& operator=(const float fScalar);
+	inline Vec3f& operator=(float fScalar);
 
-	inline Vec3f& operator*=(const float fScalar);
+	inline Vec3f& operator*=(float fScalar);
 	inline Vec3f& operator*=(const Vec3f& vScale);
 
 	inline Vec3f operator*(const Matrix3f& mMatrix);
 	inline Vec3f& operator*=(const Matrix3f& mMatrix);
 
-	inline Vec3f operator/(const float fScalar) const;
+	inline Vec3f operator/(float fScalar) const;
 	inline Vec3f operator/(const Vec3f& vScale) const;
 
-	inline Vec3f& operator/=(const float fScalar);
+	inline Vec3f& operator/=(float fScalar);
 	inline Vec3f& operator/=(const Vec3f& vScale);
 
-	inline Vec3f operator*(const float fScalar) const;
+	inline Vec3f operator*(float fScalar) const;
 	inline Vec3f operator*(const Vec3f& vScale) const;
 
 	inline Vec3f& operator+=(const Vec3f& vVector);
@@ -137,7 +145,6 @@ struct Vec3f
 };
 
 inline Vec3f operator*(const float fScalar, const Vec3f& vVector);
-inline Vec3f operator-(const Vec3f& vVector);
 
 inline Vec3f Normalize(const Vec3f& vVector);
 inline float Dot_Product(const Vec3f& vVectorA, const Vec3f& vVectorB);
@@ -183,13 +190,16 @@ struct Vec4f
 	};
 
 	Vec4f();
-	Vec4f(const Vec4f&& vVector);
-	Vec4f(const XMVECTOR&& vVector);
+	Vec4f(const Vec4f& vVector);
+	Vec4f(Vec4f&& vVector);
+	Vec4f(XMVECTOR&& vVector);
 	Vec4f(float fR, float fG, float fB, float fA);
 	Vec4f(Vec3f vVector, float fA);
 
-	inline Vec4f& operator=(const Vec4f&& vVector);
-	inline Vec4f& operator=(const XMVECTOR&& vVector);
+	inline Vec4f& operator-();
+
+	inline Vec4f& operator=(Vec4f&& vVector);
+	inline Vec4f& operator=(XMVECTOR&& vVector);
 
 	inline Vec4f operator-(const Vec4f& vVector) const;
 	inline Vec4f& operator-=(const Vec4f& vVector);
@@ -197,11 +207,13 @@ struct Vec4f
 	inline Vec4f operator+(const Vec4f& vVector) const;
 	inline Vec4f& operator+=(const Vec4f& vVector);
 
-	inline Vec4f operator/(const float fScalar) const;
-	inline Vec4f& operator/=(const float fScalar);
+	inline Vec4f operator/(float fScalar) const;
+	inline Vec4f& operator/=(float fScalar);
 
-	inline Vec4f operator*(const float fScalar) const;
-	inline Vec4f& operator*=(const float fScalar);
+	inline Vec4f operator*(float fScalar) const;
+	inline Vec4f& operator*=(float fScalar);
+	inline Vec4f operator*(const Vec4f& vVector) const;
+	inline Vec4f& operator*=(const Vec4f& vVector);
 	inline Vec4f operator*(const Matrix4f& mMatrix) const;
 	inline Vec4f& operator*=(const Matrix4f& mMatrix);
 
@@ -221,7 +233,6 @@ struct Vec4f
 };
 
 inline Vec4f operator*(const float fScalar, const Vec4f& vVector);
-inline Vec4f operator-(const Vec4f& vVector);
 
 inline Vec4f Normalize(const Vec4f& vVector);
 inline float Dot_Product(const Vec4f& vVectorA, const Vec4f& vVectorB);
@@ -466,6 +477,11 @@ inline Matrix4f Lerp(const Matrix4f& MatrixA, const Matrix4f& MatrixB, float fLa
 typedef Matrix4f Matrix44;
 typedef Matrix4f Mat4f;
 typedef Matrix4f float4x4;
+#pragma endregion
+#pragma endregion
+
+#pragma region Aligned Math Structures
+
 #pragma endregion
 
 #include "Vec2f.inl"

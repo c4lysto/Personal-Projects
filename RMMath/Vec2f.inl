@@ -5,14 +5,19 @@ inline Vec2f::Vec2f() : x(0), y(0)
 
 }
 
-inline Vec2f::Vec2f(const Vec2f&& vVector)
+inline Vec2f::Vec2f(const Vec2f& vVector) : x(vVector.x), y(vVector.y)
 {
-	*this = move(vVector);
+
 }
 
-inline Vec2f::Vec2f(const XMVECTOR&& vVector)
+inline Vec2f::Vec2f(Vec2f&& vVector) : x(vVector.x), y(vVector.y)
 {
-	*this = move(vVector);
+
+}
+
+inline Vec2f::Vec2f(XMVECTOR&& vVector)
+{
+	XMStoreFloat2((XMFLOAT2*)this, vVector);
 }
 
 inline Vec2f::Vec2f(float fX, float fY) : x(fX), y(fY)
@@ -22,7 +27,18 @@ inline Vec2f::Vec2f(float fX, float fY) : x(fX), y(fY)
 #pragma endregion
 
 #pragma region Vec2f Operators
-inline Vec2f& Vec2f::operator=(const Vec2f&& vVector)
+inline Vec2f& Vec2f::operator=(const Vec2f& vVector)
+{
+	if(this != &vVector)
+	{
+		x = vVector.x;
+		y = vVector.y;
+	}
+
+	return *this;
+}
+
+inline Vec2f& Vec2f::operator=(Vec2f&& vVector)
 {
 	if(this != &vVector)
 	{
@@ -41,7 +57,7 @@ inline Vec2f& Vec2f::operator=(const POINT vVector)
 	return *this;
 }
 
-inline Vec2f& Vec2f::operator=(const XMVECTOR&& vVector)
+inline Vec2f& Vec2f::operator=(XMVECTOR&& vVector)
 {
 	if(this != (Vec2f*)&vVector)
 		XMStoreFloat2((XMFLOAT2*)this, vVector);
@@ -59,12 +75,7 @@ inline Vec2f& Vec2f::operator=(const XMVECTOR& vVector)
 
 inline Vec2f Vec2f::operator+(const Vec2f& vVector) const
 {
-	Vec2f vec(*this);
-
-	vec.x += vVector.x;
-	vec.y += vVector.y;
-
-	return vec;
+	return Vec2f(x + vVector.x, y + vVector.y);
 }
 
 inline Vec2f& Vec2f::operator+=(const Vec2f& vVector)
@@ -77,12 +88,7 @@ inline Vec2f& Vec2f::operator+=(const Vec2f& vVector)
 
 inline Vec2f Vec2f::operator-(const Vec2f& vVector) const
 {
-	Vec2f vec(*this);
-
-	vec.x -= vVector.x;
-	vec.y -= vVector.y;
-
-	return vec;
+	return Vec2f(x - vVector.x, y - vVector.y);
 }
 
 inline Vec2f& Vec2f::operator-=(const Vec2f& vVector)
@@ -93,27 +99,25 @@ inline Vec2f& Vec2f::operator-=(const Vec2f& vVector)
 	return *this;
 }
 
-inline Vec2f operator-(const Vec2f& vVector)
+inline Vec2f& Vec2f::operator-(const Vec2f& vVector)
 {
-	return vVector * -1;
+	x = -x;
+	y = -y;
+
+	return *this;
 }
 
-inline Vec2f Vec2f::operator*(const float fScalar) const
+inline Vec2f Vec2f::operator*(float fScalar) const
 {
-	Vec2f vec(*this);
-
-	vec.x *= fScalar;
-	vec.y *= fScalar;
-
-	return vec;
+	return Vec2f(x * fScalar, y * fScalar);
 }
 
 inline Vec2f operator*(float fScalar, const Vec2f& vVector)
 {
-	return vVector * fScalar;
+	return Vec2f(vVector.x * fScalar, vVector.y * fScalar);
 }
 
-inline Vec2f& Vec2f::operator*=(const float fScalar)
+inline Vec2f& Vec2f::operator*=(float fScalar)
 {
 	x *= fScalar;
 	y *= fScalar;
@@ -121,20 +125,17 @@ inline Vec2f& Vec2f::operator*=(const float fScalar)
 	return *this;
 }
 
-inline Vec2f Vec2f::operator/(const float fScalar) const
+inline Vec2f Vec2f::operator/(float fScalar) const
 {
-	Vec2f vec(*this);
-
-	vec.x /= fScalar;
-	vec.y /= fScalar;
-
-	return vec;
+	return Vec2f(x * fScalar, y * fScalar);
 }
 
-inline Vec2f& Vec2f::operator/=(const float fScalar)
+inline Vec2f& Vec2f::operator/=(float fScalar)
 {
-	x /= fScalar;
-	y /= fScalar;
+	fScalar = 1 / fScalar;
+
+	x *= fScalar;
+	y *= fScalar;
 
 	return *this;
 }
@@ -148,7 +149,7 @@ inline float Vec2f::dot_product(const Vec2f& vVector) const
 
 inline float Vec2f::magnitude() const
 {
-	return sqrt(pow(x, 2) + pow(y, 2));
+	return sqrt(x * x + y * y);
 }
 
 inline float Vec2f::length() const
@@ -158,7 +159,7 @@ inline float Vec2f::length() const
 
 inline float Vec2f::sq_magnitude() const
 {
-	return pow(x, 2) + pow(y, 2);
+	return x * x + y * y;
 }
 
 inline float Vec2f::sq_length() const
@@ -174,8 +175,8 @@ inline Vec2f& Vec2f::normalize()
 	{
 		mag = 1 / mag;
 
-		x *= mag;
-		y *= mag;
+		x = x * mag;
+		y = y * mag;
 	}
 
 	return *this;

@@ -16,20 +16,30 @@ inline Vec3f::Vec3f(float val) : x(val), y(val), z(val)
 
 }
 
-inline Vec3f::Vec3f(const Vec3f&& vVector)
+inline Vec3f::Vec3f(const Vec3f& vVector) : x(vVector.x), y(vVector.y), z(vVector.z)
 {
-	*this = move(vVector);
+
 }
 
-inline Vec3f::Vec3f(const XMVECTOR&& vVector)
+inline Vec3f::Vec3f(Vec3f&& vVector) : x(vVector.x), y(vVector.y), z(vVector.z)
 {
-	*this = move(vVector);
+
+}
+
+inline Vec3f::Vec3f(XMVECTOR&& vVector)
+{
+	XMStoreFloat3((XMFLOAT3*)this, vVector);
 }
 
 #pragma endregion
 
 #pragma region Vec3f operators
-inline Vec3f& Vec3f::operator=(const Vec3f&& vVector)
+inline Vec3f Vec3f::operator-()
+{
+	return *this * -1.0f;
+}
+
+inline Vec3f& Vec3f::operator=(const Vec3f& vVector)
 {
 	if(this != &vVector)
 	{
@@ -41,7 +51,19 @@ inline Vec3f& Vec3f::operator=(const Vec3f&& vVector)
 	return *this;
 }
 
-inline Vec3f& Vec3f::operator=(const XMVECTOR&& vVector)
+inline Vec3f& Vec3f::operator=(Vec3f&& vVector)
+{
+	if(this != &vVector)
+	{
+		x = vVector.x;
+		y = vVector.y;
+		z = vVector.z;
+	}
+
+	return *this;
+}
+
+inline Vec3f& Vec3f::operator=(XMVECTOR&& vVector)
 {
 	if(this != (Vec3f*)&vVector)
 		XMStoreFloat3((XMFLOAT3*)this, vVector);
@@ -57,14 +79,14 @@ inline Vec3f& Vec3f::operator=(const XMVECTOR& vVector)
 	return *this;
 }
 
-inline Vec3f& Vec3f::operator=(const float fScalar)
+inline Vec3f& Vec3f::operator=(float fScalar)
 {
 	x = y = z = fScalar;
 
 	return *this;
 }
 
-inline Vec3f& Vec3f::operator*=(const float fScalar)
+inline Vec3f& Vec3f::operator*=(float fScalar)
 {
 	x *= fScalar;
 	y *= fScalar;
@@ -91,34 +113,38 @@ inline Vec3f& Vec3f::operator*=(const Matrix3f& mMatrix)
 {
 	return *this = *this * mMatrix;
 }
-
-inline Vec3f Vec3f::operator/(const float fScalar) const
+#define RM_TEST 1
+inline Vec3f Vec3f::operator/(float fScalar) const
 {
-	Vec3f tmp(*this);
+	Vec3f tmp;//(*this);
+#if RM_TEST
+	__m128 result = _mm_mul_ps(_mm_set_ps(0, z, y, x), _mm_set1_ps(1 / fScalar));
 
-	tmp.x /= fScalar;
-	tmp.y /= fScalar;
-	tmp.z /= fScalar;
+	tmp.x = result.m128_f32[0];
+	tmp.y = result.m128_f32[1];
+	tmp.z = result.m128_f32[2];
+#else
+	fScalar = 1 / fScalar;
 
+	tmp.x = x * fScalar;
+	tmp.y = y * fScalar;
+	tmp.z = z * fScalar;
+#endif
 	return tmp;
 }
 
 inline Vec3f Vec3f::operator/(const Vec3f& vScale) const
 {
-	Vec3f tmp(*this);
-
-	tmp.x /= vScale.x;
-	tmp.y /= vScale.y;
-	tmp.z /= vScale.z;
-
-	return tmp;
+	return Vec3f(x / vScale.x, y / vScale.y, z / vScale.z);
 }
 
-inline Vec3f& Vec3f::operator/=(const float fScalar)
+inline Vec3f& Vec3f::operator/=(float fScalar)
 {
-	x /= fScalar;
-	y /= fScalar;
-	z /= fScalar;
+	fScalar = 1 / fScalar;
+
+	x *= fScalar;
+	y *= fScalar;
+	z *= fScalar;
 
 	return *this;
 }
@@ -132,37 +158,19 @@ inline Vec3f& Vec3f::operator/=(const Vec3f& vScale)
 	return *this;
 }
 
-inline Vec3f Vec3f::operator*(const float fScalar) const
+inline Vec3f Vec3f::operator*(float fScalar) const
 {
-	Vec3f tmp(*this);
-
-	tmp.x *= fScalar;
-	tmp.y *= fScalar;
-	tmp.z *= fScalar;
-
-	return tmp;
+	return Vec3f(x * fScalar, y * fScalar, z * fScalar);
 }
 
 inline Vec3f Vec3f::operator*(const Vec3f& vScale) const
 {
-	Vec3f tmp(*this);
-
-	tmp.x *= vScale.x;
-	tmp.y *= vScale.y;
-	tmp.z *= vScale.z;
-
-	return tmp;
+	return Vec3f(x * vScale.x, y * vScale.y, z * vScale.z);
 }
 
-inline Vec3f operator*(const float fScalar, const Vec3f& vVector)
+inline Vec3f operator*(float fScalar, const Vec3f& vVector)
 {
-	Vec3f tmp(vVector);
-
-	tmp.x *= fScalar;
-	tmp.y *= fScalar;
-	tmp.z *= fScalar;
-
-	return tmp;
+	return Vec3f(vVector.x * fScalar, vVector.y * fScalar, vVector.z * fScalar);
 }
 
 inline Vec3f& Vec3f::operator+=(const Vec3f& vVector)
@@ -176,13 +184,7 @@ inline Vec3f& Vec3f::operator+=(const Vec3f& vVector)
 
 inline Vec3f Vec3f::operator+(const Vec3f& vVector) const
 {
-	Vec3f tmp(*this);
-
-	tmp.x += vVector.x;
-	tmp.y += vVector.y;
-	tmp.z += vVector.z;
-
-	return tmp;
+	return Vec3f(x + vVector.x, y + vVector.y, z + vVector.z);
 }
 
 inline Vec3f& Vec3f::operator-=(const Vec3f& vVector)
@@ -196,18 +198,7 @@ inline Vec3f& Vec3f::operator-=(const Vec3f& vVector)
 
 inline Vec3f Vec3f::operator-(const Vec3f& vVector) const
 {
-	Vec3f tmp(*this);
-
-	tmp.x -= vVector.x;
-	tmp.y -= vVector.y;
-	tmp.z -= vVector.z;
-
-	return tmp;
-}
-
-inline Vec3f operator-(const Vec3f& vVector)
-{
-	return vVector * -1.0f;
+	return Vec3f(x - vVector.x, y - vVector.y, z - vVector.z);
 }
 
 inline bool Vec3f::operator==(const Vec3f& vVector) const
@@ -226,7 +217,16 @@ inline bool Vec3f::operator==(const Vec3f& vVector) const
 
 inline bool Vec3f::operator!=(const Vec3f& vVector) const
 {
-	return !(*this == vVector);
+	if(x != vVector.x)
+		return true;
+
+	if(y != vVector.y)
+		return true;
+
+	if(z != vVector.z)
+		return true;
+
+	return false;
 }
 #pragma endregion
 
@@ -293,13 +293,9 @@ inline float Vec3f::dot_product(const Vec3f& vVectorB) const
 
 inline Vec3f Vec3f::cross_product(const Vec3f& vVectorB) const 
 {
-	Vec3f vec;
-
-	vec.x = y * vVectorB.z - z * vVectorB.y;
-	vec.y = z * vVectorB.x - x * vVectorB.z;
-	vec.z = x * vVectorB.y - y * vVectorB.x;
-
-	return vec;
+	return Vec3f(y * vVectorB.z - z * vVectorB.y,
+				 z * vVectorB.x - x * vVectorB.z,
+				 x * vVectorB.y - y * vVectorB.x);
 }
 #pragma endregion
 
@@ -322,7 +318,9 @@ inline Vec3f Cross_Product(const Vec3f& vVectorA, const Vec3f& vVectorB)
 	vec.y = vVectorA.z * vVectorB.x - vVectorA.x * vVectorB.z;
 	vec.z = vVectorA.x * vVectorB.y - vVectorA.y * vVectorB.x;
 
-	return vec;
+	return Vec3f(vVectorA.y * vVectorB.z - vVectorA.z * vVectorB.y,
+				 vVectorA.z * vVectorB.x - vVectorA.x * vVectorB.z,
+				 vVectorA.x * vVectorB.y - vVectorA.y * vVectorB.x);
 }
 
 inline Vec3f Lerp(const Vec3f& vVectorA, const Vec3f& vVectorB, const float fLambda)

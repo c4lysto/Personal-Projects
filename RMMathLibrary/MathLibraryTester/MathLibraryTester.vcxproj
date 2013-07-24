@@ -45,8 +45,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <LibraryPath>C:\Users\Administrator\Documents\Ryan%27s Projects Repository\RMMathLibrary\Debug;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\Users\Administrator\Documents\Ryan%27s Projects Repository\RMMathLibrary\RMMathLibrary;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Administrator\Documents\Ryan%27s Projects Repository\RMMath;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

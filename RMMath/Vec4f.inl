@@ -1,18 +1,38 @@
 
 #pragma region Vec4f Constructors
-inline Vec4f::Vec4f() : r(0), g(0), b(0), a(0)
+inline Vec4f::Vec4f()
+#ifndef SSE_MATH_AVAILABLE
+	: r(0), g(0), b(0), a(0)
+#endif
 {
-
+#ifdef SSE_MATH_AVAILABLE
+	_mm_storeu_ps(color, _mm_set1_ps(0));
+#endif
 }
 
-inline Vec4f::Vec4f(const Vec4f&& vVector)
+inline Vec4f::Vec4f(const Vec4f& vVector)
+#ifndef SSE_MATH_AVAILABLE
+	: r(vVector.r), g(vVector.g), b(vVector.b), a(vVector.a)
+#endif
 {
-	*this = move(vVector);
+#ifdef SSE_MATH_AVAILABLE
+	_mm_storeu_ps(color, _mm_loadu_ps(vVector.color));
+#endif
 }
 
-inline Vec4f::Vec4f(const XMVECTOR&& vVector)
+inline Vec4f::Vec4f(Vec4f&& vVector)
+#ifndef SSE_MATH_AVAILABLE
+	: r(vVector.r), g(vVector.g), b(vVector.b), a(vVector.a)
+#endif
 {
-	*this = move(vVector);
+#ifdef SSE_MATH_AVAILABLE
+	_mm_storeu_ps(color, _mm_loadu_ps(vVector.color));
+#endif
+}
+
+inline Vec4f::Vec4f(XMVECTOR&& vVector)
+{
+	XMStoreFloat4((XMFLOAT4*)this, vVector);
 }
 
 inline Vec4f::Vec4f(float fR, float fG, float fB, float fA) : r(fR), g(fG), b(fB), a(fA)
@@ -28,7 +48,13 @@ inline Vec4f::Vec4f(Vec3f vVector, float fA)
 #pragma endregion
 
 #pragma region Vec4f Operators
-inline Vec4f& Vec4f::operator=(const Vec4f&& vVector)
+inline Vec4f& Vec4f::operator-()
+{
+	_mm_storeu_ps(color, _mm_mul_ps(_mm_loadu_ps(color), _mm_set1_ps(-1)));
+	return *this;
+}
+
+inline Vec4f& Vec4f::operator=(Vec4f&& vVector)
 {
 	if(this != &vVector)
 	{
@@ -45,7 +71,7 @@ inline Vec4f& Vec4f::operator=(const Vec4f&& vVector)
 	return *this;
 }
 
-inline Vec4f& Vec4f::operator=(const XMVECTOR&& vVector)
+inline Vec4f& Vec4f::operator=(XMVECTOR&& vVector)
 {
 	if(this != (Vec4f*)&vVector)
 		XMStoreFloat4((XMFLOAT4*)this, vVector);
@@ -55,42 +81,129 @@ inline Vec4f& Vec4f::operator=(const XMVECTOR&& vVector)
 
 inline Vec4f Vec4f::operator-(const Vec4f& vVector) const
 {
-	return XMVectorSubtract(XMLoadFloat4((XMFLOAT4*)this), XMLoadFloat4((XMFLOAT4*)&vVector));
+#ifdef SSE_MATH_AVAILABLE
+	Vec4f result;
+	_mm_storeu_ps(result.color, _mm_sub_ps(_mm_loadu_ps(color), _mm_loadu_ps(vVector.color)));
+	return result;
+#else
+	return Vec4f(r - vVector.r, g - vVector.g, b - vVector.b, a - vVector.a);
+#endif
 }
 
 inline Vec4f& Vec4f::operator-=(const Vec4f& vVector)
 {
-	return *this = XMVectorSubtract(XMLoadFloat4((XMFLOAT4*)this), XMLoadFloat4((XMFLOAT4*)&vVector));
+#ifdef SSE_MATH_AVAILABLE
+	_mm_storeu_ps(color, _mm_sub_ps(_mm_loadu_ps(color), _mm_loadu_ps(vVector.color)));
+#else
+	r -= vVector.r;
+	g -= vVector.g;
+	b -= vVector.b;
+	a -= vVector.a;
+#endif
+	return *this;
 }
 
 inline Vec4f Vec4f::operator+(const Vec4f& vVector) const
 {
-	return XMVectorAdd(XMLoadFloat4((XMFLOAT4*)this), XMLoadFloat4((XMFLOAT4*)&vVector));
+#ifdef SSE_MATH_AVAILABLE
+	Vec4f result;
+	_mm_storeu_ps(result.color, _mm_add_ps(_mm_loadu_ps(color), _mm_loadu_ps(vVector.color)));
+	return result;
+#else
+	return Vec4f(r + vVector.r, g + vVector.g, b + vVector.b, a + vVector.a);
+#endif
 }
 
 inline Vec4f& Vec4f::operator+=(const Vec4f& vVector)
 {
-	return *this = XMVectorAdd(XMLoadFloat4((XMFLOAT4*)this), XMLoadFloat4((XMFLOAT4*)&vVector));
+#ifdef SSE_MATH_AVAILABLE
+	_mm_storeu_ps(color, _mm_add_ps(_mm_loadu_ps(color), _mm_loadu_ps(vVector.color)));
+#else
+	r += vVector.r;
+	g += vVector.g;
+	b += vVector.b;
+	a += vVector.a;
+#endif
+
+	return *this;
 }
 
-inline Vec4f Vec4f::operator/(const float fScalar) const
+inline Vec4f Vec4f::operator/(float fScalar) const
 {
-	return XMVectorDivide(XMLoadFloat4((XMFLOAT4*)this), XMVectorSet(fScalar, fScalar, fScalar, fScalar));
+#ifdef SSE_MATH_AVAILABLE
+	Vec4f result;
+	_mm_storeu_ps(result.color, _mm_div_ps(_mm_loadu_ps(color), _mm_set1_ps(fScalar)));
+	return result;
+#else
+	fScalar = 1 / fScalar;
+	return Vec4f(r * fScalar, g * fScalar, b * fScalar, a * fScalar);
+#endif
 }
 
-inline Vec4f& Vec4f::operator/=(const float fScalar)
+inline Vec4f& Vec4f::operator/=(float fScalar)
 {
-	return *this = XMVectorDivide(XMLoadFloat4((XMFLOAT4*)this), XMVectorSet(fScalar, fScalar, fScalar, fScalar));
+#ifdef SSE_MATH_AVAILABLE
+	_mm_storeu_ps(color, _mm_div_ps(_mm_loadu_ps(color), _mm_set1_ps(fScalar)));
+#else
+	fScalar = 1 / fScalar;
+
+	r *= fScalar;
+	g *= fScalar;
+	b *= fScalar;
+	a *= fScalar;
+#endif
+
+	return *this;
 }
 
-inline Vec4f Vec4f::operator*(const float fScalar) const
+inline Vec4f Vec4f::operator*(const Vec4f& vVector) const
 {
-	return XMVectorMultiply(XMLoadFloat4((XMFLOAT4*)this), XMVectorSet(fScalar, fScalar, fScalar, fScalar));
+#ifdef SSE_MATH_AVAILABLE
+	Vec4f result;
+	_mm_storeu_ps(result.color, _mm_mul_ps(_mm_loadu_ps(color), _mm_loadu_ps(vVector.color)));
+	return result;
+#else
+	return Vec4f(x * vVector.x, y * vVector.y, z * vVector.z, w * vVector.w);
+#endif
 }
 
-inline Vec4f& Vec4f::operator*=(const float fScalar)
+inline Vec4f& Vec4f::operator*=(const Vec4f& vVector)
 {
-	return *this = XMVectorMultiply(XMLoadFloat4((XMFLOAT4*)this), XMVectorSet(fScalar, fScalar, fScalar, fScalar));
+#ifdef SSE_MATH_AVAILABLE
+	_mm_storeu_ps(color, _mm_mul_ps(_mm_loadu_ps(color), _mm_loadu_ps(vVector.color)));
+#else
+	r *= vVector.r;
+	g *= vVector.g;
+	b *= vVector.b;
+	a *= vVector.a;
+#endif
+
+	return *this;
+}
+
+inline Vec4f Vec4f::operator*(float fScalar) const
+{
+#ifdef SSE_MATH_AVAILABLE
+	Vec4f result;
+	_mm_storeu_ps(result.color, _mm_mul_ps(_mm_loadu_ps(color), _mm_set1_ps(fScalar)));
+	return result;
+#else
+	return Vec4f(r * fScalar, g * fScalar, b * fScalar, a * fScalar);
+#endif
+}
+
+inline Vec4f& Vec4f::operator*=(float fScalar)
+{
+#ifdef SSE_MATH_AVAILABLE
+	_mm_storeu_ps(color, _mm_mul_ps(_mm_loadu_ps(color), _mm_set1_ps(fScalar)));
+#else
+	r *= fScalar;
+	g *= fScalar;
+	b *= fScalar;
+	a *= fScalar;
+#endif
+
+	return *this;
 }
 
 inline Vec4f Vec4f::operator*(const Matrix4f& mMatrix) const
@@ -103,14 +216,15 @@ inline Vec4f& Vec4f::operator*=(const Matrix4f& mMatrix)
 	return (*this) = (*this) * mMatrix;
 }
 
-inline Vec4f operator*(const float fScalar, const Vec4f& vVector)
+inline Vec4f operator*(float fScalar, const Vec4f& vVector)
 {
-	return XMVectorMultiply(XMLoadFloat4((XMFLOAT4*)&vVector), XMVectorSet(fScalar, fScalar, fScalar, fScalar));
-}
-
-inline Vec4f operator-(const Vec4f& vVector)
-{
-	return vVector * -1;
+#ifdef SSE_MATH_AVAILABLE
+	Vec4f result;
+	_mm_storeu_ps(result.color, _mm_mul_ps(_mm_loadu_ps(vVector.color), _mm_set1_ps(fScalar)));
+	return result;
+#else
+	return Vec4f(vVector.r * fScalar, vVector.g * fScalar, vVector.b * fScalar, vVector.a * fScalar);
+#endif
 }
 #pragma endregion
 
@@ -182,6 +296,7 @@ inline Vec4f& Vec4f::normalize()
 
 inline float Vec4f::dot_product(const Vec4f& vVector) const
 {
+#ifdef SSE_MATH_AVAILABLE
 	__m128 vec = _mm_set_ps(x, y, z, w);
 	__m128 other = _mm_load_ps(vVector.color);
 
@@ -192,6 +307,9 @@ inline float Vec4f::dot_product(const Vec4f& vVector) const
 	vec = _mm_add_ps(vec, tmp);
 
 	return _mm_add_ss(vec, _mm_shuffle_ps(vec, vec, _MM_SHUFFLE(2, 2, 0, 0))).m128_f32[0];
+#else
+	return x * vVector.x + y * vVector.y + z * vVector.z + w * vVector.w;
+#endif
 }
 
 inline Vec4f& Vec4f::zero_out()
