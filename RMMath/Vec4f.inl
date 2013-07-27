@@ -48,10 +48,9 @@ inline Vec4f::Vec4f(Vec3f vVector, float fA)
 #pragma endregion
 
 #pragma region Vec4f Operators
-inline Vec4f& Vec4f::operator-()
+inline Vec4f Vec4f::operator-()
 {
-	_mm_storeu_ps(color, _mm_mul_ps(_mm_loadu_ps(color), _mm_set1_ps(-1)));
-	return *this;
+	return Vec4f(-x, -y, -z, -w);
 }
 
 inline Vec4f& Vec4f::operator=(Vec4f&& vVector)

@@ -17,6 +17,16 @@ int main()
 	Timer timer;
 
 	Matrix4f mat1, mat2, mat3;
+
+	XMMATRIX tst1(1, 2, 3, 4,
+				  5, 6, 7, 8,
+				  9, 10, 11, 12,
+				  13, 14, 15, 16);
+	XMMATRIX tst2(16, 15, 14, 13,
+				  12, 11, 10, 9,
+				  8, 7, 6, 5,
+				  4, 3, 2, 1);
+
 	Matrix4f mat4(1, 2, 3, 4,
 				  5, 6, 7, 8,
 				  9, 10, 11, 12,
@@ -26,11 +36,19 @@ int main()
 				  8, 7, 6, 5,
 				  4, 3, 2, 1);
 
+	Matrix4fA t1;
+	Matrix4fA t2(16, 15, 14, 13,
+				  12, 11, 10, 9,
+				  8, 7, 6, 5,
+				  4, 3, 2, 1);
+
+	XMMATRIX tst3 = tst1 * tst2;
+	Matrix4f mat6 = mat4 * mat5;
+	Matrix4fA t3(t2);
+
 	mat2.Translate(0.0f, 0.0f, 1.0f);
 
 	Vec4f yes, no;
-
-	Matrix4f mat6(Vec4f(), Vec4f(), Vec4f(), Vec4f());
 
 	Vec3f vec(1.0f, 1.0f, 1.0f);
 	Vec3f vec1(0.0f, 1.0f, 0.0f);
@@ -48,7 +66,6 @@ int main()
 
 		for(unsigned long long i = 0; i < TEST_REPS; ++i)
 		{
-			vec1.normalize();
 		}
 
 		timer.Update();

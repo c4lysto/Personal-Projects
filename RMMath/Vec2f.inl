@@ -99,12 +99,9 @@ inline Vec2f& Vec2f::operator-=(const Vec2f& vVector)
 	return *this;
 }
 
-inline Vec2f& Vec2f::operator-(const Vec2f& vVector)
+inline Vec2f Vec2f::operator-()
 {
-	x = -x;
-	y = -y;
-
-	return *this;
+	return Vec2f(-x, -y);
 }
 
 inline Vec2f Vec2f::operator*(float fScalar) const

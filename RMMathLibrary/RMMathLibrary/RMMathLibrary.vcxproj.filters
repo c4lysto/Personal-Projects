@@ -47,5 +47,11 @@
     <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Matrix34f.inl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Matrix4fA.inl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Vec4fA.inl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

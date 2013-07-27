@@ -25,7 +25,7 @@ struct Vec2f
 	Vec2f(XMVECTOR&& vVector);
 	Vec2f(float fX, float fY);
 
-	inline Vec2f& operator-(const Vec2f& vVector);
+	inline Vec2f operator-();
 
 	inline Vec2f& operator=(const Vec2f& vVector);
 	inline Vec2f& operator=(Vec2f&& vVector);
@@ -196,7 +196,7 @@ struct Vec4f
 	Vec4f(float fR, float fG, float fB, float fA);
 	Vec4f(Vec3f vVector, float fA);
 
-	inline Vec4f& operator-();
+	inline Vec4f operator-();
 
 	inline Vec4f& operator=(Vec4f&& vVector);
 	inline Vec4f& operator=(XMVECTOR&& vVector);
@@ -247,11 +247,13 @@ extern const __declspec(selectany) __m128 g_IdentityX4 = _mm_setr_ps(1.0f, 0.0f,
 extern const __declspec(selectany) __m128 g_IdentityY4 = _mm_setr_ps(0.0f, 1.0f, 0.0f, 0.0f);
 extern const __declspec(selectany) __m128 g_IdentityZ4 = _mm_setr_ps(0.0f, 0.0f, 1.0f, 0.0f);
 extern const __declspec(selectany) __m128 g_IdentityW4 = _mm_setr_ps(0.0f, 0.0f, 0.0f, 1.0f);
+extern const __declspec(selectany) __m128 g_ZeroVec4 = _mm_setzero_ps();
 #else
 extern const __declspec(selectany) Vec4f g_IdentityX4 = Vec4f(1.0f, 0.0f, 0.0f, 0.0f);
 extern const __declspec(selectany) Vec4f g_IdentityY4 = Vec4f(0.0f, 1.0f, 0.0f, 0.0f);
 extern const __declspec(selectany) Vec4f g_IdentityZ4 = Vec4f(0.0f, 0.0f, 1.0f, 0.0f);
 extern const __declspec(selectany) Vec4f g_IdentityW4 = Vec4f(0.0f, 0.0f, 0.0f, 1.0f);
+extern const __declspec(selectany) Vec4f g_ZeroVec4 = Vec4f();
 #endif
 #pragma endregion
 
@@ -480,9 +482,228 @@ typedef Matrix4f float4x4;
 #pragma endregion
 #pragma endregion
 
+#ifdef SSE_MATH_AVAILABLE
 #pragma region Aligned Math Structures
 
+#pragma region Vec4fA
+struct Matrix4fA;
+
+__declspec(align(16)) struct Vec4fA
+{
+	union
+	{
+		float color[4];
+		float vector[4];
+
+		struct
+		{
+			__m128 row;
+		};
+
+		union
+		{
+			struct
+			{
+				float x, y, z, w;
+			};
+			struct
+			{
+				Vec3f position; float padW;
+			};
+		};
+
+		struct
+		{
+			float r, g, b, a;
+		};
+	};
+
+	Vec4fA();
+	Vec4fA(const Vec4fA& vVector);
+	Vec4fA(Vec4fA&& vVector);
+	Vec4fA(__m128&& vVector);
+	Vec4fA(float fR, float fG, float fB, float fA);
+	Vec4fA(Vec3f vVector, float fA);
+
+	inline Vec4fA operator-();
+
+	inline Vec4fA& operator=(Vec4fA&& vVector);
+	inline Vec4fA& operator=(__m128&& vVector);
+
+	inline Vec4fA operator-(const Vec4fA& vVector) const;
+	inline Vec4fA& operator-=(const Vec4fA& vVector);
+
+	inline Vec4fA operator+(const Vec4fA& vVector) const;
+	inline Vec4fA& operator+=(const Vec4fA& vVector);
+
+	inline Vec4fA operator/(float fScalar) const;
+	inline Vec4fA& operator/=(float fScalar);
+
+	inline Vec4fA operator*(float fScalar) const;
+	inline Vec4fA& operator*=(float fScalar);
+	inline Vec4fA operator*(const Vec4fA& vVector) const;
+	inline Vec4fA& operator*=(const Vec4fA& vVector);
+	inline Vec4fA operator*(const Matrix4fA& mMatrix) const;
+	inline Vec4fA& operator*=(const Matrix4fA& mMatrix);
+
+	inline float dot_product(const Vec4fA& vVector) const;
+
+	inline float magnitude() const;
+	inline float length() const;
+
+	inline float sq_magnitude() const;
+	inline float sq_length() const;
+
+	inline Vec4fA& normalize();
+
+	inline Vec4fA& zero_out();
+
+	inline Vec4fA& full_color();
+};
+
+inline Vec4fA operator*(const float fScalar, const Vec4fA& vVector);
+
+inline Vec4fA Normalize(const Vec4fA& vVector);
+inline float Dot_Product(const Vec4fA& vVectorA, const Vec4fA& vVectorB);
+inline Vec4fA Lerp(const Vec4fA& vVectorA, const Vec4fA& vVectorB, const float fLambda);
+
+typedef Vec4fA vec4fA;
+typedef Vec4fA vec4A;
+typedef Vec4fA float4A;
 #pragma endregion
+
+#pragma region Matrix4fA Definition
+__declspec(align(16)) struct Matrix4fA
+{
+	union
+	{
+		float m[16];
+		float ma[4][4];
+
+		struct
+		{
+			__m128 row1, row2, row3, row4;
+		};
+
+		struct
+		{
+			float Xx, Xy, Xz, Xw,
+				  Yx, Yy, Yz, Yw,
+				  Zx, Zy, Zz, Zw,
+				  Wx, Wy, Wz, Ww;
+		};
+
+		struct
+		{
+			Vec3f xAxis; float padXW;
+			Vec3f yAxis; float padYW;
+			Vec3f zAxis; float padZW;
+
+			union
+			{
+				struct
+				{
+					Vec3f wAxis;
+				};
+
+				struct
+				{
+					Vec3f position;
+				};
+			};
+
+			float padWW;
+		};
+	};
+
+	// Matrix is always initialized to an identity matrix
+	Matrix4fA();
+	Matrix4fA(float fXx, float fXy, float fXz, float fXw,
+		float fYx, float fYy, float fYz, float fYw,
+		float fZx, float fZy, float fZz, float fZw,
+		float fWx, float fWy, float fWz, float fWw);
+	Matrix4fA(const Matrix4fA& mMatrix);
+	Matrix4fA(Matrix4fA&& mMatrix);
+	Matrix4fA(XMMATRIX&& mMatrix);
+	Matrix4fA(const Vec4fA& vXAxis,
+			  const Vec4fA& vYAxis,
+			  const Vec4fA& vZAxis,
+			  const Vec4fA& vWAxis);
+
+	inline XMMATRIX toXMMatrix() const;
+	inline Matrix3f Get3x3() const;
+
+	inline float operator[](size_t ucIndex) const;
+
+	inline Matrix4fA& make_identity();
+	inline Matrix4fA& make_identity_3x3();
+
+	inline Matrix4fA& operator=(Matrix4fA&& mMatrix);
+	inline Matrix4fA& operator=(XMMATRIX&& mMatrix);
+
+	inline Matrix4fA operator*(const Matrix4fA& mMatrix) const;
+	inline Matrix4fA& operator*=(const Matrix4fA& mMatrix);
+
+	// actually faster than DirectX Version :)
+	inline Matrix4fA& Rotate_GlobalX_Radians(float fRadians);
+	inline Matrix4fA& Rotate_GlobalY_Radians(float fRadians);
+	inline Matrix4fA& Rotate_GlobalZ_Radians(float fRadians);
+
+	inline Matrix4fA& Rotate_GlobalX_Degrees(float fDegrees);
+	inline Matrix4fA& Rotate_GlobalY_Degrees(float fDegrees);
+	inline Matrix4fA& Rotate_GlobalZ_Degrees(float fDegrees);
+
+	inline Matrix4fA& Rotate_LocalX_Radians(float fRadians);
+	inline Matrix4fA& Rotate_LocalY_Radians(float fRadians);
+	inline Matrix4fA& Rotate_LocalZ_Radians(float fRadians);
+
+	inline Matrix4fA& Rotate_LocalX_Degrees(float fDegrees);
+	inline Matrix4fA& Rotate_LocalY_Degrees(float fDegrees);
+	inline Matrix4fA& Rotate_LocalZ_Degrees(float fDegrees);
+
+	inline Matrix4fA& Scale(float fXScale, float fYScale, float fZScale);
+	inline Matrix4fA& Scale(const Vec3f& vScale);
+
+	inline Matrix4fA& SetScale(float fXScale, float fYScale, float fZScale);
+	inline Matrix4fA& SetScale(const Vec3f& vScale);
+	inline Matrix4fA& SetScale(float fScale);
+	inline Vec3f GetScale() const;
+
+	inline Matrix4fA& Translate(float fX, float fY, float fZ);
+	inline Matrix4fA& Translate(Vec3f vTranslation);
+
+	inline Matrix4fA& MoveForward(float fMovement);
+	inline Matrix4fA& MoveBackward(float fMovement);
+	inline Matrix4fA& MoveLeft(float fMovement);
+	inline Matrix4fA& MoveRight(float fMovement);
+	inline Matrix4fA& MoveUp(float fMovement);
+	inline Matrix4fA& MoveDown(float fMovement);
+
+	inline Matrix4fA& Transpose();
+	inline Matrix4fA& Transpose3x3();
+
+	inline Matrix4fA& NormalizeXYZ();
+
+	inline Matrix4fA& Invert();
+
+	inline Matrix4fA& LookAt(const Vec3f& mPos);
+
+	inline Matrix4fA& TurnTo(const Vec3f& vPos, float fTurnModifier = 1.0f);
+
+	inline Matrix4fA& MakePerspective(float fFOV, float fAspectRatio, float fNearClip, float fFarClip);
+
+	inline Matrix4fA& MakeOrthographic(float fWidth, float fHeight, float fNear, float fFar);
+
+	inline Matrix4fA& OrthoNormalInvert();
+};
+
+typedef Matrix4fA Matrix44A;
+typedef Matrix4fA Mat4fA;
+typedef Matrix4fA float4x4A;
+#pragma endregion
+
+#pragma endregion
+#endif //SSE_MATH_AVAILABLE
 
 #include "Vec2f.inl"
 #include "Vec3f.inl"
@@ -490,6 +711,11 @@ typedef Matrix4f float4x4;
 #include "Matrix3f.inl"
 #include "Matrix34f.inl"
 #include "Matrix4f.inl"
+
+#ifdef SSE_MATH_AVAILABLE
+#include "Vec4fA.inl"
+#include "Matrix4fA.inl"
+#endif
 };
 
 #endif // RMMATH_H

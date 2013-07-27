@@ -36,7 +36,7 @@ inline Vec3f::Vec3f(XMVECTOR&& vVector)
 #pragma region Vec3f operators
 inline Vec3f Vec3f::operator-()
 {
-	return *this * -1.0f;
+	return Vec3f(-x, -y, -z);
 }
 
 inline Vec3f& Vec3f::operator=(const Vec3f& vVector)

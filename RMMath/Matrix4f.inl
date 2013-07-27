@@ -25,7 +25,17 @@ inline Matrix4f::Matrix4f(float fXx, float fXy, float fXz, float fXw,
 
 inline Matrix4f::Matrix4f(const Matrix4f&& mMatrix)
 {
-	*this = move(mMatrix);
+#ifdef SSE_MATH_AVAILABLE
+		_mm_storeu_ps(m, _mm_loadu_ps(mMatrix.m));
+		_mm_storeu_ps(m + 4, _mm_loadu_ps(mMatrix.m + 4));
+		_mm_storeu_ps(m + 8, _mm_loadu_ps(mMatrix.m + 8));
+		_mm_storeu_ps(m + 12, _mm_loadu_ps(mMatrix.m + 12));
+#else
+		xAxis = mMatrix.xAxis; Xw = mMatrix.Xw;
+		yAxis = mMatrix.yAxis; Yw = mMatrix.Yw;
+		zAxis = mMatrix.zAxis; Zw = mMatrix.Zw;
+		wAxis = mMatrix.wAxis; Ww = mMatrix.Ww;
+#endif
 }
 
 inline Matrix4f::Matrix4f(const XMMATRIX&& mMatrix)
