@@ -60,7 +60,7 @@ struct Vec2f
 
 inline Vec2f operator*(float fScalar, const Vec2f& vVector);
 inline Vec2f Normalize(const Vec2f& vVector);
-inline float Dot_Product(const Vec2f& vVectorA, const Vec2f& vVectorB);
+inline float DotProduct(const Vec2f& vVectorA, const Vec2f& vVectorB);
 inline Vec2f Lerp(const Vec2f& vVectorA, const Vec2f& vVectorB, const float fLambda);
 inline float AngleBetween(const Vec2f& vVectorA, const Vec2f& vVectorB);
 
@@ -100,7 +100,6 @@ struct Vec3f
 	inline Vec3f& operator=(Vec3f&& vVector);
 	inline Vec3f& operator=(XMVECTOR&& vVector);
 	inline Vec3f& operator=(const XMVECTOR& vVector);
-	inline Vec3f& operator=(float fScalar);
 
 	inline Vec3f& operator*=(float fScalar);
 	inline Vec3f& operator*=(const Vec3f& vScale);
@@ -147,8 +146,8 @@ struct Vec3f
 inline Vec3f operator*(const float fScalar, const Vec3f& vVector);
 
 inline Vec3f Normalize(const Vec3f& vVector);
-inline float Dot_Product(const Vec3f& vVectorA, const Vec3f& vVectorB);
-inline Vec3f Cross_Product(const Vec3f& vVectorA, const Vec3f& vVectorB);
+inline float DotProduct(const Vec3f& vVectorA, const Vec3f& vVectorB);
+inline Vec3f CrossProduct(const Vec3f& vVectorA, const Vec3f& vVectorB);
 inline Vec3f Lerp(const Vec3f& vVectorA, const Vec3f& vVectorB, const float fLambda);
 
 typedef Vec3f float3;
@@ -158,7 +157,7 @@ typedef Vec3f vec3;
 extern const __declspec(selectany) Vec3f g_IdentityX3 = Vec3f(1.0f, 0.0f, 0.0f);
 extern const __declspec(selectany) Vec3f g_IdentityY3 = Vec3f(0.0f, 1.0f, 0.0f);
 extern const __declspec(selectany) Vec3f g_IdentityZ3 = Vec3f(0.0f, 0.0f, 1.0f);
-extern const __declspec(selectany) Vec3f g_IdentityW3 = Vec3f(0.0f, 0.0f, 0.0f);
+extern const __declspec(selectany) Vec3f g_ZeroVec3 = Vec3f(0.0f, 0.0f, 0.0f);
 #pragma endregion
 
 #pragma region Vec4f Definition
@@ -194,7 +193,7 @@ struct Vec4f
 	Vec4f(Vec4f&& vVector);
 	Vec4f(XMVECTOR&& vVector);
 	Vec4f(float fR, float fG, float fB, float fA);
-	Vec4f(Vec3f vVector, float fA);
+	Vec4f(const Vec3f& vVector, float fA);
 
 	inline Vec4f operator-();
 
@@ -235,7 +234,7 @@ struct Vec4f
 inline Vec4f operator*(const float fScalar, const Vec4f& vVector);
 
 inline Vec4f Normalize(const Vec4f& vVector);
-inline float Dot_Product(const Vec4f& vVectorA, const Vec4f& vVectorB);
+inline float DotProduct(const Vec4f& vVectorA, const Vec4f& vVectorB);
 inline Vec4f Lerp(const Vec4f& vVectorA, const Vec4f& vVectorB, const float fLambda);
 
 typedef Vec4f vec4f;
@@ -284,16 +283,18 @@ struct Matrix3f
 	Matrix3f(float fXx, float fXy, float fXz, 
 			 float fYx, float fYy, float fYz, 
 			 float fZx, float fZy, float fZz);
-	Matrix3f(const Matrix3f&& mMatrix);
-	Matrix3f(const XMMATRIX&& mMatrix);
+	Matrix3f(const Matrix3f& mMatrix);
+	Matrix3f(Matrix3f&& mMatrix);
+	Matrix3f(XMMATRIX&& mMatrix);
 	Matrix3f(const Vec3f& vXAxis,
 			 const Vec3f& vYAxis,
 			 const Vec3f& vZAxis);
 
 	inline Matrix3f& make_identity();
 
-	inline Matrix3f& operator=(const Matrix3f&& mMatrix);
-	inline Matrix3f& operator=(const XMMATRIX&& mMatrix);
+	inline Matrix3f& operator=(const Matrix3f& mMatrix);
+	inline Matrix3f& operator=(Matrix3f&& mMatrix);
+	inline Matrix3f& operator=(XMMATRIX&& mMatrix);
 
 	inline Matrix3f operator*(const Matrix3f& mMatrix) const;
 	inline Matrix3f& operator*=(const Matrix3f& mMatrix);
@@ -337,8 +338,9 @@ struct Matrix34f
 			  float fYx, float fYy, float fYz, 
 			  float fZx, float fZy, float fZz,
 			  float fWx, float fWy, float fWz);
-	Matrix34f(const Matrix34f&& mMatrix);
-	Matrix34f(const XMMATRIX&& mMatrix);
+	Matrix34f(const Matrix34f& mMatrix);
+	Matrix34f(Matrix34f&& mMatrix);
+	Matrix34f(XMMATRIX&& mMatrix);
 	Matrix34f(const Vec3f& vXAxis,
 			  const Vec3f& vYAxis,
 			  const Vec3f& vZAxis,
@@ -396,23 +398,24 @@ struct Matrix4f
 		float fYx, float fYy, float fYz, float fYw,
 		float fZx, float fZy, float fZz, float fZw,
 		float fWx, float fWy, float fWz, float fWw);
-	Matrix4f(const Matrix4f&& mMatrix);
-	Matrix4f(const XMMATRIX&& mMatrix);
-	Matrix4f(const Vec4f&& vXAxis,
-			 const Vec4f&& vYAxis,
-			 const Vec4f&& vZAxis,
-			 const Vec4f&& vWAxis);
+	Matrix4f(const Matrix4f& mMatrix);
+	Matrix4f(Matrix4f&& mMatrix);
+	Matrix4f(XMMATRIX&& mMatrix);
+	Matrix4f(const Vec4f& vXAxis,
+			 const Vec4f& vYAxis,
+			 const Vec4f& vZAxis,
+			 const Vec4f& vWAxis);
 
 	inline XMMATRIX toXMMatrix();
 	inline Matrix3f Get3x3();
 
-	inline float operator[](size_t ucIndex) const;
-
 	inline Matrix4f& make_identity();
 	inline Matrix4f& make_identity_3x3();
 
-	inline Matrix4f& operator=(const Matrix4f&& mMatrix);
-	inline Matrix4f& operator=(const XMMATRIX&& mMatrix);
+	inline Matrix4f& operator=(const Matrix4f& mMatrix);
+	inline Matrix4f& operator=(Matrix4f&& mMatrix);
+	inline Matrix4f& operator=(const XMMATRIX& mMatrix);
+	inline Matrix4f& operator=(XMMATRIX&& mMatrix);
 
 	inline Matrix4f operator*(const Matrix4f& mMatrix) const;
 	inline Matrix4f& operator*=(const Matrix4f& mMatrix);
@@ -459,7 +462,7 @@ struct Matrix4f
 
 	inline Matrix4f& Invert();
 
-	inline Matrix4f& LookAt(const Vec3f& mPos);
+	inline Matrix4f& LookAt(const Vec3f& mPos, const Vec3f& vWorldUp = g_IdentityY3);
 
 	inline Matrix4f& TurnTo(const Vec3f& vPos, float fTurnModifier = 1.0f);
 
@@ -527,6 +530,7 @@ __declspec(align(16)) struct Vec4fA
 
 	inline Vec4fA operator-();
 
+	inline Vec4fA operator=(const Vec4fA& vVector);
 	inline Vec4fA& operator=(Vec4fA&& vVector);
 	inline Vec4fA& operator=(__m128&& vVector);
 
@@ -564,7 +568,7 @@ __declspec(align(16)) struct Vec4fA
 inline Vec4fA operator*(const float fScalar, const Vec4fA& vVector);
 
 inline Vec4fA Normalize(const Vec4fA& vVector);
-inline float Dot_Product(const Vec4fA& vVectorA, const Vec4fA& vVectorB);
+inline float DotProduct(const Vec4fA& vVectorA, const Vec4fA& vVectorB);
 inline Vec4fA Lerp(const Vec4fA& vVectorA, const Vec4fA& vVectorB, const float fLambda);
 
 typedef Vec4fA vec4fA;
@@ -633,8 +637,6 @@ __declspec(align(16)) struct Matrix4fA
 	inline XMMATRIX toXMMatrix() const;
 	inline Matrix3f Get3x3() const;
 
-	inline float operator[](size_t ucIndex) const;
-
 	inline Matrix4fA& make_identity();
 	inline Matrix4fA& make_identity_3x3();
 
@@ -686,7 +688,7 @@ __declspec(align(16)) struct Matrix4fA
 
 	inline Matrix4fA& Invert();
 
-	inline Matrix4fA& LookAt(const Vec3f& mPos);
+	inline Matrix4fA& LookAt(const Vec3f& mPos, const Vec3f& vWorldUp = g_IdentityY3);
 
 	inline Matrix4fA& TurnTo(const Vec3f& vPos, float fTurnModifier = 1.0f);
 

@@ -53,20 +53,16 @@ inline Vec3f& Vec3f::operator=(const Vec3f& vVector)
 
 inline Vec3f& Vec3f::operator=(Vec3f&& vVector)
 {
-	if(this != &vVector)
-	{
-		x = vVector.x;
-		y = vVector.y;
-		z = vVector.z;
-	}
+	x = vVector.x;
+	y = vVector.y;
+	z = vVector.z;
 
 	return *this;
 }
 
 inline Vec3f& Vec3f::operator=(XMVECTOR&& vVector)
 {
-	if(this != (Vec3f*)&vVector)
-		XMStoreFloat3((XMFLOAT3*)this, vVector);
+	XMStoreFloat3((XMFLOAT3*)this, vVector);
 
 	return *this;
 }
@@ -75,13 +71,6 @@ inline Vec3f& Vec3f::operator=(const XMVECTOR& vVector)
 {
 	if(this != (Vec3f*)&vVector)
 		XMStoreFloat3((XMFLOAT3*)this, vVector);
-
-	return *this;
-}
-
-inline Vec3f& Vec3f::operator=(float fScalar)
-{
-	x = y = z = fScalar;
 
 	return *this;
 }
@@ -113,24 +102,18 @@ inline Vec3f& Vec3f::operator*=(const Matrix3f& mMatrix)
 {
 	return *this = *this * mMatrix;
 }
-#define RM_TEST 1
+
 inline Vec3f Vec3f::operator/(float fScalar) const
 {
-	Vec3f tmp;//(*this);
-#if RM_TEST
-	__m128 result = _mm_mul_ps(_mm_set_ps(0, z, y, x), _mm_set1_ps(1 / fScalar));
+#ifdef SSE_MATH_AVAILABLE
+	__m128 result = _mm_div_ps(_mm_setr_ps(x, y, z ,0), _mm_set1_ps(fScalar));
 
-	tmp.x = result.m128_f32[0];
-	tmp.y = result.m128_f32[1];
-	tmp.z = result.m128_f32[2];
+	return Vec3f(result.m128_f32[0], result.m128_f32[1], result.m128_f32[2]);
 #else
 	fScalar = 1 / fScalar;
 
-	tmp.x = x * fScalar;
-	tmp.y = y * fScalar;
-	tmp.z = z * fScalar;
+	return Vec3f(x * fScalar, y * fScalar, z * fScalar);
 #endif
-	return tmp;
 }
 
 inline Vec3f Vec3f::operator/(const Vec3f& vScale) const
@@ -247,7 +230,7 @@ inline Vec3f& Vec3f::normalize()
 		mag = 1 / mag;
 
 #ifdef SSE_MATH_AVAILABLE
-		*this = _mm_mul_ps(_mm_set_ps(0, z, y, x), _mm_set1_ps(mag));
+		*this = _mm_mul_ps(_mm_setr_ps(x, y, z, 0), _mm_set1_ps(mag));
 #else 
 		x *= mag;
 		y *= mag;
@@ -306,18 +289,13 @@ inline Vec3f Normalize(const Vec3f& vVector)
 	return tmp.normalize();
 }
 
-inline float Dot_Product(const Vec3f& vVectorA, const Vec3f& vVectorB)
+inline float DotProduct(const Vec3f& vVectorA, const Vec3f& vVectorB)
 {
 	return vVectorA.x * vVectorB.x + vVectorA.y * vVectorB.y + vVectorA.z * vVectorB.z;
 }
 
-inline Vec3f Cross_Product(const Vec3f& vVectorA, const Vec3f& vVectorB)
+inline Vec3f CrossProduct(const Vec3f& vVectorA, const Vec3f& vVectorB)
 {
-	Vec3f vec;
-	vec.x = vVectorA.y * vVectorB.z - vVectorA.z * vVectorB.y;
-	vec.y = vVectorA.z * vVectorB.x - vVectorA.x * vVectorB.z;
-	vec.z = vVectorA.x * vVectorB.y - vVectorA.y * vVectorB.x;
-
 	return Vec3f(vVectorA.y * vVectorB.z - vVectorA.z * vVectorB.y,
 				 vVectorA.z * vVectorB.x - vVectorA.x * vVectorB.z,
 				 vVectorA.x * vVectorB.y - vVectorA.y * vVectorB.x);

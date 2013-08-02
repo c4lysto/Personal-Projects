@@ -17,6 +17,18 @@ using std::move;
 #define PI 3.14159265359f
 #endif
 
+#ifndef _2PI
+#define _2PI 6.283185307f
+#endif
+
+#ifndef PI_OVER_2
+#define PI_OVER_2 1.57079632679f
+#endif
+
+#ifndef PI_OVER_4
+#define PI_OVER_4 0.785398163397f
+#endif
+
 #ifndef FLT_EPSILON
 #define FLT_EPSILON     1.192092896e-07F
 #endif

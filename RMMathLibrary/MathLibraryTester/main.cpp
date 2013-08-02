@@ -50,13 +50,13 @@ int main()
 
 	Vec4f yes, no;
 
-	Vec3f vec(1.0f, 1.0f, 1.0f);
+	Vec3f vec(1.0f, 2.0f, 3.0f);
 	Vec3f vec1(0.0f, 1.0f, 0.0f);
 	Vec3f tmpVec;
 	Vec2f vec5(1.0f, 1.0f);
 	Vec4f vec6(1.0f, 1.0f, 1.0f, 1.0f);
 
-	vec1 = -vec1;
+	vec = vec / 2.0f;
 
 	double deltaTime = 0, totalDeltaTime = 0;
 
@@ -66,6 +66,7 @@ int main()
 
 		for(unsigned long long i = 0; i < TEST_REPS; ++i)
 		{
+			t1 = t2.Transpose();
 		}
 
 		timer.Update();

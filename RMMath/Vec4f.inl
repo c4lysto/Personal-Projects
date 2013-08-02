@@ -6,7 +6,7 @@ inline Vec4f::Vec4f()
 #endif
 {
 #ifdef SSE_MATH_AVAILABLE
-	_mm_storeu_ps(color, _mm_set1_ps(0));
+	_mm_storeu_ps(color, g_ZeroVec4);
 #endif
 }
 
@@ -40,7 +40,7 @@ inline Vec4f::Vec4f(float fR, float fG, float fB, float fA) : r(fR), g(fG), b(fB
 
 }
 
-inline Vec4f::Vec4f(Vec3f vVector, float fA)
+inline Vec4f::Vec4f(const Vec3f& vVector, float fA)
 {
 	position = vVector;
 	a = fA;
@@ -55,8 +55,6 @@ inline Vec4f Vec4f::operator-()
 
 inline Vec4f& Vec4f::operator=(Vec4f&& vVector)
 {
-	if(this != &vVector)
-	{
 #ifdef SSE_MATH_AVAILABLE
 		_mm_storeu_ps(color, _mm_loadu_ps(vVector.color));
 #else
@@ -65,15 +63,13 @@ inline Vec4f& Vec4f::operator=(Vec4f&& vVector)
 		z = vVector.z;
 		w = vVector.w;
 #endif
-	}
 
 	return *this;
 }
 
 inline Vec4f& Vec4f::operator=(XMVECTOR&& vVector)
 {
-	if(this != (Vec4f*)&vVector)
-		XMStoreFloat4((XMFLOAT4*)this, vVector);
+	XMStoreFloat4((XMFLOAT4*)this, vVector);
 
 	return *this;
 }
@@ -207,7 +203,29 @@ inline Vec4f& Vec4f::operator*=(float fScalar)
 
 inline Vec4f Vec4f::operator*(const Matrix4f& mMatrix) const
 {
-	return XMVector4Transform(XMLoadFloat4((XMFLOAT4*)this), XMLoadFloat4x4((XMFLOAT4X4*)&mMatrix));
+#ifdef SSE_MATH_AVAILABLE
+	Vec4f result;
+	__m128 tmp1, tmp2;
+
+	// get the top row
+	tmp1 = _mm_set1_ps(x);
+	tmp2 = _mm_mul_ps(_mm_loadu_ps(mMatrix.m), tmp1);
+	tmp1 = _mm_set1_ps(y);
+	tmp2 = _mm_add_ps(_mm_mul_ps(_mm_loadu_ps(mMatrix.m + 4), tmp1), tmp2);
+	tmp1 = _mm_set1_ps(z);
+	tmp2 = _mm_add_ps(_mm_mul_ps(_mm_loadu_ps(mMatrix.m + 8), tmp1), tmp2);
+	tmp1 = _mm_set1_ps(w);
+	tmp2 = _mm_add_ps(_mm_mul_ps(_mm_loadu_ps(mMatrix.m + 12), tmp1), tmp2);
+
+	_mm_storeu_ps(result.color, tmp2);
+
+	return result;
+#else
+	return Vec4f(Xx * mMatrix.Xx + Xy * mMatrix.Yx + Xz * mMatrix.Zx + Xw * mMatrix.Wx,
+				 Xx * mMatrix.Xy + Xy * mMatrix.Yy + Xz * mMatrix.Zy + Xw * mMatrix.Wy,
+				 Xx * mMatrix.Xz + Xy * mMatrix.Yz + Xz * mMatrix.Zz + Xw * mMatrix.Wz,
+				 Xx * mMatrix.Xw + Xy * mMatrix.Yw + Xz * mMatrix.Zw + Xw * mMatrix.Ww);
+#endif
 }
 
 inline Vec4f& Vec4f::operator*=(const Matrix4f& mMatrix)
@@ -231,7 +249,7 @@ inline Vec4f operator*(float fScalar, const Vec4f& vVector)
 inline float Vec4f::magnitude() const
 {
 #ifdef SSE_MATH_AVAILABLE
-	__m128 vec = _mm_set_ps(x, y, z, w);
+	__m128 vec = _mm_setr_ps(x, y, z, w);
 
 	vec = _mm_mul_ps(vec, vec);
 
@@ -253,7 +271,7 @@ inline float Vec4f::length() const
 inline float Vec4f::sq_magnitude() const
 {
 #ifdef SSE_MATH_AVAILABLE
-	__m128 vec = _mm_set_ps(x, y, z, w);
+	__m128 vec = _mm_setr_ps(x, y, z, w);
 
 	vec = _mm_mul_ps(vec, vec);
 
@@ -281,7 +299,7 @@ inline Vec4f& Vec4f::normalize()
 		mag = 1 / mag;
 
 #ifdef SSE_MATH_AVAILABLE
-		*this = _mm_mul_ps(_mm_set_ps(w, z, y, x), _mm_set1_ps(mag));
+		*this = _mm_mul_ps(_mm_setr_ps(x, y, z, w), _mm_set1_ps(mag));
 #else
 		x *= mag;
 		y *= mag;
@@ -296,7 +314,7 @@ inline Vec4f& Vec4f::normalize()
 inline float Vec4f::dot_product(const Vec4f& vVector) const
 {
 #ifdef SSE_MATH_AVAILABLE
-	__m128 vec = _mm_set_ps(x, y, z, w);
+	__m128 vec = _mm_setr_ps(x, y, z, w);
 	__m128 other = _mm_load_ps(vVector.color);
 
 	vec = _mm_mul_ps(vec, other);
@@ -314,7 +332,7 @@ inline float Vec4f::dot_product(const Vec4f& vVector) const
 inline Vec4f& Vec4f::zero_out()
 {
 #ifdef SSE_MATH_AVAILABLE
-	_mm_storeu_ps(color, _mm_setzero_ps());
+	_mm_storeu_ps(color, g_ZeroVec4);
 #else
 	x = y = z = w = 0;
 #endif
@@ -339,7 +357,7 @@ inline Vec4f Normalize(const Vec4f& vVector)
 	return tmp.normalize();
 }
 
-inline float Dot_Product(const Vec4f& vVectorA, const Vec4f& vVectorB)
+inline float DotProduct(const Vec4f& vVectorA, const Vec4f& vVectorB)
 {
 	return vVectorA.dot_product(vVectorB);
 }

@@ -13,10 +13,10 @@ inline Matrix4fA::Matrix4fA(float fXx, float fXy, float fXz, float fXw,
 							float fZx, float fZy, float fZz, float fZw,
 							float fWx, float fWy, float fWz, float fWw)
 {
-	row1 = _mm_set_ps(fXw, fXz, fXy, fXx);
-	row2 = _mm_set_ps(fYw, fYz, fYy, fYx);
-	row3 = _mm_set_ps(fZw, fZz, fZy, fZx);
-	row4 = _mm_set_ps(fWw, fWz, fWy, fWx);
+	row1 = _mm_setr_ps(fXx, fXy, fXz, fXw);
+	row2 = _mm_setr_ps(fYx, fYy, fYz, fYw);
+	row3 = _mm_setr_ps(fZx, fZy, fZz, fZw);
+	row4 = _mm_setr_ps(fWx, fWy, fWz, fWw);
 }
 
 inline Matrix4fA::Matrix4fA(const Matrix4fA& mMatrix)
@@ -66,33 +66,22 @@ inline Matrix3f Matrix4fA::Get3x3() const
 	return Matrix3f(xAxis, yAxis, zAxis);
 }
 
-inline float Matrix4fA::operator[](size_t ucIndex) const 
-{
-	return m[ucIndex]; 
-}
-
 inline Matrix4fA& Matrix4fA::operator=(Matrix4fA&& mMatrix)
 {
-	if(this != &mMatrix)
-	{
-		row1 = mMatrix.row1;
-		row2 = mMatrix.row2;
-		row3 = mMatrix.row3;
-		row4 = mMatrix.row4;
-	}
+	row1 = mMatrix.row1;
+	row2 = mMatrix.row2;
+	row3 = mMatrix.row3;
+	row4 = mMatrix.row4;
 
 	return *this;
 }
 
 inline Matrix4fA& Matrix4fA::operator=(XMMATRIX&& mMatrix)
 {
-	if(this != (Matrix4fA*)&mMatrix)
-	{
-		row1 = mMatrix.r[0];
-		row2 = mMatrix.r[1];
-		row3 = mMatrix.r[2];
-		row4 = mMatrix.r[3];
-	}
+	row1 = mMatrix.r[0];
+	row2 = mMatrix.r[1];
+	row3 = mMatrix.r[2];
+	row4 = mMatrix.r[3];
 
 	return *this;
 }
@@ -425,7 +414,17 @@ inline Matrix4fA& Matrix4fA::MoveDown(float fMovement)
 
 inline Matrix4fA& Matrix4fA::Transpose()
 {
-	return *this = XMMatrixTranspose(XMLoadFloat4x4((XMFLOAT4X4*)this));
+	__m128 tmp1 = _mm_shuffle_ps(row1, row2, _MM_SHUFFLE(1, 0, 1, 0));
+	__m128 tmp2 = _mm_shuffle_ps(row3, row4, _MM_SHUFFLE(1, 0, 1, 0));
+	__m128 tmp3 = _mm_shuffle_ps(row1, row2, _MM_SHUFFLE(3, 2, 3, 2));
+	__m128 tmp4 = _mm_shuffle_ps(row3, row4, _MM_SHUFFLE(3, 2, 3, 2));
+
+	row1 = _mm_shuffle_ps(tmp1, tmp2, _MM_SHUFFLE(2, 0, 2, 0));
+	row2 = _mm_shuffle_ps(tmp1, tmp2, _MM_SHUFFLE(3, 1, 3, 1));
+	row3 = _mm_shuffle_ps(tmp3, tmp4, _MM_SHUFFLE(2, 0, 2, 0));
+	row4 = _mm_shuffle_ps(tmp3, tmp4, _MM_SHUFFLE(3, 1, 3, 1));
+
+	return *this;
 }
 
 inline Matrix4fA& Matrix4fA::Transpose3x3()
@@ -451,9 +450,25 @@ inline Matrix4fA& Matrix4fA::Invert()
 	return *this = XMMatrixInverse(NULL, XMLoadFloat4x4((XMFLOAT4X4*)this));
 }
 
-inline Matrix4fA& Matrix4fA::LookAt(const Vec3f& mPos)
+inline Matrix4fA& Matrix4fA::LookAt(const Vec3f& mPos, const Vec3f& vWorldUp)
 {
-	return *this = XMMatrixLookAtLH(XMLoadFloat3((XMFLOAT3*)&position), XMLoadFloat3((XMFLOAT3*)&mPos), g_XMIdentityR1.v);
+	Vec4fA vecToPos(mPos, Ww);
+
+	vecToPos.row = _mm_sub_ps(vecToPos.row, row4);
+	vecToPos.normalize();
+
+	// zAxis
+	zAxis = vecToPos.position;
+
+	// xAxis;
+	xAxis = CrossProduct(vWorldUp, zAxis);
+	xAxis.normalize();
+
+	// yAxis;
+	yAxis = CrossProduct(zAxis, xAxis);
+	yAxis.normalize();
+
+	return *this;
 }
 
 inline Matrix4fA& Matrix4fA::TurnTo(const Vec3f& vPos, float fTurnModifier)
@@ -465,12 +480,25 @@ inline Matrix4fA& Matrix4fA::TurnTo(const Vec3f& vPos, float fTurnModifier)
 #pragma region Matrix4fA Camera Funcs
 inline Matrix4fA& Matrix4fA::MakePerspective(float fFOV, float fAspectRatio, float fNearClip, float fFarClip)
 {
-	return *this = XMMatrixPerspectiveFovLH(fFOV, fAspectRatio, fNearClip, fFarClip);
+	float yScale = 1 / tan(fFOV * 0.5f);
+	float xScale = yScale / fAspectRatio;
+
+	row1 = _mm_setr_ps(xScale, 0.0f, 0.0f, 0.0f);
+	row2 = _mm_setr_ps(0.0f, yScale, 0.0f, 0.0f);
+	row3 = _mm_setr_ps(0.0f, 0.0f, fFarClip / (fFarClip - fNearClip), 1.0f);
+	row4 = _mm_setr_ps(0.0f, 0.0f, -fNearClip * fFarClip / (fFarClip - fNearClip), 0.0f);
+
+	return *this;
 }
 
 inline Matrix4fA& Matrix4fA::MakeOrthographic(float fWidth, float fHeight, float fNear, float fFar)
 {
-	return *this = XMMatrixOrthographicLH(fWidth, fHeight, fNear, fFar);
+	row1 = _mm_setr_ps(2 / fWidth, 0, 0, 0);
+	row2 = _mm_setr_ps(0, 2 / fHeight, 0, 0);
+	row3 = _mm_setr_ps(0, 0, 1 / (fFar - fNear), 0);
+	row4 = _mm_setr_ps(0, 0, fNear / (fNear - fFar), 1);
+
+	return *this;
 }
 
 inline Matrix4fA& Matrix4fA::OrthoNormalInvert()
@@ -479,9 +507,9 @@ inline Matrix4fA& Matrix4fA::OrthoNormalInvert()
 
 	Transpose3x3();
 
-	Wx = -Dot_Product(tmp.position, tmp.xAxis);
-	Wy = -Dot_Product(tmp.position, tmp.yAxis);
-	Wz = -Dot_Product(tmp.position, tmp.zAxis);
+	Wx = -DotProduct(tmp.position, tmp.xAxis);
+	Wy = -DotProduct(tmp.position, tmp.yAxis);
+	Wz = -DotProduct(tmp.position, tmp.zAxis);
 
 	return *this;
 }

@@ -40,11 +40,8 @@ inline Vec2f& Vec2f::operator=(const Vec2f& vVector)
 
 inline Vec2f& Vec2f::operator=(Vec2f&& vVector)
 {
-	if(this != &vVector)
-	{
-		x = vVector.x;
-		y = vVector.y;
-	}
+	x = vVector.x;
+	y = vVector.y;
 
 	return *this;
 }
@@ -59,8 +56,7 @@ inline Vec2f& Vec2f::operator=(const POINT vVector)
 
 inline Vec2f& Vec2f::operator=(XMVECTOR&& vVector)
 {
-	if(this != (Vec2f*)&vVector)
-		XMStoreFloat2((XMFLOAT2*)this, vVector);
+	XMStoreFloat2((XMFLOAT2*)this, vVector);
 
 	return *this;
 }
@@ -124,6 +120,7 @@ inline Vec2f& Vec2f::operator*=(float fScalar)
 
 inline Vec2f Vec2f::operator/(float fScalar) const
 {
+	fScalar = 1 / fScalar;
 	return Vec2f(x * fScalar, y * fScalar);
 }
 
@@ -181,7 +178,19 @@ inline Vec2f& Vec2f::normalize()
 
 inline float Vec2f::angle_between(const Vec2f& vVector) const
 {
-	return XMVector2AngleBetweenVectors(XMLoadFloat2((XMFLOAT2*)this), XMLoadFloat2((XMFLOAT2*)&vVector)).m128_f32[0];
+	float dotProduct = (x * vVector.x) + (y * vVector.y);
+
+	float length = magnitude() * vVector.magnitude();
+
+	if(!length)
+		return 0.0f;
+
+	float angle = acos(dotProduct / length);
+
+	if(_isnan(angle))
+		return 0.0f;
+
+	return angle;
 }
 #pragma endregion
 
@@ -192,7 +201,7 @@ inline Vec2f Normalize(const Vec2f& vVector)
 	return tmp.normalize();
 }
 
-inline float Dot_Product(const Vec2f& vVectorA, const Vec2f& vVectorB)
+inline float DotProduct(const Vec2f& vVectorA, const Vec2f& vVectorB)
 {
 	return vVectorA.dot_product(vVectorB);
 }

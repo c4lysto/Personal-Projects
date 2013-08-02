@@ -1,34 +1,34 @@
 #ifdef SSE_MATH_AVAILABLE
 
 #pragma region Vec4fA Constructors
-inline Vec4fA::Vec4fA() : row(g_ZeroVec4)
+inline Vec4fA::Vec4fA()
 {
-
+	row = g_ZeroVec4;
 }
 
-inline Vec4fA::Vec4fA(const Vec4fA& vVector) : row(vVector.row)
+inline Vec4fA::Vec4fA(const Vec4fA& vVector)
 {
-
+	row = vVector.row;
 }
 
-inline Vec4fA::Vec4fA(Vec4fA&& vVector) : row(vVector.row)
+inline Vec4fA::Vec4fA(Vec4fA&& vVector)
 {
-
+	row = vVector.row;
 }
 
-inline Vec4fA::Vec4fA(__m128&& vVector) : row(vVector)
+inline Vec4fA::Vec4fA(__m128&& vVector)
 {
-
+	row = vVector;
 }
 
-inline Vec4fA::Vec4fA(float fR, float fG, float fB, float fA) : row(_mm_setr_ps(fR, fG, fB, fA))
+inline Vec4fA::Vec4fA(float fR, float fG, float fB, float fA)
 {
-
+	row = _mm_setr_ps(fR, fG, fB, fA);
 }
 
-inline Vec4fA::Vec4fA(Vec3f vVector, float fA) : row(_mm_setr_ps(vVector.x, vVector.y, vVector.z, fA))
+inline Vec4fA::Vec4fA(Vec3f vVector, float fA)
 {
-
+	row = _mm_setr_ps(vVector.x, vVector.y, vVector.z, fA);
 }
 #pragma endregion
 
@@ -38,7 +38,7 @@ inline Vec4fA Vec4fA::operator-()
 	return Vec4fA(-x, -y, -z, -w);
 }
 
-inline Vec4fA& Vec4fA::operator=(Vec4fA&& vVector)
+inline Vec4fA Vec4fA::operator=(const Vec4fA& vVector)
 {
 	if(this != &vVector)
 		row = vVector.row;
@@ -46,10 +46,16 @@ inline Vec4fA& Vec4fA::operator=(Vec4fA&& vVector)
 	return *this;
 }
 
+inline Vec4fA& Vec4fA::operator=(Vec4fA&& vVector)
+{
+	row = vVector.row;
+
+	return *this;
+}
+
 inline Vec4fA& Vec4fA::operator=(__m128&& vVector)
 {
-	if(this != (Vec4fA*)&vVector)
-		row = vVector;
+	row = vVector;
 
 	return *this;
 }
@@ -233,7 +239,7 @@ inline Vec4fA Normalize(const Vec4fA& vVector)
 	return tmp.normalize();
 }
 
-inline float Dot_Product(const Vec4fA& vVectorA, const Vec4fA& vVectorB)
+inline float DotProduct(const Vec4fA& vVectorA, const Vec4fA& vVectorB)
 {
 	return vVectorA.dot_product(vVectorB);
 }

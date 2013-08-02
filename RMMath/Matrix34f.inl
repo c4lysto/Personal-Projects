@@ -15,12 +15,19 @@ inline Matrix34f::Matrix34f(float fXx, float fXy, float fXz,
 	Wx = fWx; Wy = fWy; Wz = fWz;
 }
 
-inline Matrix34f::Matrix34f(const Matrix34f&& mMatrix)
+inline Matrix34f::Matrix34f(const Matrix34f& mMatrix) : 
+	xAxis(mMatrix.xAxis), yAxis(mMatrix.yAxis), zAxis(mMatrix.zAxis), wAxis(mMatrix.wAxis)
+{
+
+}
+
+inline Matrix34f::Matrix34f(Matrix34f&& mMatrix) :
+	xAxis(move(mMatrix.xAxis)), yAxis(move(mMatrix.yAxis)), zAxis(move(mMatrix.zAxis)), wAxis(move(mMatrix.wAxis))
 {
 	*this = move(mMatrix);
 }
 
-inline Matrix34f::Matrix34f(const XMMATRIX&& mMatrix)
+inline Matrix34f::Matrix34f(XMMATRIX&& mMatrix)
 {
 	XMStoreFloat4x3((XMFLOAT4X3*)this, mMatrix);
 }
@@ -43,6 +50,6 @@ inline Matrix34f& Matrix34f::make_identity()
 	xAxis = g_IdentityX3;
 	yAxis = g_IdentityY3;
 	zAxis = g_IdentityZ3;
-	wAxis = g_IdentityW3;
+	wAxis = g_ZeroVec3;
 }
 #pragma endregion
