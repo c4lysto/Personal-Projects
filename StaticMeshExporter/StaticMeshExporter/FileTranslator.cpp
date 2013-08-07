@@ -1,13 +1,16 @@
 #include "FileTranslator.h"
 
 #include <maya/MItDag.h>
-#include <maya/MFnMesh.h>
 #include <maya/MPointArray.h>
 #include <maya/MFloatVectorArray.h>
 #include <maya/MFloatArray.h>
 #include <maya/MSelectionList.h>
 #include <maya/MItSelectionList.h>
 #include <maya/MItMeshPolygon.h>
+#include <maya/MFnSet.h>
+#include <maya/MPlug.h>
+#include <maya/MPlugArray.h>
+#include <maya/MItDependencyGraph.h>
 #include <maya/MGlobal.h>
 
 void* FileTranslator::creator()
@@ -62,14 +65,7 @@ MStatus FileTranslator::ExportAll(const MFileObject& file)
 			{
 				if(MStatus::kSuccess == ExportMesh(meshPath))
 				{
-					if(MStatus::kSuccess == WriteMeshToBinary(outputFile))
-					{
-						cout << "\nMesh Exported!\nDag Path: " << meshPath.fullPathName().asChar() << endl;
-					}
-					else
-					{
-						cout << "Mesh Failed to write to binary file!\nDag Path: " << meshPath.fullPathName().asChar() << endl;
-					}
+					cout << "\nMesh Exported!\nDag Path: " << meshPath.fullPathName().asChar() << endl;
 				}
 				else
 				{
@@ -80,6 +76,15 @@ MStatus FileTranslator::ExportAll(const MFileObject& file)
 			{
 				cout << "Failed to Obtaint Current Mesh Path" << endl;
 			}
+		}
+
+		if(MStatus::kSuccess == WriteToBinary(outputFile))
+		{
+			MGlobal::displayInfo("Meshes Exported Successfully!");
+		}
+		else
+		{
+			MGlobal::displayInfo("Error: Meshes Exported Unsuccessfully!");
 		}
 
 		outputFile.close();
@@ -123,14 +128,7 @@ MStatus FileTranslator::ExportSelected(const MFileObject& file)
 			{
 				if(MStatus::kSuccess == ExportMesh(meshPath))
 				{
-					if(MStatus::kSuccess == WriteMeshToBinary(outputFile))
-					{
-						cout << "\nMesh Exported!\nDag Path: " << meshPath.fullPathName().asChar() << endl;
-					}
-					else
-					{
-						cout << "Mesh Failed to write to binary file!\nDag Path: " << meshPath.fullPathName().asChar() << endl;
-					}
+					cout << "\nMesh Exported!\nDag Path: " << meshPath.fullPathName().asChar() << endl;
 				}
 				else
 				{
@@ -142,6 +140,15 @@ MStatus FileTranslator::ExportSelected(const MFileObject& file)
 				cout << "Error: Failed to get Dag Path of Current Selected Mesh!";
 				continue;
 			}
+		}
+
+		if(MStatus::kSuccess == WriteToBinary(outputFile))
+		{
+			MGlobal::displayInfo("Meshes Exported Successfully!");
+		}
+		else
+		{
+			MGlobal::displayInfo("Error: Meshes Exported Unsuccessfully!");
 		}
 
 		outputFile.close();
@@ -160,7 +167,7 @@ MStatus FileTranslator::ExportMesh(MDagPath& meshPath)
 {
 	MStatus status;
 
-	MFnMesh mesh(meshPath, &status);
+	MFnMesh currMesh(meshPath, &status);
 
 	if(MStatus::kFailure == status)
 	{
@@ -170,7 +177,7 @@ MStatus FileTranslator::ExportMesh(MDagPath& meshPath)
 	}
 
 	MPointArray vertices;
-	if(MStatus::kFailure == mesh.getPoints(vertices, MSpace::kWorld))
+	if(MStatus::kFailure == currMesh.getPoints(vertices, MSpace::kWorld))
 	{
 		cout << "Error: Failed to Acquire Vertices from Mesh!" << endl;
 		cout << "Info: Error Occurred Before File Writing, File Corruption Averted." << endl;
@@ -178,7 +185,7 @@ MStatus FileTranslator::ExportMesh(MDagPath& meshPath)
 	}
 
 	MFloatVectorArray normals;
-	if(MStatus::kFailure == mesh.getNormals(normals, MSpace::kWorld))
+	if(MStatus::kFailure == currMesh.getNormals(normals, MSpace::kWorld))
 	{
 		cout << "Error: Failed to Acquire Normals from Mesh!" << endl;
 		cout << "Info: Error Occurred Before File Writing, File Corruption Averted." << endl;
@@ -186,7 +193,7 @@ MStatus FileTranslator::ExportMesh(MDagPath& meshPath)
 	}
 
 	MFloatVectorArray tangents;
-	if(MStatus::kFailure == mesh.getTangents(tangents, MSpace::kWorld))
+	if(MStatus::kFailure == currMesh.getTangents(tangents, MSpace::kWorld))
 	{
 		cout << "Error: Failed to Acquire Tangents from Mesh!" << endl;
 		cout << "Info: Error Occurred Before File Writing, File Corruption Averted." << endl;
@@ -194,7 +201,7 @@ MStatus FileTranslator::ExportMesh(MDagPath& meshPath)
 	}
 
 	MFloatArray U, V;
-	if(MStatus::kFailure == mesh.getUVs(U, V))
+	if(MStatus::kFailure == currMesh.getUVs(U, V))
 	{
 		cout << "Error: Failed to Acquire UV Coordinates from Mesh!" << endl;
 		cout << "Info: Error Occurred Before File Writing, File Corruption Averted." << endl;
@@ -204,6 +211,8 @@ MStatus FileTranslator::ExportMesh(MDagPath& meshPath)
 	MItMeshPolygon polygon(meshPath);
 
 	Mesh outMesh;
+	outMesh.m_sName = currMesh.name().asChar();
+
 	VertNormTanUV vertex;
 	Triangle triangle;
 
@@ -272,12 +281,125 @@ MStatus FileTranslator::ExportMesh(MDagPath& meshPath)
 		}
 	}
 
-
+	m_vMeshes.push_back(outMesh);
 
 	return MStatus::kSuccess;
 }
 
-MStatus FileTranslator::WriteMeshToBinary(std::ofstream& outputFile)
+MStatus FileTranslator::GetTextureNames(MFnMesh& fnMesh, Mesh& currMesh)
 {
+	MStatus status;
+	MObjectArray meshSets, meshComponents;
+	unsigned int numSets;
+
+	std::vector<std::string>& meshTextures = currMesh.m_vTextures;
+
+	fnMesh.getConnectedSetsAndMembers(0, meshSets, meshComponents, true);
+	numSets = meshSets.length();
+
+	if(numSets > 1)
+		--numSets;
+
+	for(unsigned int i = 0; i < numSets; ++i)
+	{
+		MObject set = meshSets[i];
+		MObject component = meshComponents[i];
+		MFnSet fnSet(set);
+
+		// Make sure this is a polygonal set
+		MItMeshPolygon meshPolygonIt(fnMesh.dagPath(), component, &status);
+		if(MStatus::kFailure == status)
+			continue;
+
+		MFnDependencyNode fnNode(set);
+		MPlug shaderPlug = fnNode.findPlug("surfaceShader");
+		if(shaderPlug.isNull())
+			continue;
+
+		MPlugArray connectedPlugs;
+		shaderPlug.connectedTo(connectedPlugs, true, false, &status);
+		if(MStatus::kFailure == status)
+			continue;
+		if(1 != connectedPlugs.length())
+			continue;
+
+		MPlug colorPlug = MFnDependencyNode(connectedPlugs[0].node()).findPlug("color", &status);
+		if(MStatus::kFailure == status)
+			continue;
+
+		MItDependencyGraph itDG(colorPlug, MFn::kFileTexture, MItDependencyGraph::kUpstream, MItDependencyGraph::kBreadthFirst, MItDependencyGraph::kNodeLevel, &status);
+		if(MStatus::kFailure == status)
+			continue;
+
+		itDG.disablePruningOnFilter();
+		if(itDG.isDone())
+			continue;
+
+		MObject textureNode = itDG.thisNode();
+		MPlug filenamePlug = MFnDependencyNode(textureNode).findPlug("fileTextureName");
+		MString textureName("");
+
+		filenamePlug.getValue(textureName);
+
+		// make sure this texture is not a repeat
+		size_t textureIndex = 0;
+		for(; textureIndex < meshTextures.size(); ++textureIndex)
+		{
+			if(textureName == meshTextures[i].c_str())
+				break;
+		}
+
+		// we have a new texture
+		if(textureIndex == meshTextures.size())
+			meshTextures.push_back(textureName.asChar());
+	}
+
+	return MStatus::kSuccess;
+}
+
+MStatus FileTranslator::WriteToBinary(std::ofstream& outputFile)
+{
+	unsigned int unNameSize, unNumTextures, 
+				 unNumVerts, unNumPolygons;
+
+	for(size_t i = 0; i < m_vMeshes.size(); ++i)
+	{
+		// write out size of the mesh's name
+		unNameSize = (unsigned int)m_vMeshes[i].m_sName.length();
+		outputFile.write((char*)&unNameSize, sizeof(unsigned int));
+
+		// write out Mesh's name
+		outputFile.write(m_vMeshes[i].m_sName.data(), unNameSize);
+
+
+		// write out the number of textures we will be using
+		unNumTextures = (unsigned int)m_vMeshes[i].m_vTextures.size();
+		outputFile.write((char*)&unNumTextures, sizeof(unsigned int));
+
+
+		// write out Number of Vertices this mesh has
+		std::vector<VertNormTanUV>& vertList = m_vMeshes[i].m_vVertices;
+
+		unNumVerts = (unsigned int)vertList.size();
+		outputFile.write((char*)&unNumVerts, sizeof(unsigned int));
+
+		// write out all vertices
+		for(unsigned int vertNum = 0; vertNum < vertList.size(); ++vertNum)
+		{
+			outputFile.write((char*)&vertList[i], sizeof(vertList[i]));
+		}
+
+
+		// write out Number of Polygon this mesh has
+		unNumPolygons = (unsigned int)m_vMeshes[i].m_vTriangles.size();
+		outputFile.write((char*)&unNumPolygons, sizeof(unsigned int));
+
+		std::vector<Triangle>& triList = m_vMeshes[i].m_vTriangles;
+		for(unsigned int triIndex = 0; triIndex < triList.size(); ++triIndex)
+		{
+			outputFile.write((char*)&triList[triIndex], sizeof(triList[triIndex]));
+		}
+	}
+
 	return MStatus::kSuccess;
 }

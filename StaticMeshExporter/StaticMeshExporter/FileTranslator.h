@@ -3,6 +3,7 @@
 
 #include <maya/MPxFileTranslator.h>
 #include <maya/MDagPath.h>
+#include <maya/MFnMesh.h>
 
 #include <fstream>
 #include <vector>
@@ -18,7 +19,9 @@ private:
 	MStatus ExportSelected(const MFileObject& file);
 
 	MStatus ExportMesh(MDagPath& meshPath);
-	MStatus WriteMeshToBinary(std::ofstream& outputFile);
+	MStatus GetTextureNames(MFnMesh& fnMesh, Mesh& currMesh);
+
+	MStatus WriteToBinary(std::ofstream& outputFile);
 
 public:
 	FileTranslator(void) {}
@@ -28,8 +31,8 @@ public:
 	virtual MStatus writer(const MFileObject& file,  const MString& optionsString, FileAccessMode mode);
 
 	virtual bool haveWriteMethod () const {return true;}
-	virtual MString defaultExtension () const {return "bin";}
-	virtual MString filter () const {return "*.bin";}
+	virtual MString defaultExtension () const {return "smsh";}
+	virtual MString filter () const {return "*.smsh";}
 };
 
 #endif
