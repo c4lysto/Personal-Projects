@@ -223,7 +223,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\StaticMeshExporter\StaticMeshExporter\FileTranslator.cpp" />
-    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\StaticMeshExporter\StaticMeshExporter\Mesh.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\StaticMeshExporter\StaticMeshExporter\PluginEntryPoint.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -212,6 +212,7 @@ MStatus FileTranslator::ExportMesh(MDagPath& meshPath)
 
 	Mesh outMesh;
 	outMesh.m_sName = currMesh.name().asChar();
+	GetTextureNames(currMesh, outMesh);
 
 	VertNormTanUV vertex;
 	Triangle triangle;
@@ -265,7 +266,8 @@ MStatus FileTranslator::ExportMesh(MDagPath& meshPath)
 				outMesh.m_vVertices.push_back(vertex);
 			}
 
-			triangle.indices[i] = polyIndices[i];
+			if(i < 3)
+				triangle.indices[i] = polyIndices[i];
 		}
 
 		outMesh.m_vTriangles.push_back(triangle);
@@ -337,9 +339,15 @@ MStatus FileTranslator::GetTextureNames(MFnMesh& fnMesh, Mesh& currMesh)
 
 		MObject textureNode = itDG.thisNode();
 		MPlug filenamePlug = MFnDependencyNode(textureNode).findPlug("fileTextureName");
-		MString textureName("");
+		MString fullTexturePath("");
 
-		filenamePlug.getValue(textureName);
+		filenamePlug.getValue(fullTexturePath);
+
+		std::string textureName = fullTexturePath.asChar();
+
+		// get only the texture name
+		textureName.erase(0, textureName.find_last_of('/') + 1);
+		textureName.shrink_to_fit();
 
 		// make sure this texture is not a repeat
 		size_t textureIndex = 0;
@@ -351,7 +359,7 @@ MStatus FileTranslator::GetTextureNames(MFnMesh& fnMesh, Mesh& currMesh)
 
 		// we have a new texture
 		if(textureIndex == meshTextures.size())
-			meshTextures.push_back(textureName.asChar());
+			meshTextures.push_back(textureName);
 	}
 
 	return MStatus::kSuccess;
@@ -360,7 +368,8 @@ MStatus FileTranslator::GetTextureNames(MFnMesh& fnMesh, Mesh& currMesh)
 MStatus FileTranslator::WriteToBinary(std::ofstream& outputFile)
 {
 	unsigned int unNameSize, unNumTextures, 
-				 unNumVerts, unNumPolygons;
+				 unNumVerts, unNumPolygons,
+				 unTexNameLength;
 
 	for(size_t i = 0; i < m_vMeshes.size(); ++i)
 	{
@@ -373,8 +382,20 @@ MStatus FileTranslator::WriteToBinary(std::ofstream& outputFile)
 
 
 		// write out the number of textures we will be using
-		unNumTextures = (unsigned int)m_vMeshes[i].m_vTextures.size();
+		std::vector<std::string>& textureList = m_vMeshes[i].m_vTextures;
+
+		unNumTextures = (unsigned int)textureList.size();
 		outputFile.write((char*)&unNumTextures, sizeof(unsigned int));
+
+		for(unsigned int texIndex = 0; texIndex < unNumTextures; ++texIndex)
+		{
+			// write out string length
+			unTexNameLength = (unsigned int)textureList[texIndex].size();
+			outputFile.write((char*)&unTexNameLength, sizeof(unsigned int));
+
+			// write out file name
+			outputFile.write(textureList[texIndex].data(), unTexNameLength);
+		}
 
 
 		// write out Number of Vertices this mesh has
@@ -386,7 +407,7 @@ MStatus FileTranslator::WriteToBinary(std::ofstream& outputFile)
 		// write out all vertices
 		for(unsigned int vertNum = 0; vertNum < vertList.size(); ++vertNum)
 		{
-			outputFile.write((char*)&vertList[i], sizeof(vertList[i]));
+			outputFile.write((char*)&vertList[vertNum], sizeof(vertList[vertNum]));
 		}
 
 

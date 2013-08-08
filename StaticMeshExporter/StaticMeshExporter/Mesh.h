@@ -75,8 +75,8 @@ struct Mesh
 	std::vector<Triangle> m_vTriangles;
 
 	// methods
-	Mesh(void);
-	~Mesh(void);	
+	Mesh(void){}
+	~Mesh(void){}	
 };
 
 #endif

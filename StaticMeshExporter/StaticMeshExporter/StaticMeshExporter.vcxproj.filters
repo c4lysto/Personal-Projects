@@ -21,9 +21,6 @@
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\StaticMeshExporter\StaticMeshExporter\FileTranslator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\StaticMeshExporter\StaticMeshExporter\Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\StaticMeshExporter\StaticMeshExporter\FileTranslator.h">
