@@ -67,7 +67,7 @@ public:
 
 	void Clear(RenderTarget* const* pTargets = nullptr, unsigned int unNumTargets = 1,  
 		UINT unClearFlags = D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, float fClearDepth = 1.0f, 
-		UINT8 unClearStencil = 0, XMFLOAT4 color = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+		UINT8 unClearStencil = 0, XMFLOAT4 color = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
 
 	void Present(UINT syncInterval = PRESENT_IMMEDIATE, UINT flags = 0);
 

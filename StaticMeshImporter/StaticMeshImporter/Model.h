@@ -4,14 +4,19 @@
 #include <vector>
 using std::vector;
 
+#include <string>
+using std::string;
+
 class DirectXCore;
 
 class Model
 {
 private:
 	void* m_pVertices;
+	string m_szName;
 	unsigned int m_unNumVertices;
 	unsigned int m_unVertexStride;
+	unsigned int m_eVertType;
 	vector<unsigned int> m_vIndices;
 
 public:

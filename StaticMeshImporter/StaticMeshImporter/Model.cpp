@@ -272,7 +272,67 @@ bool Model::LoadModel(const char* szFilename)
 	{
 		if(inFile.good())
 		{
+			unsigned int unNameLength = 0, unNumTextures = 0, unTexNameLength = 0, unNumPolygons = 0;
 
+			// Get Mesh Name Length
+			inFile.read((char*)&unNameLength, sizeof(unsigned int));
+
+			// Get Mesh Name
+			char* szMeshName = new char[unNameLength];
+			inFile.read(szMeshName, unNameLength);
+
+			m_szName = szMeshName;
+			delete szMeshName;
+
+			// Get Number of Textures Used
+			inFile.read((char*)&unNumTextures, sizeof(unsigned int));
+			unNumTextures = 0;
+
+			// Load Textures
+			for(unsigned int i = 0; i < unNumTextures; ++i)
+			{
+				// Get String Length
+				inFile.read((char*)&unTexNameLength, sizeof(unsigned int));
+
+				// Get Texture Name
+				char* szTextureName = new char[unTexNameLength + 1];
+				inFile.read(szTextureName, unTexNameLength);
+
+				delete szTextureName;
+			}
+
+			// Get VertexType
+			unsigned int unVertType;
+			inFile.read((char*)&unVertType, sizeof(unsigned int));
+			m_eVertType = (VertexTypeEnum)unVertType;
+
+			// Get Vertex Stride
+			inFile.read((char*)&m_unVertexStride, sizeof(unsigned int));
+
+			// Get Number of Vertices
+			inFile.read((char*)&m_unNumVertices, sizeof(unsigned int));
+
+			char* pVertices = new char[m_unNumVertices * m_unVertexStride];
+			m_pVertices = pVertices;
+
+			for(unsigned int i = 0; i < m_unNumVertices; ++i)
+			{
+				inFile.read(pVertices + (i * m_unVertexStride), m_unVertexStride);
+			}
+
+			inFile.read((char*)&unNumPolygons, sizeof(unsigned int));
+
+			m_vIndices.resize(unNumPolygons * 3);
+
+			unsigned int unCurrTriangle;
+			for(unsigned int i = 0; i < unNumPolygons; ++i)
+			{
+				unCurrTriangle = i * 3;
+
+				inFile.read((char*)&m_vIndices[unCurrTriangle], sizeof(unsigned int));
+				inFile.read((char*)&m_vIndices[unCurrTriangle + 1], sizeof(unsigned int));
+				inFile.read((char*)&m_vIndices[unCurrTriangle + 2], sizeof(unsigned int));
+			}
 		}
 		else
 			return false;

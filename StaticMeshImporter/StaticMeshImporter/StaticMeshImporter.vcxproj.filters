@@ -81,4 +81,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\StaticMeshImporter\StaticMeshImporter\VertNormTanUVTransformedVertex.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\StaticMeshImporter\StaticMeshImporter\VertNormTanUVPixel.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+  </ItemGroup>
 </Project>

@@ -36,6 +36,9 @@ using namespace std;
 #include <DirectXMath.h>
 using namespace DirectX;
 
+#include "VertNormTanUVTransformedVertex.csh"
+#include "VertNormTanUVPixel.csh"
+
 #ifdef _DEBUG
 #define BACKBUFFER_WIDTH	1280
 #define BACKBUFFER_HEIGHT	720
@@ -61,19 +64,6 @@ private:
 		DWORD GameTime;
 	};
 
-	struct ParticleData
-	{
-		Vec4f color;
-		Vec3f position;
-		Vec3f velocity;
-	};
-
-	struct ParticleVertex
-	{
-		Vec4f color;
-		Vec3f position;
-	};
-
 private:
 	HINSTANCE						application;
 	WNDPROC							appWndProc;
@@ -82,17 +72,22 @@ private:
 	DirectXCore						coreObjects;
 	RenderController				renderController;
 	GameShaderBuffer				m_GameConstBuffer;
+	GameObject						m_Box;
 	
 	CComPtr<ID3D11Buffer> pGameConstBuffer;
 	CComPtr<ID3D11Buffer> pStructuredBuffer;
 	CComPtr<ID3D11BlendState> pBlendState;
 
-	CComPtr<ID3D11InputLayout> pInputLayout;
+	CComPtr<ID3D11Buffer> m_pVertexBuffer;
+	CComPtr<ID3D11Buffer> m_pIndexBuffer;
 
-	CComPtr<ID3D11VertexShader> pVertexShader;
-	CComPtr<ID3D11PixelShader> pPixelShader;
+	CComPtr<ID3D11InputLayout> m_pInputLayout;
 
-	CComPtr<ID3D11ShaderResourceView> pTextureView;
+	CComPtr<ID3D11VertexShader> m_pVertexShader;
+	CComPtr<ID3D11PixelShader> m_pPixelShader;
+
+	CComPtr<ID3D11ShaderResourceView> m_pDiffuseTexture;
+	CComPtr<ID3D11ShaderResourceView> m_pNormalTexture;
 
 	POINT m_PrevMousePos;
 	float m_fParticleFadeTimer;
@@ -101,6 +96,14 @@ private:
 
 	void Update();
 
+	void CreateVertexBuffer();
+	void CreateIndexBuffer();
+	void CreateShaders();
+	void CreateInputLayout();
+
+	void CreateDiffuseTexture(const wchar_t* szFilename);
+	void CreateNormalTexture(const wchar_t* szFilename);
+
 public:
 	
 	
@@ -108,9 +111,14 @@ public:
 	void Initialize(HINSTANCE hinst, WNDPROC proc);
 	bool Run();
 	bool ShutDown();
+
+	void OnMouseMove(HWND hWnd, LPARAM lParam);
 };
 
 DEMO_APP myApp;
+bool m_bRButtonDown = false;
+bool m_bLButtonDown = false;
+POINT lockedMousePos;
 
 //************************************************************
 //************ CREATION OF OBJECTS & RESOURCES ***************
@@ -161,17 +169,118 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 	coreObjects.GetContext()->CSSetConstantBuffers(GAME_CONST_BUFF_REGISTER, 1, &pGameConstBuffer.p);
 	coreObjects.GetContext()->CSSetConstantBuffers(CAMERA_CONST_BUFF_REGISTER, 1, &camera.GetCamConstBuff().p);
 
-	// TODO: PART 2 STEP 8a
-	D3D11_INPUT_ELEMENT_DESC vLayout[] = VERTCLR_LAYOUT;
-	
-	// TODO: PART 2 STEP 8b
-	// NOTE: ask about 4th parameter
+	m_Box.GetModel()->LoadModel("Box.smsh");
 
-	CreateDDSTextureFromFile(coreObjects.GetDevice(), _T("particle.dds"), NULL, &pTextureView.p);
+	CreateVertexBuffer();
+	CreateIndexBuffer();
+	CreateShaders();
+	CreateInputLayout();
+
+	CreateDiffuseTexture(L"crate.dds");
+	CreateNormalTexture(L"NormalMap.dds");
 
 	ZeroMemory(&m_GameConstBuffer, sizeof(GameShaderBuffer));
 
 	timer.Restart();
+}
+
+void DEMO_APP::CreateVertexBuffer()
+{
+	// Create Vertex Buffer Description
+	D3D11_BUFFER_DESC vertBuffDesc;
+	ZeroMemory(&vertBuffDesc, sizeof(D3D11_BUFFER_DESC));
+	vertBuffDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	vertBuffDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertBuffDesc.ByteWidth = m_Box.GetModel()->GetVertexStride() * m_Box.GetModel()->GetNumVertices();
+
+	// Create Initial Vertex Data since the buffer is Immutable
+	D3D11_SUBRESOURCE_DATA initialVertData;
+	ZeroMemory(&initialVertData, sizeof(D3D11_SUBRESOURCE_DATA));
+	initialVertData.pSysMem = m_Box.GetModel()->GetVertices();
+
+	if(FAILED(coreObjects.GetDevice()->CreateBuffer(&vertBuffDesc, &initialVertData, &m_pVertexBuffer.p)))
+		MessageBox(window, L"Failed To Create Vertex Buffer", L"", MB_OK | MB_ICONERROR);
+}
+
+void DEMO_APP::CreateIndexBuffer()
+{
+	D3D11_BUFFER_DESC indexBuffDesc;
+	ZeroMemory(&indexBuffDesc, sizeof(D3D11_BUFFER_DESC));
+	indexBuffDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	indexBuffDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBuffDesc.ByteWidth = m_Box.GetModel()->GetNumIndices() * sizeof(unsigned int);
+
+	D3D11_SUBRESOURCE_DATA initialIndexData;
+	ZeroMemory(&initialIndexData, sizeof(D3D11_SUBRESOURCE_DATA));
+	initialIndexData.pSysMem = m_Box.GetModel()->GetIndices().data();
+
+	if(FAILED(coreObjects.GetDevice()->CreateBuffer(&indexBuffDesc, &initialIndexData, &m_pIndexBuffer.p)))
+		MessageBox(window, L"Failed To Create Index Buffer", L"", MB_OK | MB_ICONERROR);
+}
+
+void DEMO_APP::CreateShaders()
+{
+	if(FAILED(coreObjects.GetDevice()->CreateVertexShader(VertNormTanUVTransformedVertex, ARRAYSIZE(VertNormTanUVTransformedVertex), NULL, &m_pVertexShader.p)))
+		MessageBox(window, L"Failed To Create Vertex Shader", L"", MB_OK | MB_ICONERROR);
+
+	if(FAILED(coreObjects.GetDevice()->CreatePixelShader(VertNormTanUVPixel, ARRAYSIZE(VertNormTanUVPixel), NULL, &m_pPixelShader.p)))
+		MessageBox(window, L"Failed To Create Vertex Shader", L"", MB_OK | MB_ICONERROR);
+}
+
+void DEMO_APP::CreateInputLayout()
+{
+	D3D11_INPUT_ELEMENT_DESC vLayout[] = VERTNORMTANUV_LAYOUT;
+
+	if(FAILED(coreObjects.GetDevice()->CreateInputLayout(vLayout, NUM_VERTNORMTANUV_ELEMENTS, VertNormTanUVTransformedVertex, ARRAYSIZE(VertNormTanUVTransformedVertex), &m_pInputLayout.p)))
+		MessageBox(window, L"Failed To Create Input Layout", L"", MB_OK | MB_ICONERROR);
+}
+
+void DEMO_APP::CreateDiffuseTexture(const wchar_t* szFilename)
+{
+	CreateDDSTextureFromFile(coreObjects.GetDevice(), szFilename, NULL, &m_pDiffuseTexture.p);
+}
+
+void DEMO_APP::CreateNormalTexture(const wchar_t* szFilename)
+{
+	CreateDDSTextureFromFile(coreObjects.GetDevice(), szFilename, NULL, &m_pNormalTexture.p);
+}
+
+void DEMO_APP::OnMouseMove(HWND hWnd, LPARAM lParam)
+{
+	POINT currMousePos = {LOWORD(lParam), HIWORD(lParam)};
+
+	if(m_bRButtonDown)
+	{
+		POINT mouseMovement = {m_PrevMousePos.x - currMousePos.x, m_PrevMousePos.y - currMousePos.y};
+
+		camera.RotateCameraMouseMovement(mouseMovement, timer.Delta());
+
+		POINT screenPos = lockedMousePos;
+		ClientToScreen(hWnd, &screenPos);
+		SetCursorPos(screenPos.x, screenPos.y);
+
+		m_PrevMousePos = lockedMousePos;
+
+		return;
+	}
+	else if(m_bLButtonDown)
+	{
+		Vec3f result = camera.Unproject(currMousePos);
+
+		result.normalize();// = XMVector4Normalize(result);
+
+		//XMStoreFloat3(&m_GameConstBuffer.CameraToGravity, result);
+		m_GameConstBuffer.CameraToGravity = result;
+
+		result *= 40.0f;
+
+		// camera pos
+		result += camera.GetWorldMatrix().position;
+
+		m_GameConstBuffer.gravityPos = result;
+	}
+		
+	m_PrevMousePos = currMousePos;
 }
 
 //************************************************************
@@ -185,36 +294,34 @@ bool DEMO_APP::Run()
 
 	coreObjects.Clear();
 	
-	// TODO: PART 2 STEP 9a
-	//UINT strides = 0;//[] = {VERTCLR_SIZE};
-	//UINT offsets = 0;//[] = {0};
-	//ID3D11Buffer* pNUllBuffer = NULL; 
-	//coreObjects.GetContext()->IASetVertexBuffers(0, 1, &pNUllBuffer, &strides, &offsets);
+	// Set Vertex and Index Buffers
+	UINT strides[] = {VERTNORMTANUV_SIZE};
+	UINT offsets[] = {0};
+	coreObjects.GetContext()->IASetVertexBuffers(0, 1, &m_pVertexBuffer.p, strides, offsets);
+	coreObjects.GetContext()->IASetIndexBuffer(m_pIndexBuffer.p, DXGI_FORMAT_R32_UINT, 0);
 	
-	// TODO: PART 2 STEP 9b
-	coreObjects.GetContext()->VSSetShader(pVertexShader.p, 0, 0);
-	coreObjects.GetContext()->PSSetShader(pPixelShader.p, 0, 0);
+	// Set Vertex and Pixel Shaders
+	coreObjects.GetContext()->VSSetShader(m_pVertexShader.p, 0, 0);
+	coreObjects.GetContext()->PSSetShader(m_pPixelShader.p, 0, 0);
 
+	// Set the Input Layout
+	coreObjects.GetContext()->IASetInputLayout(m_pInputLayout.p);
 	
-	// TODO: PART 2 STEP 9d
-	coreObjects.GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	// Set Primitive Topology
+	coreObjects.GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// NOTE: parameter 1 is the register number in the shader
-	coreObjects.GetContext()->PSSetShaderResources(0, 1, &pTextureView.p);
+	// Set Textures
+	coreObjects.GetContext()->PSSetShaderResources(0, 1, &m_pDiffuseTexture.p);
+	coreObjects.GetContext()->PSSetShaderResources(1, 1, &m_pNormalTexture.p);
 	
 	camera.SetMVPAndWorldMatrices(Matrix4f());
 
-	// TODO: PART 2 STEP 10
-	coreObjects.GetContext()->Draw(0, 0);
+	// Draw Call
+	coreObjects.GetContext()->DrawIndexed(m_Box.GetModel()->GetNumIndices(), 0, 0);
 
-	ID3D11ShaderResourceView *pNULLsrv = NULL;
-	coreObjects.GetContext()->VSSetShaderResources(0, 1, &pNULLsrv);
-	coreObjects.GetContext()->PSSetShaderResources(0, 1, &pNULLsrv);
-
-	// TODO: PART 1 STEP 8
+	// Present To Screen
 	coreObjects.Present(PRESENT_VSYNC);
 	
-	// END OF PART 1
 	return true; 
 }
 
@@ -285,7 +392,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
         case ( WM_DESTROY ): { PostQuitMessage( 0 ); }
         break;
 
-		/*case WM_RBUTTONDOWN:
+		case WM_RBUTTONDOWN:
 			{
 				m_bRButtonDown = true;
 				
@@ -304,7 +411,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 			{
 				myApp.OnMouseMove(hWnd, lParam);
 			}
-			break;*/
+			break;
     }
     return DefWindowProc( hWnd, message, wParam, lParam );
 }

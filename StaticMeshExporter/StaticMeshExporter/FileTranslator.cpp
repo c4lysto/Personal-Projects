@@ -369,12 +369,13 @@ MStatus FileTranslator::WriteToBinary(std::ofstream& outputFile)
 {
 	unsigned int unNameSize, unNumTextures, 
 				 unNumVerts, unNumPolygons,
-				 unTexNameLength;
+				 unTexNameLength, unVertexType = VERTTYPE_VERTNORMTANUV,
+				 unVertexStride = sizeof(VertNormTanUV);
 
 	for(size_t i = 0; i < m_vMeshes.size(); ++i)
 	{
 		// write out size of the mesh's name
-		unNameSize = (unsigned int)m_vMeshes[i].m_sName.length();
+		unNameSize = (unsigned int)m_vMeshes[i].m_sName.length() + 1;
 		outputFile.write((char*)&unNameSize, sizeof(unsigned int));
 
 		// write out Mesh's name
@@ -397,6 +398,11 @@ MStatus FileTranslator::WriteToBinary(std::ofstream& outputFile)
 			outputFile.write(textureList[texIndex].data(), unTexNameLength);
 		}
 
+		// write out the vertex type (enum identical to one used here)
+		outputFile.write((char*)&unVertexType, sizeof(unsigned int));
+
+		// write out Vertex Stride
+		outputFile.write((char*)&unVertexStride, sizeof(unsigned int));
 
 		// write out Number of Vertices this mesh has
 		std::vector<VertNormTanUV>& vertList = m_vMeshes[i].m_vVertices;
