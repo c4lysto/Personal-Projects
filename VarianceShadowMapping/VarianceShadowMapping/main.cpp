@@ -13,6 +13,15 @@
 //************ INCLUDES & DEFINES ****************************
 //************************************************************
 
+/*	NOTE	*/
+/* Only way i could figure out how to get the
+/	IID_ID3D11ShaderReflection GUID to work
+/	properly for Dynamic Shader Linkage	*/
+#include <windows.h>
+#include <initguid.h>
+#include <d3dcompiler.h>
+/* END NOTE	*/
+
 #include <iostream>
 #include <time.h>
 #include "XTime.h"
@@ -21,6 +30,14 @@
 #include "Camera.h"
 #include "VertexDeclarations.h"
 #include "RenderController.h"
+#include "IndexBuffer.h"
+#include "VertexBuffer.h"
+#include "DebugWindow.h"
+#include "PointLight.h"
+#include "DirectionalLight.h"
+#include "SpotLight.h"
+#include "PixelShaderDynamic.h"
+#include "VertexShader.h"
 using namespace VertexDecl;
 
 #include "DDSTextureLoader.h"
@@ -36,9 +53,6 @@ using namespace std;
 #include <DirectXMath.h>
 using namespace DirectX;
 
-#include "VertNormTanUVTransformedVertex.csh"
-#include "VertNormTanUVPixel.csh"
-
 #ifdef _DEBUG
 #define BACKBUFFER_WIDTH	1280
 #define BACKBUFFER_HEIGHT	720
@@ -48,6 +62,9 @@ using namespace DirectX;
 #endif
 
 #define GAME_CONST_BUFF_REGISTER 0
+
+#include "VertNormTanUVTransformedVertex.csh"
+#include "VertNormTanUVPixel.csh"
 
 //************************************************************
 //************ SIMPLE WINDOWS APP CLASS **********************
@@ -72,22 +89,31 @@ private:
 	DirectXCore						coreObjects;
 	RenderController				renderController;
 	GameShaderBuffer				m_GameConstBuffer;
+
 	GameObject						m_Box;
+	GameObject						m_Ground;
 	
 	CComPtr<ID3D11Buffer> pGameConstBuffer;
 	CComPtr<ID3D11Buffer> pStructuredBuffer;
 	CComPtr<ID3D11BlendState> pBlendState;
 
-	CComPtr<ID3D11Buffer> m_pVertexBuffer;
-	CComPtr<ID3D11Buffer> m_pIndexBuffer;
+	VertexBuffer m_VertexBuffer;
+	IndexBuffer m_IndexBuffer;
 
 	CComPtr<ID3D11InputLayout> m_pInputLayout;
 
-	CComPtr<ID3D11VertexShader> m_pVertexShader;
-	CComPtr<ID3D11PixelShader> m_pPixelShader;
+	VertexShader m_VertexShader;
+	PixelShaderDynamic m_LightingShader;
 
-	CComPtr<ID3D11ShaderResourceView> m_pDiffuseTexture;
+	PointLight m_ptLight;
+	DirectionalLight m_dirLight;
+	SpotLight m_SpotLight;
+
+	CComPtr<ID3D11ShaderResourceView> m_pCrateTexture;
 	CComPtr<ID3D11ShaderResourceView> m_pNormalTexture;
+
+	CComPtr<ID3D11ShaderResourceView> m_pGroundTexture;
+	CComPtr<ID3D11ShaderResourceView> m_pGroundNormalTexture;
 
 	POINT m_PrevMousePos;
 	float m_fParticleFadeTimer;
@@ -100,9 +126,10 @@ private:
 	void CreateIndexBuffer();
 	void CreateShaders();
 	void CreateInputLayout();
+	void InitLights();
 
-	void CreateDiffuseTexture(const wchar_t* szFilename);
-	void CreateNormalTexture(const wchar_t* szFilename);
+	void CreateDiffuseTexture(const wchar_t* szFilename, Mesh* pMesh, ID3D11ShaderResourceView** pSRV);
+	void CreateNormalTexture(const wchar_t* szFilename, Mesh* pMesh, ID3D11ShaderResourceView** pSRV);
 
 public:
 	
@@ -117,7 +144,6 @@ public:
 
 DEMO_APP myApp;
 bool m_bRButtonDown = false;
-bool m_bLButtonDown = false;
 POINT lockedMousePos;
 
 //************************************************************
@@ -150,11 +176,18 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 							NULL, NULL,	application, this );												
 
     ShowWindow( window, SW_SHOW );
+
+	DebugWindow::Initialize();
 	//********************* END WARNING ************************//
 
 	coreObjects.Initialize(window, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT, true);
 	renderController.Initialize(&coreObjects);
 	camera.Initialize(&coreObjects, DEG_TO_RAD(42.0f), 0.1f, 200.0f);
+
+	ILight::CreateClassLinkage(&coreObjects);
+	PointLight::CreateConstantBufferAndClassLinkage(coreObjects.GetDevice(), "gPointLight");
+	DirectionalLight::CreateConstantBufferAndClassLinkage(coreObjects.GetDevice(), "gDirLight");
+	SpotLight::CreateConstantBufferAndClassLinkage(coreObjects.GetDevice(), "gSpotLight");
 
 	D3D11_BUFFER_DESC shaderConstBuffDesc;
 	ZeroMemory(&shaderConstBuffDesc, sizeof(D3D11_BUFFER_DESC));
@@ -169,15 +202,24 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 	coreObjects.GetContext()->CSSetConstantBuffers(GAME_CONST_BUFF_REGISTER, 1, &pGameConstBuffer.p);
 	coreObjects.GetContext()->CSSetConstantBuffers(CAMERA_CONST_BUFF_REGISTER, 1, &camera.GetCamConstBuff().p);
 
-	m_Box.GetModel()->LoadModel("Box.smsh");
-
 	CreateVertexBuffer();
 	CreateIndexBuffer();
 	CreateShaders();
 	CreateInputLayout();
+	InitLights();
 
-	CreateDiffuseTexture(L"crate.dds");
-	CreateNormalTexture(L"NormalMap.dds");
+	m_Box.GetModel()->LoadModel("Models/Box.smsh", &coreObjects, &m_VertexBuffer, &m_IndexBuffer);
+
+	m_Ground.GetModel()->LoadModel("Models/Quad5.smsh", &coreObjects, &m_VertexBuffer, &m_IndexBuffer);
+	m_Ground.GetMatrix().SetScale(20.0f);
+
+	// Setup Box Textures
+	CreateDiffuseTexture(L"Textures/crate.dds", m_Box.GetModel()->GetMesh(), &m_pCrateTexture.p);
+	CreateNormalTexture(L"Textures/NormalMap.dds", m_Box.GetModel()->GetMesh(), &m_pNormalTexture.p);
+
+	// Setup Ground Textures
+	CreateDiffuseTexture(L"Textures/Aphalt_Diffuse.dds", m_Ground.GetModel()->GetMesh(), &m_pGroundTexture.p);
+	CreateNormalTexture(L"Textures/Asphalt_Normal.dds", m_Ground.GetModel()->GetMesh(), &m_pGroundNormalTexture.p);
 
 	ZeroMemory(&m_GameConstBuffer, sizeof(GameShaderBuffer));
 
@@ -186,45 +228,43 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 
 void DEMO_APP::CreateVertexBuffer()
 {
-	// Create Vertex Buffer Description
-	D3D11_BUFFER_DESC vertBuffDesc;
-	ZeroMemory(&vertBuffDesc, sizeof(D3D11_BUFFER_DESC));
-	vertBuffDesc.Usage = D3D11_USAGE_IMMUTABLE;
-	vertBuffDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertBuffDesc.ByteWidth = m_Box.GetModel()->GetVertexStride() * m_Box.GetModel()->GetNumVertices();
-
-	// Create Initial Vertex Data since the buffer is Immutable
-	D3D11_SUBRESOURCE_DATA initialVertData;
-	ZeroMemory(&initialVertData, sizeof(D3D11_SUBRESOURCE_DATA));
-	initialVertData.pSysMem = m_Box.GetModel()->GetVertices();
-
-	if(FAILED(coreObjects.GetDevice()->CreateBuffer(&vertBuffDesc, &initialVertData, &m_pVertexBuffer.p)))
-		MessageBox(window, L"Failed To Create Vertex Buffer", L"", MB_OK | MB_ICONERROR);
+	m_VertexBuffer.Initialize(&coreObjects, VERTNORMTANUV_SIZE);
 }
 
 void DEMO_APP::CreateIndexBuffer()
 {
-	D3D11_BUFFER_DESC indexBuffDesc;
-	ZeroMemory(&indexBuffDesc, sizeof(D3D11_BUFFER_DESC));
-	indexBuffDesc.Usage = D3D11_USAGE_IMMUTABLE;
-	indexBuffDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indexBuffDesc.ByteWidth = m_Box.GetModel()->GetNumIndices() * sizeof(unsigned int);
-
-	D3D11_SUBRESOURCE_DATA initialIndexData;
-	ZeroMemory(&initialIndexData, sizeof(D3D11_SUBRESOURCE_DATA));
-	initialIndexData.pSysMem = m_Box.GetModel()->GetIndices().data();
-
-	if(FAILED(coreObjects.GetDevice()->CreateBuffer(&indexBuffDesc, &initialIndexData, &m_pIndexBuffer.p)))
-		MessageBox(window, L"Failed To Create Index Buffer", L"", MB_OK | MB_ICONERROR);
+	m_IndexBuffer.Initialize(&coreObjects);
 }
 
 void DEMO_APP::CreateShaders()
 {
-	if(FAILED(coreObjects.GetDevice()->CreateVertexShader(VertNormTanUVTransformedVertex, ARRAYSIZE(VertNormTanUVTransformedVertex), NULL, &m_pVertexShader.p)))
-		MessageBox(window, L"Failed To Create Vertex Shader", L"", MB_OK | MB_ICONERROR);
+	m_VertexShader.CreateVertexShader(coreObjects.GetContext(), coreObjects.GetDevice(), VertNormTanUVTransformedVertex, ARRAYSIZE(VertNormTanUVTransformedVertex));
 
-	if(FAILED(coreObjects.GetDevice()->CreatePixelShader(VertNormTanUVPixel, ARRAYSIZE(VertNormTanUVPixel), NULL, &m_pPixelShader.p)))
-		MessageBox(window, L"Failed To Create Vertex Shader", L"", MB_OK | MB_ICONERROR);
+	m_LightingShader.CreatePixelShader(coreObjects.GetContext(), coreObjects.GetDevice(), VertNormTanUVPixel, ARRAYSIZE(VertNormTanUVPixel));
+	m_LightingShader.SetClassInstance("gSpotLight", m_LightingShader.AddInterfaceByName("gLight"));
+}
+
+void DEMO_APP::InitLights()
+{
+	m_ptLight.SetPosition(0.0f, 3.0f, 0.0f);
+	m_ptLight.SetRadius(7.5f);
+	m_ptLight.SetSpecularPower(10.0f);
+	m_ptLight.SetConstantBufferPS(coreObjects.GetContext());
+	m_ptLight.UpdateConstantBuffer(coreObjects.GetContext());
+
+	m_SpotLight.SetPosition(10.0f, 5.0f, 0.0f);
+	m_SpotLight.SetDirection(-1.0f, -1.0f, 0.0f);
+	m_SpotLight.SetSpecularPower(10.0f);
+	m_SpotLight.SetInnerConeRatio(0.95f);
+	m_SpotLight.SetOuterConeRatio(0.9f);
+	m_SpotLight.SetRadius(15.0f);
+	m_SpotLight.SetConstantBufferPS(coreObjects.GetContext());
+	m_SpotLight.UpdateConstantBuffer(coreObjects.GetContext());
+
+	m_dirLight.SetDirection(1.0f, -1.0f, 1.0f);
+	m_dirLight.SetSpecularPower(10.0f);
+	m_dirLight.SetConstantBufferPS(coreObjects.GetContext());
+	m_dirLight.UpdateConstantBuffer(coreObjects.GetContext());
 }
 
 void DEMO_APP::CreateInputLayout()
@@ -235,14 +275,18 @@ void DEMO_APP::CreateInputLayout()
 		MessageBox(window, L"Failed To Create Input Layout", L"", MB_OK | MB_ICONERROR);
 }
 
-void DEMO_APP::CreateDiffuseTexture(const wchar_t* szFilename)
+void DEMO_APP::CreateDiffuseTexture(const wchar_t* szFilename, Mesh* pMesh, ID3D11ShaderResourceView** pSRV)
 {
-	CreateDDSTextureFromFile(coreObjects.GetDevice(), szFilename, NULL, &m_pDiffuseTexture.p);
+	CreateDDSTextureFromFile(coreObjects.GetDevice(), szFilename, NULL, pSRV);
+
+	pMesh->SetTexture(*pSRV, MESH_TEX_DIFFUSE);
 }
 
-void DEMO_APP::CreateNormalTexture(const wchar_t* szFilename)
+void DEMO_APP::CreateNormalTexture(const wchar_t* szFilename, Mesh* pMesh, ID3D11ShaderResourceView** pSRV)
 {
-	CreateDDSTextureFromFile(coreObjects.GetDevice(), szFilename, NULL, &m_pNormalTexture.p);
+	CreateDDSTextureFromFile(coreObjects.GetDevice(), szFilename, NULL, pSRV);
+
+	pMesh->SetTexture(*pSRV, MESH_TEX_NORMAL);
 }
 
 void DEMO_APP::OnMouseMove(HWND hWnd, LPARAM lParam)
@@ -263,22 +307,6 @@ void DEMO_APP::OnMouseMove(HWND hWnd, LPARAM lParam)
 
 		return;
 	}
-	else if(m_bLButtonDown)
-	{
-		Vec3f result = camera.Unproject(currMousePos);
-
-		result.normalize();// = XMVector4Normalize(result);
-
-		//XMStoreFloat3(&m_GameConstBuffer.CameraToGravity, result);
-		m_GameConstBuffer.CameraToGravity = result;
-
-		result *= 40.0f;
-
-		// camera pos
-		result += camera.GetWorldMatrix().position;
-
-		m_GameConstBuffer.gravityPos = result;
-	}
 		
 	m_PrevMousePos = currMousePos;
 }
@@ -295,29 +323,18 @@ bool DEMO_APP::Run()
 	coreObjects.Clear();
 	
 	// Set Vertex and Index Buffers
-	UINT strides[] = {VERTNORMTANUV_SIZE};
-	UINT offsets[] = {0};
-	coreObjects.GetContext()->IASetVertexBuffers(0, 1, &m_pVertexBuffer.p, strides, offsets);
-	coreObjects.GetContext()->IASetIndexBuffer(m_pIndexBuffer.p, DXGI_FORMAT_R32_UINT, 0);
+	m_VertexBuffer.PrepareVertexBuffer();
+	m_IndexBuffer.PrepareIndexBuffer();
 	
 	// Set Vertex and Pixel Shaders
-	coreObjects.GetContext()->VSSetShader(m_pVertexShader.p, 0, 0);
-	coreObjects.GetContext()->PSSetShader(m_pPixelShader.p, 0, 0);
+	m_VertexShader.SetVertexShader();
+	m_LightingShader.SetPixelShader();
 
 	// Set the Input Layout
 	coreObjects.GetContext()->IASetInputLayout(m_pInputLayout.p);
-	
-	// Set Primitive Topology
-	coreObjects.GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// Set Textures
-	coreObjects.GetContext()->PSSetShaderResources(0, 1, &m_pDiffuseTexture.p);
-	coreObjects.GetContext()->PSSetShaderResources(1, 1, &m_pNormalTexture.p);
-	
-	camera.SetMVPAndWorldMatrices(Matrix4f());
-
-	// Draw Call
-	coreObjects.GetContext()->DrawIndexed(m_Box.GetModel()->GetNumIndices(), 0, 0);
+	m_Box.Render(&coreObjects, &camera);
+	m_Ground.Render(&coreObjects, &camera);
 
 	// Present To Screen
 	coreObjects.Present(PRESENT_VSYNC);
@@ -351,10 +368,14 @@ void DEMO_APP::Update()
 //************************************************************
 
 bool DEMO_APP::ShutDown()
-{
-	// TODO: PART 1 STEP 6
-	
+{	
+	SpotLight::ReleaseConstantBufferAndClassLinkage();
+	DirectionalLight::ReleaseConstantBufferAndClassLinkage();
+	PointLight::ReleaseConstantBufferAndClassLinkage();
+	ILight::ReleaseClassLinkage();
+
 	UnregisterClass( L"DirectXApplication", application ); 
+	DebugWindow::Shutdown();
 	return true;
 }
 
@@ -404,18 +425,6 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 		case WM_RBUTTONUP:
 			{
 				m_bRButtonDown = false;
-			}
-			break;
-
-		case WM_LBUTTONDOWN:
-			{
-				m_bLButtonDown = true;
-			}
-			break;
-
-		case WM_LBUTTONUP:
-			{
-				m_bLButtonDown = false;
 			}
 			break;
 

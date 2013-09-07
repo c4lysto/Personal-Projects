@@ -7,6 +7,8 @@
 #define ROTATION_SPEED PI
 #define MOUSE_ROTATION_SPEED PI * 0.1f
 
+static unsigned int Hit = 0;
+
 void Camera::Initialize(DirectXCore* pCore,/*Renderer* renderer, */float fFOV, float fNearClip, float fFarClip)
 {
 	//m_pRenderer = renderer;
@@ -40,10 +42,13 @@ void Camera::Initialize(DirectXCore* pCore,/*Renderer* renderer, */float fFOV, f
 	if(FAILED(m_pCore->GetDevice()->CreateBuffer(&shaderBuffDesc, 0, &m_pObjectConstBuffer.p)))
 		MessageBox(NULL, L"Failed to create Object Constant Buffer" , L"", MB_OK | MB_ICONERROR);
 
-	m_mWorldMatrix *= XMMatrixTranslation(0.0f, 0.0f, -10.0f);
+	m_mWorldMatrix.position = Vec3f(0.0f, 5.0f, -10.0f);
+	m_mWorldMatrix.LookAt(Vec3f());
 	
 	m_pCore->GetContext()->VSSetConstantBuffers(CAMERA_CONST_BUFF_REGISTER, 1, &m_pCameraConstBuffer.p);
 	m_pCore->GetContext()->VSSetConstantBuffers(OBJECT_CONST_BUFF_REGISTER, 1, &m_pObjectConstBuffer.p);
+
+	m_pCore->GetContext()->PSSetConstantBuffers(CAMERA_CONST_BUFF_REGISTER, 1, &m_pCameraConstBuffer.p);
 }
 
 void Camera::ResetCamera()
@@ -82,21 +87,6 @@ void Camera::UpdateMatrices()
 	}
 }
 
-void Camera::SetMVPAndWorldMatrices(GameObject* pObject)
-{
-	if(pObject)
-	{
-		m_ShaderObjectBuffer.m_mMVPMatrix = pObject->GetMatrix() * m_ShaderCameraBuffer.m_mViewProjectionMatrix;
-		m_ShaderObjectBuffer.m_mWorldMatrix = pObject->GetMatrix();
-
-		D3D11_MAPPED_SUBRESOURCE objectSubresource;
-
-		m_pCore->GetContext()->Map(m_pObjectConstBuffer.p, 0, D3D11_MAP_WRITE_DISCARD, 0, &objectSubresource);
-			memcpy(objectSubresource.pData, &m_ShaderObjectBuffer, sizeof(ShaderObjectBuffer));
-		m_pCore->GetContext()->Unmap(m_pObjectConstBuffer.p, 0);
-	}
-}
-
 void Camera::SetMVPAndWorldMatrices(const Matrix4f& matrix)
 {
 	m_ShaderObjectBuffer.m_mMVPMatrix = matrix * m_ShaderCameraBuffer.m_mViewProjectionMatrix;
@@ -111,70 +101,70 @@ void Camera::SetMVPAndWorldMatrices(const Matrix4f& matrix)
 
 void Camera::MoveForward(double fElapsedTime)
 {
-	m_mWorldMatrix.MoveForward(fElapsedTime * TRANSLATION_SPEED);
+	m_mWorldMatrix.MoveForward((float)fElapsedTime * TRANSLATION_SPEED);
 
 	m_bDirty = true;
 }
 
 void Camera::MoveBackward(double fElapsedTime)
 {
-	m_mWorldMatrix.MoveBackward(fElapsedTime * TRANSLATION_SPEED);
+	m_mWorldMatrix.MoveBackward((float)fElapsedTime * TRANSLATION_SPEED);
 
 	m_bDirty = true;
 }
 
 void Camera::MoveLeft(double fElapsedTime)
 {
-	m_mWorldMatrix.MoveLeft(fElapsedTime * TRANSLATION_SPEED);
+	m_mWorldMatrix.MoveLeft((float)fElapsedTime * TRANSLATION_SPEED);
 
 	m_bDirty = true;
 }
 
 void Camera::MoveRight(double fElapsedTime)
 {
-	m_mWorldMatrix.MoveRight(fElapsedTime * TRANSLATION_SPEED);
+	m_mWorldMatrix.MoveRight((float)fElapsedTime * TRANSLATION_SPEED);
 
 	m_bDirty = true;
 }
 
 void Camera::MoveUp(double fElapsedTime)
 {
-	m_mWorldMatrix.MoveUp(fElapsedTime * TRANSLATION_SPEED);
+	m_mWorldMatrix.MoveUp((float)fElapsedTime * TRANSLATION_SPEED);
 
 	m_bDirty = true;
 }
 
 void Camera::MoveDown(double fElapsedTime)
 {
-	m_mWorldMatrix.MoveDown(fElapsedTime * TRANSLATION_SPEED);
+	m_mWorldMatrix.MoveDown((float)fElapsedTime * TRANSLATION_SPEED);
 
 	m_bDirty = true;
 }
 
 void Camera::RotateLeft(double fElapsedTime)
 {
-	m_mWorldMatrix.Rotate_LocalY_Radians(-ROTATION_SPEED * fElapsedTime);
+	m_mWorldMatrix.Rotate_LocalY_Radians(-ROTATION_SPEED * (float)fElapsedTime);
 
 	m_bDirty = true;
 }
 
 void Camera::RotateRight(double fElapsedTime)
 {
-	m_mWorldMatrix.Rotate_LocalY_Radians(ROTATION_SPEED * fElapsedTime);
+	m_mWorldMatrix.Rotate_LocalY_Radians(ROTATION_SPEED * (float)fElapsedTime);
 
 	m_bDirty = true;
 }
 
 void Camera::RotateUp(double fElapsedTime)
 {
-	m_mWorldMatrix.Rotate_LocalX_Radians(-ROTATION_SPEED * fElapsedTime);
+	m_mWorldMatrix.Rotate_LocalX_Radians(-ROTATION_SPEED * (float)fElapsedTime);
 
 	m_bDirty = true;
 }
 
 void Camera::RotateDown(double fElapsedTime)
 {
-	m_mWorldMatrix.Rotate_LocalX_Radians(ROTATION_SPEED * fElapsedTime);
+	m_mWorldMatrix.Rotate_LocalX_Radians(ROTATION_SPEED * (float)fElapsedTime);
 
 	m_bDirty = true;
 }
@@ -191,9 +181,9 @@ void Camera::RotateCameraMouseMovement(POINT movement, double fElapsedTime)
 		//XMStoreFloat(&fDotProduct, XMVector3Dot(m_mWorldMatrix.toXMMatrix().r[1], XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
 
 		if(fDotProduct > 0.0f)
-			m_mWorldMatrix.Rotate_GlobalY_Radians(-MOUSE_ROTATION_SPEED * fElapsedTime * movement.x);
+			m_mWorldMatrix.Rotate_GlobalY_Radians(-movement.x * (float)fElapsedTime * 0.5f);//-MOUSE_ROTATION_SPEED * (float)fElapsedTime * movement.x);
 		else
-			m_mWorldMatrix.Rotate_GlobalY_Radians(MOUSE_ROTATION_SPEED * fElapsedTime * movement.x);
+			m_mWorldMatrix.Rotate_GlobalY_Radians(-movement.x * (float)fElapsedTime * 0.5f);//MOUSE_ROTATION_SPEED * (float)fElapsedTime * movement.x);
 
 		m_mWorldMatrix.position = tmpPos;
 
@@ -202,7 +192,7 @@ void Camera::RotateCameraMouseMovement(POINT movement, double fElapsedTime)
 
 	if(movement.y)
 	{
-		m_mWorldMatrix.Rotate_LocalX_Radians(-MOUSE_ROTATION_SPEED * fElapsedTime * movement.y);
+		m_mWorldMatrix.Rotate_LocalX_Radians(-movement.y * (float)fElapsedTime);//-MOUSE_ROTATION_SPEED * (float)fElapsedTime * movement.y);
 
 		m_bDirty = true;
 	}
@@ -213,7 +203,7 @@ Vec3f Camera::Unproject(POINT screenPos)
 {
 	const D3D11_VIEWPORT& viewport = m_pCore->GetViewport();
 
-	Vec3f unprojectedPoint = XMVector3Unproject(XMVectorSet(screenPos.x, screenPos.y, 0, 0), viewport.TopLeftX, viewport.TopLeftY,
+	Vec3f unprojectedPoint = XMVector3Unproject(XMVectorSet((float)screenPos.x, (float)screenPos.y, 0, 0), viewport.TopLeftX, viewport.TopLeftY,
 		viewport.Width, viewport.Height, viewport.MinDepth, viewport.MaxDepth, m_mProjectionMatrix.toXMMatrix(), m_mViewMatrix.toXMMatrix(), XMMatrixIdentity());
 
 	return unprojectedPoint - m_mWorldMatrix.position;

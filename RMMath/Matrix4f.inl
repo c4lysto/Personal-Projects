@@ -442,6 +442,8 @@ inline Matrix4f& Matrix4f::Scale(float fXScale, float fYScale, float fZScale)
 	xAxis *= fXScale;
 	yAxis *= fYScale;
 	zAxis *= fZScale;
+
+	return *this;
 }
 
 inline Matrix4f& Matrix4f::Scale(const Vec3f& vScale) 
@@ -459,6 +461,8 @@ inline Matrix4f& Matrix4f::SetScale(float fXScale, float fYScale, float fZScale)
 
 	zAxis.normalize();
 	zAxis *= fZScale;
+
+	return *this;
 }
 
 inline Matrix4f& Matrix4f::SetScale(const Vec3f& vScale)

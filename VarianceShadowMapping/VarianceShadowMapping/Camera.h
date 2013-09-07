@@ -74,7 +74,6 @@ public:
 	const CComPtr<ID3D11Buffer>& GetCamConstBuff() const {return m_pCameraConstBuffer;}
 	//Vec3f GetCameraMovement() const {return m_mWorldMatrix.position - m_vPrevPos;}
 
-	void SetMVPAndWorldMatrices(GameObject* pObject);
 	void SetMVPAndWorldMatrices(const Matrix4f& matrix);
 
 	inline void SetFOV(float fFOV) {m_fFOV = fFOV; m_bDirty = true;}

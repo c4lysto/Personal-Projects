@@ -13,6 +13,14 @@ using std::move;
 #define SSE_MATH_AVAILABLE
 #endif
 
+#ifndef SAFE_RELEASE
+#define SAFE_RELEASE(rel) { if(rel) {rel->Release(); rel = nullptr;}}
+#endif
+
+#ifndef SAFE_DELETE
+#define SAFE_DELETE(del) { if(del) {delete del; del = nullptr;} }
+#endif
+
 #ifndef PI
 #define PI 3.14159265359f
 #endif

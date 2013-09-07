@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VarianceShadowMapping", "VarianceShadowMapping\VarianceShadowMapping.vcxproj", "{A4D57FE6-E553-4B51-BFAC-FE043A4BFC08}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A4D57FE6-E553-4B51-BFAC-FE043A4BFC08}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A4D57FE6-E553-4B51-BFAC-FE043A4BFC08}.Debug|Win32.Build.0 = Debug|Win32
+		{A4D57FE6-E553-4B51-BFAC-FE043A4BFC08}.Release|Win32.ActiveCfg = Release|Win32
+		{A4D57FE6-E553-4B51-BFAC-FE043A4BFC08}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

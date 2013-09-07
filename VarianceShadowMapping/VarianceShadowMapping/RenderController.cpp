@@ -29,7 +29,7 @@ void RenderController::InitShaderSamplers()
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.MaxAnisotropy = 16;
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
 
 	if(FAILED(m_pCore->GetDevice()->CreateSamplerState(&samplerDesc, &m_pTextureSamplers[WRAP_SAMPLER_STATE].p)))
 		MessageBox(NULL, L"Failed to Create Wrap Texture Sampler", L"", MB_OK | MB_ICONERROR);

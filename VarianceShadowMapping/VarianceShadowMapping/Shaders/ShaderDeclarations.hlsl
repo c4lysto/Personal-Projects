@@ -13,20 +13,20 @@ cbuffer GAME : register(b0)
 
 cbuffer CAMERA : register(b1)
 {
-	float4x4 ViewProjectionMatrix;
-	float3 CameraPos;
-	float3 fillData;
+	float4x4 gViewProjectionMatrix;
+	float3 gCameraPos;
+	float cameraFillData;
 }
 
 cbuffer OBJECT : register(b2)
 {
-	float4x4 MVPMatrix;
-	float4x4 WorldMatrix;
+	float4x4 gMVPMatrix;
+	float4x4 gWorldMatrix;
 }
 
 texture2D DiffuseTexture : register(t0);
 texture2D NormalTexture : register(t1);
-textureCUBE CubeMapDiffuse : register(t2);
+texture2D SpecularTexture : register(t2);
 
 SamplerState WrapSampler : register(s0);
 SamplerState ClampSampler : register(s1);
@@ -42,7 +42,8 @@ struct VERTNORMTANUV_IN
 struct VERTNORMTANUV_OUT
 {
 	float2 texCoord : TEXCOORD0;
-	float3x3 tbn : TEXCOORD1;
+	float3 worldPos : TEXCOORD1;
+	float3x3 tbn : TEXCOORD2;
 	float4 position : SV_POSITION;
 };
 
