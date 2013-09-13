@@ -87,6 +87,9 @@
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\SpotLight.cpp">
       <Filter>Source Files\Lights</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\AmbientLight.cpp">
+      <Filter>Source Files\Lights</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Camera.h">
@@ -149,6 +152,9 @@
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\SpotLight.h">
       <Filter>Header Files\Lights</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\AmbientLight.h">
+      <Filter>Header Files\Lights</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\VertNormTanUVTransformedVertex.hlsl">
@@ -161,6 +167,12 @@
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\Lights.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\VSMPixel.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\VSMVertex.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
   </ItemGroup>

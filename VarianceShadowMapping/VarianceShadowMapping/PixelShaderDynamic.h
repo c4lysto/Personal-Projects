@@ -34,7 +34,7 @@ public:
 
 	UINT AddInterfaceByName(LPCSTR szAbstractObjectName);
 
-	void SetClassInstance(LPCSTR szAbstractObjectName, LPCSTR szShaderObjectName, UINT unInstanceIndex = 0);
+	void SetClassInstance(LPCSTR szShaderObjectName, LPCSTR szAbstractObjectName, UINT unInstanceIndex = 0);
 	void SetClassInstance(LPCSTR szShaderObjectName, unsigned int unIndex, UINT unInstanceIndex = 0);
 
 	virtual void SetPixelShader()

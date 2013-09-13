@@ -130,7 +130,7 @@ UINT PixelShaderDynamic::AddInterfaceByName(LPCSTR szAbstractObjectName)
 	return UINT_MAX;
 }
 
-void PixelShaderDynamic::SetClassInstance(LPCSTR szAbstractObjectName, LPCSTR szShaderObjectName, UINT unInstanceIndex)
+void PixelShaderDynamic::SetClassInstance(LPCSTR szShaderObjectName, LPCSTR szAbstractObjectName, UINT unInstanceIndex)
 {
 	unsigned int unIndex = UINT_MAX;
 

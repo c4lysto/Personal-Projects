@@ -86,6 +86,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\AmbientLight.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Camera.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DDSTextureLoader.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DebugWindow.cpp" />
@@ -108,6 +109,7 @@
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\XTime.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\AmbientLight.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Camera.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DDSTextureLoader.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DebugWindow.h" />
@@ -130,6 +132,14 @@
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\XTime.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\VSMVertex.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\VSMPixel.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
     <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\Lights.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>

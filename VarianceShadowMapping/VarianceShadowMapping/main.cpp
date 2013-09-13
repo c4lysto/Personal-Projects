@@ -36,6 +36,7 @@
 #include "PointLight.h"
 #include "DirectionalLight.h"
 #include "SpotLight.h"
+#include "AmbientLight.h"
 #include "PixelShaderDynamic.h"
 #include "VertexShader.h"
 using namespace VertexDecl;
@@ -86,8 +87,8 @@ private:
 	WNDPROC							appWndProc;
 	HWND							window;
 	XTime							timer;
-	DirectXCore						coreObjects;
-	RenderController				renderController;
+	DirectXCore						m_CoreObjects;
+	RenderController				m_RenderController;
 	GameShaderBuffer				m_GameConstBuffer;
 
 	GameObject						m_Box;
@@ -105,6 +106,7 @@ private:
 	VertexShader m_VertexShader;
 	PixelShaderDynamic m_LightingShader;
 
+	AmbientLight m_AmbientLight;
 	PointLight m_ptLight;
 	DirectionalLight m_dirLight;
 	SpotLight m_SpotLight;
@@ -114,6 +116,7 @@ private:
 
 	CComPtr<ID3D11ShaderResourceView> m_pGroundTexture;
 	CComPtr<ID3D11ShaderResourceView> m_pGroundNormalTexture;
+	CComPtr<ID3D11ShaderResourceView> m_pGroundSpecularTexture;
 
 	POINT m_PrevMousePos;
 	float m_fParticleFadeTimer;
@@ -128,8 +131,16 @@ private:
 	void CreateInputLayout();
 	void InitLights();
 
+	void RenderMultipass(GameObject* pObject);
+
+	void RenderAmbientPass(GameObject* pObject);
+	void RenderDirectionalLightPass(GameObject* pObject);
+	void RenderPointLightPass(GameObject* pObject);
+	void RenderSpotLightPass(GameObject* pObject);
+
 	void CreateDiffuseTexture(const wchar_t* szFilename, Mesh* pMesh, ID3D11ShaderResourceView** pSRV);
 	void CreateNormalTexture(const wchar_t* szFilename, Mesh* pMesh, ID3D11ShaderResourceView** pSRV);
+	void CreateSpecularTexture(const wchar_t* szFilename, Mesh* pMesh, ID3D11ShaderResourceView** pSRV);
 
 public:
 	
@@ -140,6 +151,8 @@ public:
 	bool ShutDown();
 
 	void OnMouseMove(HWND hWnd, LPARAM lParam);
+
+	void SetCurrentMousePos(POINT mousePos) {m_PrevMousePos = mousePos;}
 };
 
 DEMO_APP myApp;
@@ -180,14 +193,15 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 	DebugWindow::Initialize();
 	//********************* END WARNING ************************//
 
-	coreObjects.Initialize(window, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT, true);
-	renderController.Initialize(&coreObjects);
-	camera.Initialize(&coreObjects, DEG_TO_RAD(42.0f), 0.1f, 200.0f);
+	m_CoreObjects.Initialize(window, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT, true);
+	m_RenderController.Initialize(&m_CoreObjects);
+	camera.Initialize(&m_CoreObjects, DEG_TO_RAD(42.0f), 0.1f, 200.0f);
 
-	ILight::CreateClassLinkage(&coreObjects);
-	PointLight::CreateConstantBufferAndClassLinkage(coreObjects.GetDevice(), "gPointLight");
-	DirectionalLight::CreateConstantBufferAndClassLinkage(coreObjects.GetDevice(), "gDirLight");
-	SpotLight::CreateConstantBufferAndClassLinkage(coreObjects.GetDevice(), "gSpotLight");
+	ILight::CreateClassLinkage(&m_CoreObjects);
+	AmbientLight::CreateConstantBufferAndClassLinkage(m_CoreObjects.GetDevice(), "gAmbientLight");
+	PointLight::CreateConstantBufferAndClassLinkage(m_CoreObjects.GetDevice(), "gPointLight");
+	DirectionalLight::CreateConstantBufferAndClassLinkage(m_CoreObjects.GetDevice(), "gDirLight");
+	SpotLight::CreateConstantBufferAndClassLinkage(m_CoreObjects.GetDevice(), "gSpotLight");
 
 	D3D11_BUFFER_DESC shaderConstBuffDesc;
 	ZeroMemory(&shaderConstBuffDesc, sizeof(D3D11_BUFFER_DESC));
@@ -196,11 +210,11 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 	shaderConstBuffDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	shaderConstBuffDesc.ByteWidth = sizeof(GameShaderBuffer);
 
-	if(FAILED(coreObjects.GetDevice()->CreateBuffer(&shaderConstBuffDesc, 0, &pGameConstBuffer.p)))
+	if(FAILED(m_CoreObjects.GetDevice()->CreateBuffer(&shaderConstBuffDesc, 0, &pGameConstBuffer.p)))
 		MessageBox(NULL, L"Failed to create Game Constant Buffer" , L"", MB_OK | MB_ICONERROR);
 
-	coreObjects.GetContext()->CSSetConstantBuffers(GAME_CONST_BUFF_REGISTER, 1, &pGameConstBuffer.p);
-	coreObjects.GetContext()->CSSetConstantBuffers(CAMERA_CONST_BUFF_REGISTER, 1, &camera.GetCamConstBuff().p);
+	m_CoreObjects.GetContext()->CSSetConstantBuffers(GAME_CONST_BUFF_REGISTER, 1, &pGameConstBuffer.p);
+	m_CoreObjects.GetContext()->CSSetConstantBuffers(CAMERA_CONST_BUFF_REGISTER, 1, &camera.GetCamConstBuff().p);
 
 	CreateVertexBuffer();
 	CreateIndexBuffer();
@@ -208,9 +222,9 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 	CreateInputLayout();
 	InitLights();
 
-	m_Box.GetModel()->LoadModel("Models/Box.smsh", &coreObjects, &m_VertexBuffer, &m_IndexBuffer);
+	m_Box.GetModel()->LoadModel("Models/Box.smsh", &m_CoreObjects, &m_VertexBuffer, &m_IndexBuffer);
 
-	m_Ground.GetModel()->LoadModel("Models/Quad5.smsh", &coreObjects, &m_VertexBuffer, &m_IndexBuffer);
+	m_Ground.GetModel()->LoadModel("Models/Quad5.smsh", &m_CoreObjects, &m_VertexBuffer, &m_IndexBuffer);
 	m_Ground.GetMatrix().SetScale(20.0f);
 
 	// Setup Box Textures
@@ -218,8 +232,9 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 	CreateNormalTexture(L"Textures/NormalMap.dds", m_Box.GetModel()->GetMesh(), &m_pNormalTexture.p);
 
 	// Setup Ground Textures
-	CreateDiffuseTexture(L"Textures/Aphalt_Diffuse.dds", m_Ground.GetModel()->GetMesh(), &m_pGroundTexture.p);
-	CreateNormalTexture(L"Textures/Asphalt_Normal.dds", m_Ground.GetModel()->GetMesh(), &m_pGroundNormalTexture.p);
+	CreateDiffuseTexture(L"Textures/Ground_Diffuse.dds", m_Ground.GetModel()->GetMesh(), &m_pGroundTexture.p);
+	CreateNormalTexture(L"Textures/Ground_Normal.dds", m_Ground.GetModel()->GetMesh(), &m_pGroundNormalTexture.p);
+	CreateSpecularTexture(L"Textures/Ground_Specular.dds", m_Ground.GetModel()->GetMesh(), &m_pGroundSpecularTexture.p);
 
 	ZeroMemory(&m_GameConstBuffer, sizeof(GameShaderBuffer));
 
@@ -228,65 +243,79 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 
 void DEMO_APP::CreateVertexBuffer()
 {
-	m_VertexBuffer.Initialize(&coreObjects, VERTNORMTANUV_SIZE);
+	m_VertexBuffer.Initialize(&m_CoreObjects, VERTNORMTANUV_SIZE);
 }
 
 void DEMO_APP::CreateIndexBuffer()
 {
-	m_IndexBuffer.Initialize(&coreObjects);
+	m_IndexBuffer.Initialize(&m_CoreObjects);
 }
 
 void DEMO_APP::CreateShaders()
 {
-	m_VertexShader.CreateVertexShader(coreObjects.GetContext(), coreObjects.GetDevice(), VertNormTanUVTransformedVertex, ARRAYSIZE(VertNormTanUVTransformedVertex));
+	m_VertexShader.CreateVertexShader(m_CoreObjects.GetContext(), m_CoreObjects.GetDevice(), VertNormTanUVTransformedVertex, ARRAYSIZE(VertNormTanUVTransformedVertex));
 
-	m_LightingShader.CreatePixelShader(coreObjects.GetContext(), coreObjects.GetDevice(), VertNormTanUVPixel, ARRAYSIZE(VertNormTanUVPixel));
-	m_LightingShader.SetClassInstance("gSpotLight", m_LightingShader.AddInterfaceByName("gLight"));
+	m_LightingShader.CreatePixelShader(m_CoreObjects.GetContext(), m_CoreObjects.GetDevice(), VertNormTanUVPixel, ARRAYSIZE(VertNormTanUVPixel));
+	m_LightingShader.SetClassInstance("gAmbientLight", m_LightingShader.AddInterfaceByName("gLight"));
 }
 
 void DEMO_APP::InitLights()
 {
+	m_AmbientLight.SetLightColor(0.1f, 0.1f, 0.1f);
+	m_AmbientLight.SetConstantBufferPS(m_CoreObjects.GetContext());
+	m_AmbientLight.UpdateConstantBuffer(m_CoreObjects.GetContext());
+
+	m_ptLight.SetLightColor(1.0f, 0.0f, 0.0f);
 	m_ptLight.SetPosition(0.0f, 3.0f, 0.0f);
 	m_ptLight.SetRadius(7.5f);
 	m_ptLight.SetSpecularPower(10.0f);
-	m_ptLight.SetConstantBufferPS(coreObjects.GetContext());
-	m_ptLight.UpdateConstantBuffer(coreObjects.GetContext());
+	m_ptLight.SetConstantBufferPS(m_CoreObjects.GetContext());
+	m_ptLight.UpdateConstantBuffer(m_CoreObjects.GetContext());
 
+	m_SpotLight.SetLightColor(0.0f, 1.0f, 0.0f);
 	m_SpotLight.SetPosition(10.0f, 5.0f, 0.0f);
 	m_SpotLight.SetDirection(-1.0f, -1.0f, 0.0f);
 	m_SpotLight.SetSpecularPower(10.0f);
 	m_SpotLight.SetInnerConeRatio(0.95f);
 	m_SpotLight.SetOuterConeRatio(0.9f);
 	m_SpotLight.SetRadius(15.0f);
-	m_SpotLight.SetConstantBufferPS(coreObjects.GetContext());
-	m_SpotLight.UpdateConstantBuffer(coreObjects.GetContext());
+	m_SpotLight.SetConstantBufferPS(m_CoreObjects.GetContext());
+	m_SpotLight.UpdateConstantBuffer(m_CoreObjects.GetContext());
 
+	m_dirLight.SetLightColor(0.0f, 0.0f, 1.0f);
 	m_dirLight.SetDirection(1.0f, -1.0f, 1.0f);
 	m_dirLight.SetSpecularPower(10.0f);
-	m_dirLight.SetConstantBufferPS(coreObjects.GetContext());
-	m_dirLight.UpdateConstantBuffer(coreObjects.GetContext());
+	m_dirLight.SetConstantBufferPS(m_CoreObjects.GetContext());
+	m_dirLight.UpdateConstantBuffer(m_CoreObjects.GetContext());
 }
 
 void DEMO_APP::CreateInputLayout()
 {
 	D3D11_INPUT_ELEMENT_DESC vLayout[] = VERTNORMTANUV_LAYOUT;
 
-	if(FAILED(coreObjects.GetDevice()->CreateInputLayout(vLayout, NUM_VERTNORMTANUV_ELEMENTS, VertNormTanUVTransformedVertex, ARRAYSIZE(VertNormTanUVTransformedVertex), &m_pInputLayout.p)))
+	if(FAILED(m_CoreObjects.GetDevice()->CreateInputLayout(vLayout, NUM_VERTNORMTANUV_ELEMENTS, VertNormTanUVTransformedVertex, ARRAYSIZE(VertNormTanUVTransformedVertex), &m_pInputLayout.p)))
 		MessageBox(window, L"Failed To Create Input Layout", L"", MB_OK | MB_ICONERROR);
 }
 
 void DEMO_APP::CreateDiffuseTexture(const wchar_t* szFilename, Mesh* pMesh, ID3D11ShaderResourceView** pSRV)
 {
-	CreateDDSTextureFromFile(coreObjects.GetDevice(), szFilename, NULL, pSRV);
+	CreateDDSTextureFromFile(m_CoreObjects.GetDevice(), szFilename, NULL, pSRV);
 
 	pMesh->SetTexture(*pSRV, MESH_TEX_DIFFUSE);
 }
 
 void DEMO_APP::CreateNormalTexture(const wchar_t* szFilename, Mesh* pMesh, ID3D11ShaderResourceView** pSRV)
 {
-	CreateDDSTextureFromFile(coreObjects.GetDevice(), szFilename, NULL, pSRV);
+	CreateDDSTextureFromFile(m_CoreObjects.GetDevice(), szFilename, NULL, pSRV);
 
 	pMesh->SetTexture(*pSRV, MESH_TEX_NORMAL);
+}
+
+void DEMO_APP::CreateSpecularTexture(const wchar_t* szFilename, Mesh* pMesh, ID3D11ShaderResourceView** pSRV)
+{
+	CreateDDSTextureFromFile(m_CoreObjects.GetDevice(), szFilename, NULL, pSRV);
+
+	pMesh->SetTexture(*pSRV, MESH_TEX_SPECULAR);
 }
 
 void DEMO_APP::OnMouseMove(HWND hWnd, LPARAM lParam)
@@ -311,16 +340,12 @@ void DEMO_APP::OnMouseMove(HWND hWnd, LPARAM lParam)
 	m_PrevMousePos = currMousePos;
 }
 
-//************************************************************
-//************ EXECUTION *************************************
-//************************************************************
-
 bool DEMO_APP::Run()
 {
 	Update();
 	camera.UpdateMatrices();
 
-	coreObjects.Clear();
+	m_CoreObjects.Clear();
 	
 	// Set Vertex and Index Buffers
 	m_VertexBuffer.PrepareVertexBuffer();
@@ -331,15 +356,50 @@ bool DEMO_APP::Run()
 	m_LightingShader.SetPixelShader();
 
 	// Set the Input Layout
-	coreObjects.GetContext()->IASetInputLayout(m_pInputLayout.p);
+	m_CoreObjects.GetContext()->IASetInputLayout(m_pInputLayout.p);
 
-	m_Box.Render(&coreObjects, &camera);
-	m_Ground.Render(&coreObjects, &camera);
+	RenderMultipass(&m_Box);
+	RenderMultipass(&m_Ground);
 
 	// Present To Screen
-	coreObjects.Present(PRESENT_VSYNC);
+	m_CoreObjects.Present(PRESENT_VSYNC);
 	
 	return true; 
+}
+
+void DEMO_APP::RenderMultipass(GameObject* pObject)
+{
+	RenderAmbientPass(pObject);
+
+	m_RenderController.SetBlendState(ADDITIVE_BLEND_MODE);
+	RenderDirectionalLightPass(pObject);
+	RenderPointLightPass(pObject);
+	RenderSpotLightPass(pObject);
+}
+
+void DEMO_APP::RenderAmbientPass(GameObject* pObject)
+{
+	m_RenderController.SetBlendState(NO_BLEND_MODE);
+	m_LightingShader.SetClassInstance("gAmbientLight", "gLight");
+	pObject->Render(&m_CoreObjects, &camera);
+}
+
+void DEMO_APP::RenderDirectionalLightPass(GameObject* pObject)
+{
+	m_LightingShader.SetClassInstance("gDirLight", "gLight");
+	pObject->Render(&m_CoreObjects, &camera);
+}
+
+void DEMO_APP::RenderPointLightPass(GameObject* pObject)
+{
+	m_LightingShader.SetClassInstance("gPointLight", "gLight");
+	pObject->Render(&m_CoreObjects, &camera);
+}
+
+void DEMO_APP::RenderSpotLightPass(GameObject* pObject)
+{
+	m_LightingShader.SetClassInstance("gSpotLight", "gLight");
+	pObject->Render(&m_CoreObjects, &camera);
 }
 
 void DEMO_APP::Update()
@@ -361,6 +421,16 @@ void DEMO_APP::Update()
 		camera.MoveUp(fElapsedTime);
 	else if(GetAsyncKeyState('Q'))
 		camera.MoveDown(fElapsedTime);
+
+	// removes camera choppiness as opposed to using the window proc.
+	if(m_bRButtonDown)
+	{
+		POINT mousePos;
+		GetCursorPos(&mousePos);
+		ScreenToClient(window, &mousePos);
+
+		OnMouseMove(window, LPARAM(mousePos.x | (mousePos.y << 16)));
+	}
 }
 
 //************************************************************
@@ -372,6 +442,7 @@ bool DEMO_APP::ShutDown()
 	SpotLight::ReleaseConstantBufferAndClassLinkage();
 	DirectionalLight::ReleaseConstantBufferAndClassLinkage();
 	PointLight::ReleaseConstantBufferAndClassLinkage();
+	AmbientLight::ReleaseConstantBufferAndClassLinkage();
 	ILight::ReleaseClassLinkage();
 
 	UnregisterClass( L"DirectXApplication", application ); 
@@ -419,6 +490,8 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 				
 				lockedMousePos.x = LOWORD(lParam);
 				lockedMousePos.y = HIWORD(lParam);
+
+				myApp.SetCurrentMousePos(lockedMousePos);
 			}
 			break;
 
@@ -428,11 +501,13 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 			}
 			break;
 
-		case WM_MOUSEMOVE:
+		// Causes camera movement to be very choppy when
+		// moving while turning. Hmmmm....
+		/*case WM_MOUSEMOVE:
 			{
 				myApp.OnMouseMove(hWnd, lParam);
 			}
-			break;
+			break;*/
     }
     return DefWindowProc( hWnd, message, wParam, lParam );
 }

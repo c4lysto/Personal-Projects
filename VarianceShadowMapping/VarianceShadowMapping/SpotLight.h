@@ -9,10 +9,10 @@ class SpotLight : public ILight
 {
 private:
 	Vec3f m_vPosition;
+	float m_fRadius;
 	Vec3f m_vDirection;
 	float m_fInnerConeRatio;
 	float m_fOuterConeRatio;
-	float m_fRadius;
 
 	static ID3D11Buffer* m_pSpotLightConstBuffer;
 	static ID3D11ClassInstance* m_pSpotLightClassInstance;

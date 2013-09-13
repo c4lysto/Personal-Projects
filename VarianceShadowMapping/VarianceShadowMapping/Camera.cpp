@@ -169,6 +169,7 @@ void Camera::RotateDown(double fElapsedTime)
 	m_bDirty = true;
 }
 
+#include <iostream>
 void Camera::RotateCameraMouseMovement(POINT movement, double fElapsedTime)
 {
 	if(movement.x)
@@ -192,10 +193,13 @@ void Camera::RotateCameraMouseMovement(POINT movement, double fElapsedTime)
 
 	if(movement.y)
 	{
-		m_mWorldMatrix.Rotate_LocalX_Radians(-movement.y * (float)fElapsedTime);//-MOUSE_ROTATION_SPEED * (float)fElapsedTime * movement.y);
+		m_mWorldMatrix.Rotate_LocalX_Radians(-movement.y * (float)fElapsedTime * 0.5f);//-MOUSE_ROTATION_SPEED * (float)fElapsedTime * movement.y);
 
 		m_bDirty = true;
 	}
+
+	std::cout << "Movement X: " << movement.x << "\t Y: " << movement.y << std::endl
+				<< "Elapsed Time: " << fElapsedTime << std::endl << std::endl;
 }
 
 // depth is a 0-1 value

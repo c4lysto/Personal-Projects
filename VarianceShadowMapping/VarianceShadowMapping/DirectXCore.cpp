@@ -56,7 +56,7 @@ bool DirectXCore::Initialize(HWND hWnd, unsigned short usWidth, unsigned short u
 
 	//DXGIGetDebugInterface(DXGI_DEBUG_ALL, (void**)&m_pDebugger);
 #else
-	if(FAILED(D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, NULL, NULL, NULL,
+	if(FAILED(D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, NULL, featureLevels, ARRAYSIZE(featureLevels),
 		D3D11_SDK_VERSION, &swapDesc, &m_pSwapChain, &m_pDevice, NULL, &m_pContext)))
 	{
 		MessageBox(NULL, L"Failed to Create the Device and Swap Chain", L"", MB_OK | MB_ICONERROR);
@@ -281,7 +281,7 @@ void DirectXCore::Clear(RenderTarget* const* pTargets, unsigned int unNumTargets
 	if(pTargets)
 	{
 		for(unsigned int i = 0; i < unNumTargets; ++i)
-			m_pTargetViews[i] = m_rtBackBuffer;
+			m_pTargetViews[i] = pTargets[i]->GetRenderTargetView();
 
 		m_pContext->OMSetRenderTargets(unNumTargets, m_pTargetViews, m_pDepthStencil);
 
