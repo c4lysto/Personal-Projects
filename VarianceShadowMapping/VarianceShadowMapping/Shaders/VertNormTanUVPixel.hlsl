@@ -4,7 +4,7 @@
 #include "ShaderDeclarations.hlsl"
 #include "Lights.hlsl"
 
-IBaseLight gLight;
+IBaseLight gLights;//[MAX_LIGHTS];
 
 float4 main(VERTNORMTANUV_OUT input) : SV_TARGET
 {
@@ -14,10 +14,17 @@ float4 main(VERTNORMTANUV_OUT input) : SV_TARGET
 	surfaceNormal = surfaceNormal * 2 - 1;
 	surfaceNormal = mul(surfaceNormal, input.tbn);
 
-	//lightAccumulation += gLight.CalculateDiffuseColor(input.worldPos, surfaceNormal);
-	//lightAccumulation += gLight.CalculateSpecularColor(input.worldPos, surfaceNormal);
+	float specularIntensity = SpecularTexture.Sample(WrapSampler, input.texCoord).r;
 
-	return objectColor * float4(gLight.CalculateLightAccumulation(input.worldPos, surfaceNormal, SpecularTexture.Sample(WrapSampler, input.texCoord).r), 1.0f);
+	float3 lightAccumulation = (float3)0;
+
+	//[unroll]
+	//for(unsigned int i = 0; i < MAX_LIGHTS; ++i)
+	//{
+		lightAccumulation += gLights/*[i]*/.CalculateLightAccumulation(input.worldPos, surfaceNormal, specularIntensity);
+	//}
+
+	return objectColor * float4(lightAccumulation, 1.0f);
 }
 
 #endif

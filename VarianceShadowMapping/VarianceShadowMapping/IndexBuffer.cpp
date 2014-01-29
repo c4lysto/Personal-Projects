@@ -37,15 +37,15 @@ void IndexBuffer::IncrementSize(unsigned int unNumIndices)
 
 	if(pOldBuffer)
 	{
-		D3D11_MAPPED_SUBRESOURCE oldBuff, newBuff;
+		// Copy old data into the new Index Buffer
 
-		ID3D11DeviceContext* pContext = m_pCore->GetContext();
+		D3D11_BOX copyRegion;
+		ZeroMemory(&copyRegion, sizeof(D3D11_BOX));
+		copyRegion.back = 1;
+		copyRegion.bottom = 1;
+		copyRegion.right = m_unNumIndicesUsed * sizeof(unsigned int);
 
-		pContext->Map(pOldBuffer, NULL, D3D11_MAP_READ, NULL, &oldBuff);
-		pContext->Map(m_pIndexBuffer, NULL, D3D11_MAP_WRITE, NULL, &newBuff);
-			memcpy(newBuff.pData, oldBuff.pData, m_unNumIndicesUsed * sizeof(unsigned int));
-		pContext->Unmap(m_pIndexBuffer, NULL);
-		pContext->Unmap(pOldBuffer, NULL);
+		m_pCore->GetContext()->CopySubresourceRegion(m_pIndexBuffer, 0, 0, 0, 0, pOldBuffer, 0, &copyRegion);
 
 		SAFE_RELEASE(pOldBuffer);
 	}
@@ -60,17 +60,12 @@ unsigned int IndexBuffer::AddIndices(const unsigned int* pIndices, unsigned int 
 
 	D3D11_MAPPED_SUBRESOURCE buff;
 	m_pCore->GetContext()->Map(m_pIndexBuffer, NULL, D3D11_MAP_WRITE_NO_OVERWRITE,  NULL, &buff);
-		memcpy((char*)buff.pData + m_unNumIndicesUsed * sizeof(unsigned int), pIndices, unNumIndices * sizeof(unsigned int));
+		memcpy((unsigned int*)buff.pData + m_unNumIndicesUsed, pIndices, unNumIndices * sizeof(unsigned int));
 	m_pCore->GetContext()->Unmap(m_pIndexBuffer, NULL);
 
 	m_unNumIndicesUsed += unNumIndices;
 
 	return unCurrOffset;
-}
-
-unsigned int IndexBuffer::AddIndices(const std::vector<unsigned int>& pIndices)
-{
-	return AddIndices(pIndices.data(), pIndices.size());
 }
 
 void IndexBuffer::PrepareIndexBuffer()

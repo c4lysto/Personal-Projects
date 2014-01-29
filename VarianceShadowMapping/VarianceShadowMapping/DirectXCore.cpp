@@ -1,6 +1,6 @@
 #include "DirectXCore.h"
 
-DirectXCore::DirectXCore(void)
+DirectXCore::DirectXCore(void) : m_unCurrNumRenderTargets(0)
 {
 #ifdef _DEBUG
 	m_pDebugger = nullptr;
@@ -17,9 +17,20 @@ DirectXCore::~DirectXCore(void)
 
 bool DirectXCore::Initialize(HWND hWnd, unsigned short usWidth, unsigned short usHeight, bool bWindowed)
 {
-	m_unScreenWidth = usWidth;
-	m_unScreenHeight = usHeight;
+	if(FAILED(CreateDeviceAndSwapChain(hWnd, bWindowed)))
+		return false;
 
+	InitBackBufferAndViewport(usWidth, usHeight);
+
+	InitDepthStencilBuffer(usWidth, usHeight);
+
+	InitRasterizer();
+
+	return true;
+}
+
+HRESULT DirectXCore::CreateDeviceAndSwapChain(HWND hWnd, bool bWindowed)
+{
 	DXGI_SWAP_CHAIN_DESC swapDesc;
 
 	ZeroMemory(&swapDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
@@ -46,29 +57,31 @@ bool DirectXCore::Initialize(HWND hWnd, unsigned short usWidth, unsigned short u
 		D3D_FEATURE_LEVEL_9_1,
 	};
 
+	HRESULT hr;
+
 #ifdef _DEBUG
-	if(FAILED(D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_DEBUG, featureLevels, ARRAYSIZE(featureLevels),
-		D3D11_SDK_VERSION, &swapDesc, &m_pSwapChain, &m_pDevice, NULL, &m_pContext)))
-	{
-		MessageBox(NULL, L"Failed to Create the Device and Swap Chain", L"", MB_OK | MB_ICONERROR);
-		return false;
-	}
+	hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_DEBUG, featureLevels, ARRAYSIZE(featureLevels),
+		D3D11_SDK_VERSION, &swapDesc, &m_pSwapChain, &m_pDevice, NULL, &m_pContext);
 
 	//DXGIGetDebugInterface(DXGI_DEBUG_ALL, (void**)&m_pDebugger);
 #else
-	if(FAILED(D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, NULL, featureLevels, ARRAYSIZE(featureLevels),
-		D3D11_SDK_VERSION, &swapDesc, &m_pSwapChain, &m_pDevice, NULL, &m_pContext)))
-	{
-		MessageBox(NULL, L"Failed to Create the Device and Swap Chain", L"", MB_OK | MB_ICONERROR);
-		return false;
-	}
+	hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, NULL, featureLevels, ARRAYSIZE(featureLevels),
+		D3D11_SDK_VERSION, &swapDesc, &m_pSwapChain, &m_pDevice, NULL, &m_pContext);
 #endif
 
-#pragma region Create BackBuffer
+	if(FAILED(hr))
+		MessageBox(NULL, L"Failed to Create the Device and Swap Chain", L"", MB_OK | MB_ICONERROR);
+
+	return hr;
+}
+
+void DirectXCore::InitBackBufferAndViewport(unsigned short usWidth, unsigned short usHeight)
+{
 	ID3D11Texture2D* pBackBuffer;
 	m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
 
 	m_rtBackBuffer.Create(this, pBackBuffer);
+	SetRenderTargets(nullptr);
 
 	ZeroMemory(&m_Viewport, sizeof(D3D11_VIEWPORT));
 
@@ -80,71 +93,65 @@ bool DirectXCore::Initialize(HWND hWnd, unsigned short usWidth, unsigned short u
 	m_Viewport.MaxDepth = 1.0f;
 
 	m_pContext->RSSetViewports(1, &m_Viewport);
-#pragma endregion
 
-#pragma region Create Depth Stencil
-	D3D11_TEXTURE2D_DESC desc;
-	ZeroMemory(&desc, sizeof(D3D11_TEXTURE2D_DESC));
-	desc.Width = m_unScreenWidth;
-	desc.Height = m_unScreenHeight;
-	desc.MipLevels = 1;
-	desc.ArraySize = 1;
-	desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	desc.SampleDesc.Count = 1;
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	desc.MiscFlags = 0;
+	SetViewports(NULL);
 
-	ID3D11Texture2D* pDepthStencilTexture;
-	if(FAILED(m_pDevice->CreateTexture2D(&desc, NULL, &pDepthStencilTexture)))
+	D3D11_BUFFER_DESC shaderBuffDesc;
+	ZeroMemory(&shaderBuffDesc, sizeof(D3D11_BUFFER_DESC));
+	shaderBuffDesc.Usage = D3D11_USAGE_DYNAMIC;
+	shaderBuffDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	shaderBuffDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	shaderBuffDesc.ByteWidth = sizeof(PostProcessData);
+
+	if(FAILED(m_pDevice->CreateBuffer(&shaderBuffDesc, 0, &m_pPostProcessConstBuffer.p)))
 	{
-		MessageBox(NULL, L"Failed to Create the Depth Buffer Texture", L"", MB_OK | MB_ICONERROR);
-		return false;
+		MessageBox(NULL, L"Failed to create Post-Process Constant Buffer" , L"", MB_OK | MB_ICONERROR);
+		return;
 	}
 
-	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilDesc;
-	ZeroMemory(&depthStencilDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
-	depthStencilDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthStencilDesc.Texture2D.MipSlice = 0;
+	m_pContext->CSSetConstantBuffers(POSTPROCESS_REGISTER, 1, &m_pPostProcessConstBuffer.p);
+	m_pContext->GSSetConstantBuffers(POSTPROCESS_REGISTER, 1, &m_pPostProcessConstBuffer.p);
 
-	if(FAILED(m_pDevice->CreateDepthStencilView(pDepthStencilTexture, &depthStencilDesc, &m_pDepthStencil)))
-	{
-		MessageBox(NULL, L"Failed to Create the Depth Buffer View", L"", MB_OK | MB_ICONERROR);
-		return false;
-	}
+	SetPostProcessDetails();
+}
+
+void DirectXCore::InitDepthStencilBuffer(unsigned short usWidth, unsigned short usHeight)
+{
+	m_DepthStencil.Create(m_pDevice, usWidth, usHeight);
+	SetDepthStencilTarget(nullptr);
+
+	CommitRenderTargetAndDepthStencil();
 
 	D3D11_DEPTH_STENCIL_DESC dsDesc;
-	// disable depth buffer since we are drawing particles
 	dsDesc.DepthEnable = TRUE;
 	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
 
-	dsDesc.StencilEnable = true;
-	dsDesc.StencilReadMask = 0xFF;
-	dsDesc.StencilWriteMask = 0xFF;
+	dsDesc.StencilEnable = FALSE;
+	dsDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+	dsDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
 
 	dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
 	dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
 	dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
 	dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
 	dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
 	dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
 	if(FAILED(m_pDevice->CreateDepthStencilState(&dsDesc, &m_pDepthStencilState.p)))
 	{
 		MessageBox(NULL, L"Failed to Create the DepthStencil State", L"", MB_OK | MB_ICONERROR);
-		return false;
+		return;
 	}
 
-	m_pContext->OMSetDepthStencilState(m_pDepthStencilState.p, 1);
+	m_pContext->OMSetDepthStencilState(m_pDepthStencilState.p, 0);
+}
 
-#pragma endregion
-
-#pragma region Create Rasterizer Desc (Default Values according to MSDN)
+void DirectXCore::InitRasterizer()
+{
 	m_RasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	m_RasterizerDesc.CullMode = D3D11_CULL_BACK;
 	m_RasterizerDesc.FrontCounterClockwise = FALSE;
@@ -159,14 +166,28 @@ bool DirectXCore::Initialize(HWND hWnd, unsigned short usWidth, unsigned short u
 	if(FAILED(m_pDevice->CreateRasterizerState(&m_RasterizerDesc, &m_pRasterizerState.p)))
 	{
 		MessageBox(NULL, L"Failed to Create the Rasterizer State", L"", MB_OK | MB_ICONERROR);
-		return false;
+		return;
 	}
 
 	m_pContext->RSSetState(m_pRasterizerState.p);
-#pragma endregion
-
-	return true;
 }
+
+void DirectXCore::SetPostProcessDetails(unsigned int unWidth, unsigned int unHeight)
+{
+	m_PostProcessData.m_unScreenWidth = unWidth ? unWidth : unsigned int(m_Viewport.Width);
+	m_PostProcessData.m_unScreenHeight = unHeight ? unHeight : unsigned int(m_Viewport.Height);
+	m_PostProcessData.m_unPixelsPerThread = (m_PostProcessData.m_unScreenWidth * m_PostProcessData.m_unScreenHeight) / D3D11_CS_THREAD_GROUP_MAX_THREADS_PER_GROUP;
+
+	if(m_PostProcessData.m_unPixelsPerThread % D3D11_CS_THREAD_GROUP_MAX_THREADS_PER_GROUP)
+		m_PostProcessData.m_unPixelsPerThread += 1;
+
+	D3D11_MAPPED_SUBRESOURCE postProcessSubresource;
+
+	m_pContext->Map(m_pPostProcessConstBuffer.p, 0, D3D11_MAP_WRITE_DISCARD, 0, &postProcessSubresource);
+		memcpy(postProcessSubresource.pData, &m_PostProcessData, sizeof(PostProcessData));
+	m_pContext->Unmap(m_pPostProcessConstBuffer.p, 0);
+}
+
 void DirectXCore::ChangeRasterizerState(RasterizerStateEnum eState, ...)
 {
 	va_list args;
@@ -271,35 +292,53 @@ void DirectXCore::CommitRasterizerChanges()
 	m_pContext->RSSetState(m_pRasterizerState.p);
 }
 
-void DirectXCore::Clear(RenderTarget* const* pTargets, unsigned int unNumTargets, UINT unClearFlags, 
-								float fClearDepth, UINT8 unStencilClear, XMFLOAT4 color)
+void DirectXCore::SetRenderTargets(/*const */ID3D11RenderTargetView*/*RenderTarget*/* pTargets, unsigned int unNumTargets)
 {
-	//D3D11_RECT scissorRect = {m_Viewport.TopLeftX, m_Viewport.TopLeftY, m_Viewport.Width, m_Viewport.Height};
-	//m_pContext->RSSetScissorRects(1, &scissorRect);
-
-	// is binding and setting the clear Rects Necessary???
 	if(pTargets)
 	{
-		for(unsigned int i = 0; i < unNumTargets; ++i)
-			m_pTargetViews[i] = pTargets[i]->GetRenderTargetView();
+		unsigned int currTarget = 0;
+		m_unCurrNumRenderTargets = unNumTargets;
+		for( ; currTarget < unNumTargets && currTarget < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; ++currTarget)
+		{
+			m_pTargetViews[currTarget] = pTargets[currTarget];// .GetRenderTargetView();
+		}
 
-		m_pContext->OMSetRenderTargets(unNumTargets, m_pTargetViews, m_pDepthStencil);
-
-		for(unsigned int i = 0; i < unNumTargets; ++i)
-			m_pContext->ClearRenderTargetView(m_pTargetViews[i], (const float*)&color);
+		if(currTarget < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT)
+		{
+			do
+			{
+				m_pTargetViews[currTarget++] = nullptr;
+			}
+			while(currTarget < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT);
+		}
 	}
 	else
 	{
-		ID3D11RenderTargetView* const pBackBuffer = m_rtBackBuffer.GetRenderTargetView();
-		m_pContext->OMSetRenderTargets(1, &pBackBuffer, m_pDepthStencil);
+		m_pTargetViews[0] = m_rtBackBuffer.GetRenderTargetView();
+		m_unCurrNumRenderTargets = 1;
 
-		m_pContext->ClearRenderTargetView(m_rtBackBuffer, (const float*)&color);
-	}	
+		for(unsigned int i = 1; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
+		{
+			m_pTargetViews[i] = nullptr;
+		}
+	}
+}
 
-	m_pContext->ClearDepthStencilView(m_pDepthStencil, unClearFlags, fClearDepth, unStencilClear);
+void DirectXCore::Clear(unsigned int unTargetClearFlags, UINT unDSClearFlags, float fClearDepth, UINT8 unClearStencil, const Vec4f color)
+{
+	if((unTargetClearFlags & CLEAR_RENDER_TARGETS))
+	{
+		for(unsigned int i = 0; i < m_unCurrNumRenderTargets; ++i)
+			m_pContext->ClearRenderTargetView(m_pTargetViews[i], color.vector);
+	}
+
+	// if we are supposed to clear the 
+	if(unTargetClearFlags & CLEAR_DS_BUFFER)
+		m_pContext->ClearDepthStencilView(m_pCurrDepthStencil->GetDepthStencilView(), unDSClearFlags, fClearDepth, unClearStencil);
 }
 
 void DirectXCore::Present(UINT syncInterval, UINT flags)
 {
-	m_pSwapChain->Present(syncInterval, flags);
+	if(DXGI_STATUS_OCCLUDED == m_pSwapChain->Present(syncInterval, flags))
+	{}//Sleep(500);
 }

@@ -21,28 +21,32 @@ class Camera
 private:
 	struct ShaderCameraBuffer
 	{
+		Matrix4f m_mViewMatrix;
 		Matrix4f m_mViewProjectionMatrix;
 		Vec3f m_CameraPos;
 		float m_fFillData;
+		Vec3f m_ViewDir;
+		float m_fFillData2;
 	};
 
 	struct ShaderObjectBuffer
 	{
 		Matrix4f m_mMVPMatrix;
+		Matrix4f m_mModelViewMatrix;
 		Matrix4f m_mWorldMatrix;
 	};
 
 private:
 	Matrix4f m_mWorldMatrix;
-	Matrix4f m_mViewMatrix;
 	Matrix4f m_mProjectionMatrix;
+
+	Frustum m_Frustum;
 
 	CComPtr<ID3D11Buffer> m_pCameraConstBuffer;
 	CComPtr<ID3D11Buffer> m_pObjectConstBuffer;
 
 	ShaderCameraBuffer m_ShaderCameraBuffer;
 	ShaderObjectBuffer m_ShaderObjectBuffer;
-	Vec3f m_vPrevPos;
 	DirectXCore* m_pCore;
 	float m_fNearClip;
 	float m_fFarClip;
@@ -62,14 +66,16 @@ public:
 	inline float GetFarClip() const	{return m_fFarClip;}
 
 	inline const Matrix4f& GetWorldMatrix()	const {return m_mWorldMatrix;}
-	//inline const Vec3f& GetCameraPos() const	{return m_mWorldMatrix.wAxis;}
-	inline const Matrix4f& GetViewMatrix() const	{return m_mViewMatrix;}
+	inline const Vec3f& GetCameraPos() const	{return m_mWorldMatrix.position;}
+	inline const Matrix4f& GetViewMatrix() const	{return m_ShaderCameraBuffer.m_mViewMatrix;}
 	inline const Matrix4f& GetProjectionMatrix() const {return m_mProjectionMatrix;}
 	inline const Matrix4f& GetViewProjectionMatrix() const {return m_ShaderCameraBuffer.m_mViewProjectionMatrix;}
 	//inline const Matrix4f GetInvViewProjMatrix() const	{return MatrixInverse(m_mViewProjectionMatrix);}
-	//inline Frustum GetFrustum() const{return m_frFrustum;}
+	inline const Frustum& GetFrustum() const {return m_Frustum;}
 	inline float GetFOV() const	{ return m_fFOV; }
 	float GetAspectRatio() const;
+
+	void SetShaderObjectBuffer(const Matrix4f& mWorldMatrix, const Matrix4f& mViewMatrix, const Matrix4f& mVPMatrix);
 
 	const CComPtr<ID3D11Buffer>& GetCamConstBuff() const {return m_pCameraConstBuffer;}
 	//Vec3f GetCameraMovement() const {return m_mWorldMatrix.position - m_vPrevPos;}
@@ -80,11 +86,11 @@ public:
 	inline void SetNearClip(float fNearClip) {m_fNearClip = fNearClip; m_bDirty = true;}
 	inline void SetFarClip(float fFarClip) {m_fFarClip = fFarClip; m_bDirty = true;}
 
-	/*inline void SetPosition(float fX, float fY, float fZ) 
+	inline void SetPosition(float fX, float fY, float fZ) 
 	{m_mWorldMatrix.position.x = fX;
 	 m_mWorldMatrix.position.y = fY;
 	 m_mWorldMatrix.position.z = fZ; m_bDirty = true;}
-	inline void SetPosition(const Vec3f& pos) {m_mWorldMatrix.position = pos; m_bDirty = true;}*/
+	inline void SetPosition(const Vec3f& pos) {m_mWorldMatrix.position = pos; m_bDirty = true;}
 
 	void MoveForward(double fElapsedTime);
 	void MoveBackward(double fElapsedTime);

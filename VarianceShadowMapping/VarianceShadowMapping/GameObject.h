@@ -6,12 +6,10 @@ using namespace RMMath;
 
 #include "Model.h"
 
-class Camera;
-
 class GameObject
 {
 private:
-	Model m_Model;
+	Model* m_pModel;
 	Matrix4f m_Matrix;
 	Vec3f m_Velocity;
 
@@ -19,13 +17,17 @@ public:
 	GameObject(void);
 	~GameObject(void);
 
-	Model* GetModel() {return &m_Model;}
+	bool LoadModel(const char* szFilename, DirectXCore* pCore, VertexBuffer* pVertexBuffer, IndexBuffer* pIndexBuffer);
+
+	Model* GetModel() const {return m_pModel;}
+	void SetModel(Model* pModel) { if(m_pModel) m_pModel->Release();  m_pModel = pModel; if(m_pModel) m_pModel->AddRef(); }
 
 	Matrix4f& GetMatrix() {return m_Matrix;}
 
 	void Update(float fElapsedTime);
 
-	void Render(DirectXCore* pCore, Camera* pCam);
+	void RenderIndexed(DirectXCore* pCore);
+	void RenderIndexedNoTex(DirectXCore* pCore);
 };
 
 #endif

@@ -30,9 +30,9 @@ public:
 	PixelShaderDynamic(void);
 	~PixelShaderDynamic(void);
 
-	virtual HRESULT CreatePixelShader(ID3D11DeviceContext* pContext, ID3D11Device* pDevice, const void* pShaderBytecode, SIZE_T unBytecodeLength);
+	virtual HRESULT CreatePixelShader(ID3D11Device* pDevice, const void* pShaderBytecode, SIZE_T unBytecodeLength);
 
-	UINT AddInterfaceByName(LPCSTR szAbstractObjectName);
+	UINT AddInterfaceByName(LPCSTR szAbstractObjectName, UINT unArrayIndex = 0);
 
 	void SetClassInstance(LPCSTR szShaderObjectName, LPCSTR szAbstractObjectName, UINT unInstanceIndex = 0);
 	void SetClassInstance(LPCSTR szShaderObjectName, unsigned int unIndex, UINT unInstanceIndex = 0);

@@ -628,14 +628,14 @@ inline Matrix4f& Matrix4f::MakeOrthographic(float fWidth, float fHeight, float f
 {
 #ifdef SSE_MATH_AVAILABLE
 	_mm_storeu_ps(m, _mm_setr_ps(2 / fWidth, 0, 0, 0));
-	_mm_storeu_ps(m, _mm_setr_ps(0, 2 / fHeight, 0, 0));
-	_mm_storeu_ps(m, _mm_setr_ps(0, 0, 1 / (fFar - fNear), 0));
-	_mm_storeu_ps(m, _mm_setr_ps(0, 0, fNear / (fNear - fFar), 1));
+	_mm_storeu_ps(m + 4, _mm_setr_ps(0, 2 / fHeight, 0, 0));
+	_mm_storeu_ps(m + 8, _mm_setr_ps(0, 0, 1 / (fFar - fNear), 0));
+	_mm_storeu_ps(m + 12, _mm_setr_ps(0, 0, -fNear / (fFar - fNear), 1));
 #else
 	Xx = 2 / fWidth; Xy = Xz = Xw = 0;
 	Yx = 0; Yy = 2 / fHeight; Yz = yW = 0;
-	Zx = Zy = 0; Zz = 1 / (fFar - fNear); Zw = 1;
-	Wx = Wy = 0; Wz = fNear / (fNear - fFar); Ww = 1;
+	Zx = Zy = 0; Zz = 1 / (fFar - fNear); Zw = 0;
+	Wx = Wy = 0; Wz = -fNear / (fFar - fNear); Ww = 1;
 #endif
 	return *this;
 }
@@ -649,6 +649,23 @@ inline Matrix4f& Matrix4f::OrthoNormalInvert()
 	Wx = -DotProduct(tmp.position, tmp.xAxis);
 	Wy = -DotProduct(tmp.position, tmp.yAxis);
 	Wz = -DotProduct(tmp.position, tmp.zAxis);
+
+	return *this;
+}
+
+inline Matrix4f& Matrix4f::MakeTextureMatrixOffsetLH(unsigned int unWidth, unsigned int unHeight)
+{
+#ifdef SSE_MATH_AVAILABLE
+	_mm_storeu_ps(m, _mm_setr_ps(0.5f, 0.0f, 0.0f, 0.0f));
+	_mm_storeu_ps(m + 4, _mm_setr_ps(0.0f, -0.5f, 0.0f, 0.0f));
+	_mm_storeu_ps(m + 8, _mm_setr_ps(0.0f, 0.0f, 1.0f, 0.0f));
+	_mm_storeu_ps(m + 12, _mm_setr_ps(0.5f + (0.5f / unWidth), 0.5f + (0.5f / unHeight), 0.0f, 1.0f));
+#else
+	Xx = 0.5f; Xy = Xz = Xw = 0;
+	Yx = 0; Yy = -0.5f; Yz = yW = 0;
+	Zx = Zy = 0; Zz = 1; Zw = 0;
+	Wx = 0.5f + (0.5f / unWidth); Wy = 0.5f + (0.5f / unHeight); Wz = 0.0f; Ww = 1;
+#endif
 
 	return *this;
 }

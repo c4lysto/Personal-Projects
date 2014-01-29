@@ -5,7 +5,7 @@ using namespace VertexDecl;
 
 #include <fstream>
 
-Model::Model(void)
+Model::Model(void) : m_unRefCount(1)
 {
 
 }
@@ -15,14 +15,27 @@ Model::~Model(void)
 
 }
 
-void Model::Render(DirectXCore* pCore)
+void Model::RenderIndexed(DirectXCore* pCore)
 {
 	for(size_t i = 0; i < m_vMeshes.size(); ++i)
 	{
-		Mesh& currMesh = m_vMeshes[i];
+		const Mesh& currMesh = m_vMeshes[i];
 
-		// Set the Textures for the Pixel Shader
+		// Set the Textures for the Pixel Shader and Domain Shader
+		currMesh.SetDSTextureSRVs(pCore);
 		currMesh.SetPSTextureSRVs(pCore);
+
+		pCore->GetContext()->IASetPrimitiveTopology(currMesh.GetTopologyType());
+
+		pCore->GetContext()->DrawIndexed(currMesh.GetNumIndices(), currMesh.GetIndexOffset(), currMesh.GetVertexOffset());
+	}
+}
+
+void Model::RenderIndexedNoTex(DirectXCore* pCore)
+{
+	for(size_t i = 0; i < m_vMeshes.size(); ++i)
+	{
+		const Mesh& currMesh = m_vMeshes[i];
 
 		pCore->GetContext()->IASetPrimitiveTopology(currMesh.GetTopologyType());
 

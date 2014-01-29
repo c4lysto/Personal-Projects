@@ -30,18 +30,18 @@ void VertexBuffer::IncrementSize(unsigned int unNumVerts)
 	buffDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 	m_pCore->GetDevice()->CreateBuffer(&buffDesc, NULL, &m_pVertexBuffer);
-
+	
 	if(pOldBuffer)
 	{
-		D3D11_MAPPED_SUBRESOURCE oldBuff, newBuff;
+		// Copy old data into the new Vertex Buffer
 
-		ID3D11DeviceContext* pContext = m_pCore->GetContext();
+		D3D11_BOX copyRegion;
+		ZeroMemory(&copyRegion, sizeof(D3D11_BOX));
+		copyRegion.back = 1;
+		copyRegion.bottom = 1;
+		copyRegion.right = m_unNumVertsUsed * m_unDeclSize;
 
-		pContext->Map(pOldBuffer, NULL, D3D11_MAP_READ, NULL, &oldBuff);
-		pContext->Map(m_pVertexBuffer, NULL, D3D11_MAP_WRITE, NULL, &newBuff);
-			memcpy(newBuff.pData, oldBuff.pData, m_unNumVertsUsed * m_unDeclSize);
-		pContext->Unmap(m_pVertexBuffer, NULL);
-		pContext->Unmap(pOldBuffer, NULL);
+		m_pCore->GetContext()->CopySubresourceRegion(m_pVertexBuffer, 0, 0, 0, 0, pOldBuffer, 0, &copyRegion);
 
 		SAFE_RELEASE(pOldBuffer);
 	}
@@ -56,7 +56,7 @@ unsigned int VertexBuffer::AddVerts(void* pVerts, unsigned int unNumVerts)
 
 	D3D11_MAPPED_SUBRESOURCE buff;
 	m_pCore->GetContext()->Map(m_pVertexBuffer, NULL, D3D11_MAP_WRITE_NO_OVERWRITE,  NULL, &buff);
-		memcpy((char*)buff.pData + m_unNumVertsUsed * m_unDeclSize, pVerts, unNumVerts * m_unDeclSize);
+	memcpy((char*)buff.pData + m_unNumVertsUsed * m_unDeclSize, pVerts, unNumVerts * m_unDeclSize);
 	m_pCore->GetContext()->Unmap(m_pVertexBuffer, NULL);
 
 	m_unNumVertsUsed += unNumVerts;

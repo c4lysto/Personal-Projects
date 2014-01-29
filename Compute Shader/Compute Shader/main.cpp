@@ -56,8 +56,10 @@ using namespace DirectX;
 #define MAX_PARTICLES 1024000
 #define MAX_COMPUTE_THREADS D3D11_CS_THREAD_GROUP_MAX_THREADS_PER_GROUP
 
-#define PARTICLE_FADE_TIME 3.0f
+#define PARTICLE_FADE_TIME 20.0f
 #define FAST_CAMERA_MODIFIER 3.0f
+
+#define GRAVITY_OFFSET 50.0f
 
 //************************************************************
 //************ SIMPLE WINDOWS APP CLASS **********************
@@ -78,13 +80,8 @@ private:
 	{
 		Vec4f color;
 		Vec3f position;
-		Vec3f velocity;
-	};
-
-	struct ParticleVertex
-	{
-		Vec4f color;
-		Vec3f position;
+		Vec3f prevPos;
+		Vec3f force;
 	};
 
 private:
@@ -128,11 +125,13 @@ public:
 	
 	DEMO_APP() {}
 	void Initialize(HINSTANCE hinst, WNDPROC proc);
-	void OnMouseMove(HWND hWnd, LPARAM lParam);
+	void OnMouseMove();
 	void Explode(LPARAM lParam);
 	void ResetParticleFadeTimer();
 	bool Run();
 	bool ShutDown();
+
+	void SetCurrentMousePos(POINT mousePos) {m_PrevMousePos = mousePos;}
 };
 
 DEMO_APP myApp;
@@ -174,7 +173,7 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 
 	coreObjects.Initialize(window, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT, true);
 	renderController.Initialize(&coreObjects);
-	camera.Initialize(&coreObjects, DEG_TO_RAD(42.0f), 0.1f, 200.0f);
+	camera.Initialize(&coreObjects, DEG_TO_RAD(42.0f), 0.1f, 500.0f);
 	m_fParticleFadeTimer = PARTICLE_FADE_TIME;
 
 	D3D11_BUFFER_DESC shaderConstBuffDesc;
@@ -198,14 +197,16 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 		particles[i].position.y = (rand() % 1501 - 500) * 0.01f;
 		particles[i].position.z = (rand() % 1501 - 500) * 0.01f;
 
+		particles[i].prevPos = particles[i].position;
+
 		particles[i].color.x = (rand() % 101 + 1) * 0.01f;
 		particles[i].color.y = (rand() % 101 + 1) * 0.01f;
 		particles[i].color.z = (rand() % 101 + 1) * 0.01f;
 		particles[i].color.w = 1.0f;
 
-		particles[i].velocity.x = (rand() % 501 - 250) * 0.01f;
-		particles[i].velocity.y = (rand() % 501 - 250) * 0.01f;
-		particles[i].velocity.z = (rand() % 501 - 250) * 0.01f;
+		particles[i].force.x = (rand() % 501 - 250) * 0.1f;
+		particles[i].force.y = (rand() % 501 - 250) * 0.1f;
+		particles[i].force.z = (rand() % 501 - 250) * 0.1f;
 	}
 	
 	// TODO: PART 2 STEP 7
@@ -226,7 +227,7 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 		MessageBox(window, L"Failed to create ParticleFloat Shader", L"", MB_OK | MB_ICONERROR);
 
 	if(FAILED(coreObjects.GetDevice()->CreateComputeShader(ExplodeCS, ARRAYSIZE(ExplodeCS), NULL, &pExplodeCS.p)))
-		MessageBox(window, L"Failed to create ParticleFloat Shader", L"", MB_OK | MB_ICONERROR);
+		MessageBox(window, L"Failed to create Explode Shader", L"", MB_OK | MB_ICONERROR);
 
 	// TODO: PART 2 STEP 8a
 	D3D11_INPUT_ELEMENT_DESC vLayout[] = VERTCLR_LAYOUT;
@@ -292,42 +293,42 @@ void DEMO_APP::Initialize(HINSTANCE hinst, WNDPROC proc)
 	timer.Restart();
 }
 
-void DEMO_APP::OnMouseMove(HWND hWnd, LPARAM lParam)
+void DEMO_APP::OnMouseMove()
 {
-	POINT currMousePos = {LOWORD(lParam), HIWORD(lParam)};
+	POINT ptCurrMousePos;
+	GetCursorPos(&ptCurrMousePos);
 
 	if(m_bRButtonDown)
 	{
-		POINT mouseMovement = {m_PrevMousePos.x - currMousePos.x, m_PrevMousePos.y - currMousePos.y};
+		POINT mouseMovement = {m_PrevMousePos.x - ptCurrMousePos.x, m_PrevMousePos.y - ptCurrMousePos.y};
 
 		camera.RotateCameraMouseMovement(mouseMovement, timer.Delta());
 
 		POINT screenPos = lockedMousePos;
-		ClientToScreen(hWnd, &screenPos);
 		SetCursorPos(screenPos.x, screenPos.y);
 
 		m_PrevMousePos = lockedMousePos;
 
 		return;
 	}
-	else if(m_bLButtonDown)
+	if(m_bLButtonDown)
 	{
-		Vec3f result = camera.Unproject(currMousePos);
+		POINT ptClientPos = ptCurrMousePos;
+		ScreenToClient(window, &ptClientPos);
+		Vec3f result = camera.Unproject(ptCurrMousePos);
 
 		result.normalize();// = XMVector4Normalize(result);
 
 		//XMStoreFloat3(&m_GameConstBuffer.CameraToGravity, result);
 		m_GameConstBuffer.CameraToGravity = result;
 
-		result *= 40.0f;
+		result *= GRAVITY_OFFSET;
 
 		// camera pos
 		result += camera.GetWorldMatrix().position;
 
 		m_GameConstBuffer.gravityPos = result;
 	}
-		
-	m_PrevMousePos = currMousePos;
 }
 
 void DEMO_APP::ResetParticleFadeTimer()
@@ -337,9 +338,9 @@ void DEMO_APP::ResetParticleFadeTimer()
 
 void DEMO_APP::UpdateGameConstBuff()
 {
-	if(m_bLButtonDown)
+	//if(m_bLButtonDown)
 		m_GameConstBuffer.fElapsedTime = (float)timer.Delta();
-	else if(m_fParticleFadeTimer > 0.0f)
+	/*else if(m_fParticleFadeTimer > 0.0f)
 	{
 		m_fParticleFadeTimer = max(m_fParticleFadeTimer - (float)timer.Delta(), 0.0f);
 
@@ -347,7 +348,7 @@ void DEMO_APP::UpdateGameConstBuff()
 			int x = 0;
 
 		m_GameConstBuffer.fElapsedTime = (float)timer.Delta() * (m_fParticleFadeTimer / PARTICLE_FADE_TIME);
-	}
+	}*/
 
 	m_GameConstBuffer.GameTime = GetTickCount();
 
@@ -379,10 +380,10 @@ bool DEMO_APP::Run()
 	}
 	else
 	{
-		if(m_fParticleFadeTimer > 0.0f)
+		//if(m_fParticleFadeTimer > 0.0f)
 			coreObjects.GetContext()->CSSetShader(pParticleFloatCS.p, 0, 0);
-		else
-			coreObjects.GetContext()->CSSetShader(NULL, 0, 0);
+		//else
+			//coreObjects.GetContext()->CSSetShader(NULL, 0, 0);
 	}
 
 	UINT threadgroups = MAX_PARTICLES / MAX_COMPUTE_THREADS;
@@ -444,7 +445,7 @@ void DEMO_APP::Explode(LPARAM lParam)
 	//XMStoreFloat3(&m_GameConstBuffer.CameraToGravity, result);
 	m_GameConstBuffer.CameraToGravity = result;
 
-	result *= 20.0f;
+	result *= GRAVITY_OFFSET;
 
 	// camera pos
 	result += camera.GetWorldMatrix().position;
@@ -469,6 +470,8 @@ void DEMO_APP::Update()
 {
 	timer.Signal();
 	double fElapsedTime = timer.Delta();
+
+	OnMouseMove();
 
 	UpdateGameConstBuff();
 
@@ -543,6 +546,10 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 				
 				lockedMousePos.x = LOWORD(lParam);
 				lockedMousePos.y = HIWORD(lParam);
+
+				ClientToScreen(hWnd, &lockedMousePos);
+
+				myApp.SetCurrentMousePos(lockedMousePos);
 			}
 			break;
 
@@ -555,7 +562,6 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 		case WM_LBUTTONDOWN:
 			{
 				m_bLButtonDown = true;
-				myApp.OnMouseMove(hWnd, lParam);
 			}
 			break;
 
@@ -569,12 +575,6 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 		case WM_MBUTTONDOWN:
 			{
 				myApp.Explode(lParam);
-			}
-			break;
-
-		case WM_MOUSEMOVE:
-			{
-				myApp.OnMouseMove(hWnd, lParam);
 			}
 			break;
 

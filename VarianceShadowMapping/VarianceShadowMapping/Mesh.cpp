@@ -43,6 +43,9 @@ Mesh& Mesh::operator=(const Mesh& rhs)
 {
 	if(this != &rhs)
 	{
+		if(m_pPrimitiveData)
+			m_pPrimitiveData->Release();
+
 		m_pPrimitiveData = rhs.m_pPrimitiveData;
 
 		if(m_pPrimitiveData)
@@ -97,7 +100,7 @@ bool Mesh::LoadMesh(std::ifstream& inFile, DirectXCore* pCore, VertexBuffer* pVe
 			std::wstringstream szTextureLoadFile;
 			szTextureLoadFile << "Textures/" << szTextureName;
 
-			ID3D11ShaderResourceView* pTextureSRV;
+			ID3D11ShaderResourceView* pTextureSRV = NULL;
 			CreateDDSTextureFromFile(pCore->GetDevice(), szTextureLoadFile.str().c_str(), NULL, &pTextureSRV);
 
 			//	Will Change when the Exporter is changed |

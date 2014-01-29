@@ -192,9 +192,9 @@ void Camera::RotateCameraMouseMovement(POINT movement, double fElapsedTime)
 		//XMStoreFloat(&fDotProduct, XMVector3Dot(m_mWorldMatrix.toXMMatrix().r[1], XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
 
 		if(fDotProduct > 0.0f)
-			m_mWorldMatrix.Rotate_GlobalY_Radians(-MOUSE_ROTATION_SPEED * fElapsedTime * movement.x);
+			m_mWorldMatrix.Rotate_GlobalY_Radians(-movement.x * (float)fElapsedTime * 0.5f);
 		else
-			m_mWorldMatrix.Rotate_GlobalY_Radians(MOUSE_ROTATION_SPEED * fElapsedTime * movement.x);
+			m_mWorldMatrix.Rotate_GlobalY_Radians(-movement.x * (float)fElapsedTime * 0.5f);
 
 		m_mWorldMatrix.position = tmpPos;
 
@@ -203,7 +203,7 @@ void Camera::RotateCameraMouseMovement(POINT movement, double fElapsedTime)
 
 	if(movement.y)
 	{
-		m_mWorldMatrix.Rotate_LocalX_Radians(-MOUSE_ROTATION_SPEED * fElapsedTime * movement.y);
+		m_mWorldMatrix.Rotate_LocalX_Radians(-movement.y * (float)fElapsedTime * 0.5f);
 
 		m_bDirty = true;
 	}

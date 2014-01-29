@@ -20,6 +20,8 @@ void* FileTranslator::creator()
 
 MStatus FileTranslator::writer(const MFileObject& file,  const MString& optionsString, FileAccessMode mode)
 {
+	m_vMeshes.clear();
+
 	switch(mode)
 	{
 	// export all
@@ -169,6 +171,9 @@ MStatus FileTranslator::ExportMesh(MDagPath& meshPath)
 
 	MFnMesh currMesh(meshPath, &status);
 
+	if(currMesh.isIntermediateObject())
+		return MStatus::kSuccess;
+
 	if(MStatus::kFailure == status)
 	{
 		cout << "Error: Failed to Acquire Mesh From Dag Path!" << endl;
@@ -249,7 +254,7 @@ MStatus FileTranslator::ExportMesh(MDagPath& meshPath)
 			vertex.Tz = tangents[tanIndex].z;
 
 			vertex.u = U[UVIndex];
-			vertex.v = V[UVIndex];
+			vertex.v = 1 - V[UVIndex];
 
 			for(unVertNum = 0; unVertNum < outMesh.m_vVertices.size(); ++unVertNum)
 			{

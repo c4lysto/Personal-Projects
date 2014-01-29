@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,7 +19,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -41,6 +41,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -88,11 +90,17 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\AmbientLight.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Camera.cpp" />
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\ComputeShader.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DDSTextureLoader.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DebugWindow.cpp" />
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DepthStencilTarget.cpp" />
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DepthStencilTargetCube.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DirectionalLight.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DirectXCore.cpp" />
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DomainShader.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\GameObject.cpp" />
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\GeometryShader.cpp" />
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\HullShader.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\ILight.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\IndexBuffer.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\main.cpp" />
@@ -103,7 +111,9 @@
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\PointLight.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\RenderController.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\RenderTarget.cpp" />
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\RenderTargetCube.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\SpotLight.cpp" />
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\UnorderedAccessView.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\VertexBuffer.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\VertexShader.cpp" />
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\XTime.cpp" />
@@ -111,14 +121,23 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\AmbientLight.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Camera.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\ComputeShader.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DDSTextureLoader.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DebugWindow.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DepthStencilTarget.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DepthStencilTargetCube.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DirectionalLight.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DirectXCore.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DomainShader.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\GameObject.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\GeometryShader.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\HullShader.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\PixelShader.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\PixelShaderDynamic.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\RenderTargetCube.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shader.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\SpotLight.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\UnorderedAccessView.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\VertexShader.h" />
     <ClInclude Include="ILight.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\IndexBuffer.h" />
@@ -132,15 +151,11 @@
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\XTime.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\VSMVertex.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-    </FxCompile>
-    <FxCompile Include="Shaders\VSMPixel.hlsl">
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\AmbientLightPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\Lights.hlsl">
+    <FxCompile Include="Shaders\Tessellation.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
@@ -148,9 +163,153 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\DirectionalLightVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\DynamicTessDistDS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Domain</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Domain</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\DynamicTessDistHS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Hull</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Hull</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\GaussianBlurCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\HorizontalBlurPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\HorizontalBlurVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\Lights.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PassThroughPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PassThroughScreenVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PointLightGS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PointLightShadowGS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PointLightShadowPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PointLightShadowVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PointLightVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PointToQuadGS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PostProcess.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\TessellationVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\SolidWireframeGS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\SunPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\SunVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\RadialBlurDecayPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
     <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\ShaderDeclarations.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\SkyDomePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\SkyDomeVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\SpotLightShadowPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\SpotLightVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\SpotLightShadowVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\DirectionalShadowPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\DirectionalShadowVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PointLightPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\SpotLightPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\DirectionalLightPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\VSMVertex.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\VSMPixel.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\VertNormTanUVPixel.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>

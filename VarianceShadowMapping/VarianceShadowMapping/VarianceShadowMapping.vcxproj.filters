@@ -25,6 +25,27 @@
     <Filter Include="Source Files\Lights">
       <UniqueIdentifier>{c5e371ae-6034-441e-bfb0-4e10f4f78cd2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Vertex Shaders">
+      <UniqueIdentifier>{c510a547-f655-4681-a9ed-97bafd6608ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Pixel Shaders">
+      <UniqueIdentifier>{b21df4c9-3454-4263-a1e7-acfbd8f517c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Hull Shaders">
+      <UniqueIdentifier>{3b778db7-167b-4b17-983b-e68580b95af2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Domain Shaders">
+      <UniqueIdentifier>{d337e907-3956-4225-bdf2-17346618cbe9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Compute Shaders">
+      <UniqueIdentifier>{689b4b77-ace5-42e7-9139-27f8631bc7ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Geometry Shaders">
+      <UniqueIdentifier>{7c33fb7e-46cf-4411-b8b9-05498aa087e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shader Headers">
+      <UniqueIdentifier>{9ae9a692-e3cd-4ff8-bdfd-ce5fd3ce7a97}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Camera.cpp">
@@ -89,6 +110,30 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\AmbientLight.cpp">
       <Filter>Source Files\Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DepthStencilTarget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\RenderTargetCube.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DepthStencilTargetCube.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\GeometryShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\UnorderedAccessView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\ComputeShader.cpp">
+      <Filter>Source Files\Shader Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\HullShader.cpp">
+      <Filter>Source Files\Shader Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DomainShader.cpp">
+      <Filter>Source Files\Shader Classes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -155,25 +200,148 @@
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\AmbientLight.h">
       <Filter>Header Files\Lights</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DepthStencilTarget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\RenderTargetCube.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DepthStencilTargetCube.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\GeometryShader.h">
+      <Filter>Header Files\Shader Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\UnorderedAccessView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\ComputeShader.h">
+      <Filter>Header Files\Shader Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\HullShader.h">
+      <Filter>Header Files\Shader Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\DomainShader.h">
+      <Filter>Header Files\Shader Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shader.h">
+      <Filter>Header Files\Shader Classes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\DirectionalLightVS.hlsl">
+      <Filter>Resource Files\Vertex Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\DirectionalShadowVS.hlsl">
+      <Filter>Resource Files\Vertex Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PointLightShadowVS.hlsl">
+      <Filter>Resource Files\Vertex Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PointLightVS.hlsl">
+      <Filter>Resource Files\Vertex Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\SkyDomeVS.hlsl">
+      <Filter>Resource Files\Vertex Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\SpotLightShadowVS.hlsl">
+      <Filter>Resource Files\Vertex Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\SpotLightVS.hlsl">
+      <Filter>Resource Files\Vertex Shaders</Filter>
+    </FxCompile>
     <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\VertNormTanUVTransformedVertex.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\ShaderDeclarations.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\VertNormTanUVPixel.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\Lights.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\VSMPixel.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Vertex Shaders</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\VSMVertex.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Vertex Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\AmbientLightPS.hlsl">
+      <Filter>Resource Files\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\DirectionalLightPS.hlsl">
+      <Filter>Resource Files\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\DirectionalShadowPS.hlsl">
+      <Filter>Resource Files\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PointLightPS.hlsl">
+      <Filter>Resource Files\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PointLightShadowPS.hlsl">
+      <Filter>Resource Files\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\SkyDomePS.hlsl">
+      <Filter>Resource Files\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\SpotLightPS.hlsl">
+      <Filter>Resource Files\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\SpotLightShadowPS.hlsl">
+      <Filter>Resource Files\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\VSMPixel.hlsl">
+      <Filter>Resource Files\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\VertNormTanUVPixel.hlsl">
+      <Filter>Resource Files\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PointLightGS.hlsl">
+      <Filter>Resource Files\Geometry Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PointLightShadowGS.hlsl">
+      <Filter>Resource Files\Geometry Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\Lights.hlsl">
+      <Filter>Resource Files\Shader Headers</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PostProcess.hlsl">
+      <Filter>Resource Files\Shader Headers</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\ShaderDeclarations.hlsl">
+      <Filter>Resource Files\Shader Headers</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\GaussianBlurCS.hlsl">
+      <Filter>Resource Files\Compute Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PassThroughScreenVS.hlsl">
+      <Filter>Resource Files\Vertex Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PassThroughPS.hlsl">
+      <Filter>Resource Files\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\HorizontalBlurPS.hlsl">
+      <Filter>Resource Files\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\HorizontalBlurVS.hlsl">
+      <Filter>Resource Files\Vertex Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\RadialBlurDecayPS.hlsl">
+      <Filter>Resource Files\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\SunVS.hlsl">
+      <Filter>Resource Files\Vertex Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\SunPS.hlsl">
+      <Filter>Resource Files\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\PointToQuadGS.hlsl">
+      <Filter>Resource Files\Geometry Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\SolidWireframeGS.hlsl">
+      <Filter>Resource Files\Geometry Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\DynamicTessDistHS.hlsl">
+      <Filter>Resource Files\Hull Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\DynamicTessDistDS.hlsl">
+      <Filter>Resource Files\Domain Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Ryan%27s Projects Repository\VarianceShadowMapping\VarianceShadowMapping\Shaders\TessellationVS.hlsl">
+      <Filter>Resource Files\Vertex Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Tessellation.hlsl">
+      <Filter>Resource Files\Shader Headers</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

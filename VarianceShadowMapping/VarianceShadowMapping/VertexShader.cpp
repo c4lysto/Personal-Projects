@@ -1,6 +1,6 @@
 #include "VertexShader.h"
 
-VertexShader::VertexShader() : m_pShader(nullptr), m_pContext(nullptr)
+VertexShader::VertexShader() : m_pShader(nullptr)
 {
 
 }
@@ -12,15 +12,11 @@ VertexShader::~VertexShader()
 		m_pShader->Release();
 		m_pShader = nullptr;
 	}
-
-	m_pContext = nullptr;
 }
 
-HRESULT VertexShader::CreateVertexShader(ID3D11DeviceContext* pContext, ID3D11Device* pDevice, const void* pShaderBytecode, SIZE_T unBytecodeLength)
+HRESULT VertexShader::CreateVertexShader(ID3D11Device* pDevice, const void* pShaderBytecode, SIZE_T unBytecodeLength)
 {
 	HRESULT retVal = S_OK;
-
-	m_pContext = pContext;
 
 	if(pDevice)
 	{

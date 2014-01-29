@@ -27,7 +27,10 @@
 
 //NOTE: This define specifies that you're running this on Windows 7 instead of Windows 8
 // If you are running this on 8, just remove this define.
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT > _WINT32_WINNT_WIN7)
+#undef _WIN32_WINNT
 #define _WIN32_WINNT _WIN32_WINNT_WIN7
+#endif //defined(_WIN32_WINNT) && (_WIN32_WINNT > _WINT32_WINNT_WIN7)
 
 #if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/) && !defined(DXGI_1_2_FORMATS)
 #define DXGI_1_2_FORMATS

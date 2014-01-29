@@ -3,9 +3,11 @@
 
 #pragma pack_matrix(row_major)
 
+#define CAMERA_FAR_CLIP 500.0f
+
 cbuffer GAME : register(b0)
 {
-	float fElapsedTime;
+	float fDeltaTime;
 	float3 gravityPos;
 	float3 CameraToGravity;
 	uint GameTime;
@@ -68,7 +70,8 @@ struct ParticleData
 {
 	float4 color;
 	float3 position;
-	float3 velocity;
+	float3 prevPos;
+	float3 force;
 };
 
 #endif

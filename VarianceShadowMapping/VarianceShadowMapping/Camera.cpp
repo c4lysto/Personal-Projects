@@ -7,6 +7,8 @@
 #define ROTATION_SPEED PI
 #define MOUSE_ROTATION_SPEED PI * 0.1f
 
+#define TARGET_FRAME_TIME (1 / 60.0f)
+
 static unsigned int Hit = 0;
 
 void Camera::Initialize(DirectXCore* pCore,/*Renderer* renderer, */float fFOV, float fNearClip, float fFarClip)
@@ -21,11 +23,11 @@ void Camera::Initialize(DirectXCore* pCore,/*Renderer* renderer, */float fFOV, f
 
 	m_fFOV = fFOV;
 
-	//m_frFrustum.Build(fFOV, fNearClip, fFarClip, 
-	//	m_pRenderer->GetScreenWidth() / (float)m_pRenderer->GetScreenHeight(), m_mWorldMatrix);
+	m_Frustum.Build(fFOV, fNearClip, fFarClip, 
+		m_pCore->GetScreenWidth() / (float)m_pCore->GetScreenHeight(), m_mWorldMatrix);
 
 	m_mProjectionMatrix.MakePerspective(m_fFOV, 
-			pCore->GetScreenWidth() / (float)pCore->GetScreenHeight(), fNearClip, fFarClip);
+			m_pCore->GetScreenWidth() / (float)m_pCore->GetScreenHeight(), fNearClip, fFarClip);
 
 	D3D11_BUFFER_DESC shaderBuffDesc;
 	ZeroMemory(&shaderBuffDesc, sizeof(D3D11_BUFFER_DESC));
@@ -42,13 +44,17 @@ void Camera::Initialize(DirectXCore* pCore,/*Renderer* renderer, */float fFOV, f
 	if(FAILED(m_pCore->GetDevice()->CreateBuffer(&shaderBuffDesc, 0, &m_pObjectConstBuffer.p)))
 		MessageBox(NULL, L"Failed to create Object Constant Buffer" , L"", MB_OK | MB_ICONERROR);
 
-	m_mWorldMatrix.position = Vec3f(0.0f, 5.0f, -10.0f);
-	m_mWorldMatrix.LookAt(Vec3f());
+	m_mWorldMatrix.position = Vec3f(0.0f, 3.0f, 0.0f);// Vec3f(0.0f, 5.0f, -10.0f);
+	//m_mWorldMatrix.LookAt(Vec3f());
 	
 	m_pCore->GetContext()->VSSetConstantBuffers(CAMERA_CONST_BUFF_REGISTER, 1, &m_pCameraConstBuffer.p);
 	m_pCore->GetContext()->VSSetConstantBuffers(OBJECT_CONST_BUFF_REGISTER, 1, &m_pObjectConstBuffer.p);
 
+	m_pCore->GetContext()->HSSetConstantBuffers(CAMERA_CONST_BUFF_REGISTER, 1, &m_pCameraConstBuffer.p);
+	m_pCore->GetContext()->DSSetConstantBuffers(CAMERA_CONST_BUFF_REGISTER, 1, &m_pCameraConstBuffer.p);
 	m_pCore->GetContext()->PSSetConstantBuffers(CAMERA_CONST_BUFF_REGISTER, 1, &m_pCameraConstBuffer.p);
+
+	m_pCore->GetContext()->CSSetConstantBuffers(CAMERA_CONST_BUFF_REGISTER, 1, &m_pCameraConstBuffer.p);
 }
 
 void Camera::ResetCamera()
@@ -67,10 +73,11 @@ void Camera::UpdateMatrices()
 {
 	if(m_bDirty)
 	{
-		m_mViewMatrix = MatrixInverse(m_mWorldMatrix);
+		m_ShaderCameraBuffer.m_mViewMatrix = MatrixInverse(m_mWorldMatrix);
 
-		m_ShaderCameraBuffer.m_mViewProjectionMatrix = m_mViewMatrix * m_mProjectionMatrix;
+		m_ShaderCameraBuffer.m_mViewProjectionMatrix = m_ShaderCameraBuffer.m_mViewMatrix * m_mProjectionMatrix;
 		m_ShaderCameraBuffer.m_CameraPos = m_mWorldMatrix.position;
+		m_ShaderCameraBuffer.m_ViewDir = m_mWorldMatrix.zAxis;
 
 		D3D11_MAPPED_SUBRESOURCE cameraSubresource;
 
@@ -80,8 +87,8 @@ void Camera::UpdateMatrices()
 
 		//m_vPrevPos = m_mWorldMatrix.position;
 	
-		//m_frFrustum.Build(m_fFOV, m_fNearClip, m_fFarClip, 
-			//m_pRenderer->GetScreenWidth() / (float)m_pRenderer->GetScreenHeight(), m_mWorldMatrix);
+		m_Frustum.Build(m_fFOV, m_fNearClip, m_fFarClip, 
+			m_pCore->GetScreenWidth() / (float)m_pCore->GetScreenHeight(), m_mWorldMatrix);
 
 		m_bDirty = false;
 	}
@@ -90,7 +97,21 @@ void Camera::UpdateMatrices()
 void Camera::SetMVPAndWorldMatrices(const Matrix4f& matrix)
 {
 	m_ShaderObjectBuffer.m_mMVPMatrix = matrix * m_ShaderCameraBuffer.m_mViewProjectionMatrix;
+	m_ShaderObjectBuffer.m_mModelViewMatrix = matrix * m_ShaderCameraBuffer.m_mViewMatrix;
 	m_ShaderObjectBuffer.m_mWorldMatrix = matrix;
+
+	D3D11_MAPPED_SUBRESOURCE objectSubresource;
+
+	m_pCore->GetContext()->Map(m_pObjectConstBuffer.p, 0, D3D11_MAP_WRITE_DISCARD, 0, &objectSubresource);
+		memcpy(objectSubresource.pData, &m_ShaderObjectBuffer, sizeof(ShaderObjectBuffer));
+	m_pCore->GetContext()->Unmap(m_pObjectConstBuffer.p, 0);
+}
+
+void Camera::SetShaderObjectBuffer(const Matrix4f& mWorldMatrix, const Matrix4f& mViewMatrix, const Matrix4f& mVPMatrix)
+{
+	m_ShaderObjectBuffer.m_mMVPMatrix = mWorldMatrix * mVPMatrix;
+	m_ShaderObjectBuffer.m_mModelViewMatrix = mWorldMatrix * mViewMatrix;
+	m_ShaderObjectBuffer.m_mWorldMatrix = mWorldMatrix;
 
 	D3D11_MAPPED_SUBRESOURCE objectSubresource;
 
@@ -182,9 +203,9 @@ void Camera::RotateCameraMouseMovement(POINT movement, double fElapsedTime)
 		//XMStoreFloat(&fDotProduct, XMVector3Dot(m_mWorldMatrix.toXMMatrix().r[1], XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
 
 		if(fDotProduct > 0.0f)
-			m_mWorldMatrix.Rotate_GlobalY_Radians(-movement.x * (float)fElapsedTime * 0.5f);//-MOUSE_ROTATION_SPEED * (float)fElapsedTime * movement.x);
+			m_mWorldMatrix.Rotate_GlobalY_Radians(-movement.x * float(fElapsedTime * (TARGET_FRAME_TIME / fElapsedTime) * 0.5f));//(float)fElapsedTime * 0.5f);//-MOUSE_ROTATION_SPEED * (float)fElapsedTime * movement.x);
 		else
-			m_mWorldMatrix.Rotate_GlobalY_Radians(-movement.x * (float)fElapsedTime * 0.5f);//MOUSE_ROTATION_SPEED * (float)fElapsedTime * movement.x);
+			m_mWorldMatrix.Rotate_GlobalY_Radians(-movement.x * float(fElapsedTime * (TARGET_FRAME_TIME / fElapsedTime) * 0.5f));//(float)fElapsedTime * 0.5f);//MOUSE_ROTATION_SPEED * (float)fElapsedTime * movement.x);
 
 		m_mWorldMatrix.position = tmpPos;
 
@@ -193,13 +214,10 @@ void Camera::RotateCameraMouseMovement(POINT movement, double fElapsedTime)
 
 	if(movement.y)
 	{
-		m_mWorldMatrix.Rotate_LocalX_Radians(-movement.y * (float)fElapsedTime * 0.5f);//-MOUSE_ROTATION_SPEED * (float)fElapsedTime * movement.y);
+		m_mWorldMatrix.Rotate_LocalX_Radians(-movement.y * float(fElapsedTime * (TARGET_FRAME_TIME / fElapsedTime) * 0.5f));//(float)fElapsedTime * 0.5f);//-MOUSE_ROTATION_SPEED * (float)fElapsedTime * movement.y);
 
 		m_bDirty = true;
 	}
-
-	std::cout << "Movement X: " << movement.x << "\t Y: " << movement.y << std::endl
-				<< "Elapsed Time: " << fElapsedTime << std::endl << std::endl;
 }
 
 // depth is a 0-1 value
@@ -208,7 +226,7 @@ Vec3f Camera::Unproject(POINT screenPos)
 	const D3D11_VIEWPORT& viewport = m_pCore->GetViewport();
 
 	Vec3f unprojectedPoint = XMVector3Unproject(XMVectorSet((float)screenPos.x, (float)screenPos.y, 0, 0), viewport.TopLeftX, viewport.TopLeftY,
-		viewport.Width, viewport.Height, viewport.MinDepth, viewport.MaxDepth, m_mProjectionMatrix.toXMMatrix(), m_mViewMatrix.toXMMatrix(), XMMatrixIdentity());
+		viewport.Width, viewport.Height, viewport.MinDepth, viewport.MaxDepth, m_mProjectionMatrix.toXMMatrix(), m_ShaderCameraBuffer.m_mViewMatrix.toXMMatrix(), XMMatrixIdentity());
 
 	return unprojectedPoint - m_mWorldMatrix.position;
 }

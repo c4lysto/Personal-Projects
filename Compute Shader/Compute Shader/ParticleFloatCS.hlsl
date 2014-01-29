@@ -14,10 +14,26 @@ void main( uint ThreadID : SV_GroupIndex , uint3 GroupID : SV_GroupID)
 	{
 		uint index = GroupID.x * MAX_PARTICLES + ThreadID;
 
-		particles[index].position += particles[index].velocity * fElapsedTime;
+		float3 prevPos = particles[index].position;
+		float3 particlePos = 2 * particles[index].position - particles[index].prevPos;
+		
+		if(any(particles[index].force))
+		{
+			particlePos += particles[index].force * 0.5f * fDeltaTime * fDeltaTime;
+			particles[index].force = 0;
+		}
 
-		if(fElapsedTime == 0)
-			particles[index].velocity = 0;
+		float3 camToParticle = particlePos - CameraPos;
+		if(length(camToParticle) > CAMERA_FAR_CLIP)
+		{
+			particlePos = CameraPos + normalize(camToParticle) * CAMERA_FAR_CLIP;
+			float3 savePos = prevPos;
+			prevPos = particlePos;
+			particlePos = savePos;
+		}
+
+		particles[index].position = particlePos;
+		particles[index].prevPos = prevPos;
 	}
 }
 

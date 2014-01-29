@@ -30,10 +30,8 @@ PixelShaderDynamic::~PixelShaderDynamic(void)
 	}
 }
 
-HRESULT PixelShaderDynamic::CreatePixelShader(ID3D11DeviceContext* pContext, ID3D11Device* pDevice, const void* pShaderBytecode, SIZE_T unBytecodeLength)
+HRESULT PixelShaderDynamic::CreatePixelShader(ID3D11Device* pDevice, const void* pShaderBytecode, SIZE_T unBytecodeLength)
 {
-	m_pContext = pContext;
-
 	HRESULT retVal = S_OK;
 
 	// Will Return S_OK if device is NULL just in case we want a NULL shader
@@ -106,7 +104,7 @@ HRESULT PixelShaderDynamic::InitShaderReflection(const void* pShaderBytecode, SI
 	return S_OK;
 }
 
-UINT PixelShaderDynamic::AddInterfaceByName(LPCSTR szAbstractObjectName)
+UINT PixelShaderDynamic::AddInterfaceByName(LPCSTR szAbstractObjectName, UINT unArrayIndex)
 {
 	if(m_pReflector)
 	{
@@ -118,7 +116,7 @@ UINT PixelShaderDynamic::AddInterfaceByName(LPCSTR szAbstractObjectName)
 			return UINT_MAX;
 		}
 
-		UINT unSlotIndex = pVariable->GetInterfaceSlot(0);
+		UINT unSlotIndex = pVariable->GetInterfaceSlot(unArrayIndex);
 
 		if((size_t)unSlotIndex < m_vInterfaceNames.size())
 		{

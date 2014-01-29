@@ -7,8 +7,12 @@
 using namespace RMMath;
 
 class DirectXCore;
+class Camera;
 struct ID3D11ClassLinkage;
 struct ID3D11ClassInstance;
+
+#define SHADOW_RESOLUTION 2048
+#define POINT_LIGHT_SHADOW_RESOLUTION 256
 
 #pragma vtordisp(on)
 class ILight
@@ -16,6 +20,8 @@ class ILight
 protected:
 	Vec3f m_vColor;
 	float m_fSpecularPower;
+
+	static ID3D11Buffer* m_pLightConstBuffer;
 
 private:
 	static ID3D11ClassInstance** m_pShaderLinkageArray;
@@ -25,6 +31,13 @@ public:
 	virtual ~ILight() = 0 {}
 
 	static ID3D11ClassLinkage* m_pLightClassLinkage;
+
+	virtual void InitializeViewProjMatrix(const Camera* pCam) = 0;
+	//virtual void UpdateViewProjMatrix() = 0;
+	virtual void SetObjectMatrices(const Matrix4f& mMatrix, Camera* pCam) = 0;
+
+	virtual Matrix4f GetViewMatrix(unsigned int unCubeFace = 0) const = 0;
+	virtual Matrix4f GetViewProjectionMatrix(unsigned int unCubeFace = 0) const = 0;
 
 	Vec3f GetLightColor() const {return m_vColor;}
 	float GetSpecularPower() const {return m_fSpecularPower;}

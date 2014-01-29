@@ -1,33 +1,33 @@
 
 #pragma region Vec2f Constructors
-inline Vec2f::Vec2f() : x(0), y(0)
+template<typename Type>
+inline Vec2<Type>::Vec2() : x(0), y(0)
 {
 
 }
 
-inline Vec2f::Vec2f(const Vec2f& vVector) : x(vVector.x), y(vVector.y)
+template<typename Type>
+inline Vec2<Type>::Vec2(const Vec2& vVector) : x(vVector.x), y(vVector.y)
 {
 
 }
 
-inline Vec2f::Vec2f(Vec2f&& vVector) : x(vVector.x), y(vVector.y)
+template<typename Type>
+inline Vec2<Type>::Vec2(Vec2&& vVector) : x(vVector.x), y(vVector.y)
 {
 
 }
 
-inline Vec2f::Vec2f(XMVECTOR&& vVector)
-{
-	XMStoreFloat2((XMFLOAT2*)this, vVector);
-}
-
-inline Vec2f::Vec2f(float fX, float fY) : x(fX), y(fY)
+template<typename Type>
+inline Vec2<Type>::Vec2(Type fX, Type fY) : x(fX), y(fY)
 {
 
 }
 #pragma endregion
 
-#pragma region Vec2f Operators
-inline Vec2f& Vec2f::operator=(const Vec2f& vVector)
+#pragma region Vec2 Operators
+template<typename Type>
+inline Vec2<Type>& Vec2<Type>::operator=(const Vec2<Type>& vVector)
 {
 	if(this != &vVector)
 	{
@@ -38,7 +38,8 @@ inline Vec2f& Vec2f::operator=(const Vec2f& vVector)
 	return *this;
 }
 
-inline Vec2f& Vec2f::operator=(Vec2f&& vVector)
+template<typename Type>
+inline Vec2<Type>& Vec2<Type>::operator=(Vec2&& vVector)
 {
 	x = vVector.x;
 	y = vVector.y;
@@ -46,7 +47,8 @@ inline Vec2f& Vec2f::operator=(Vec2f&& vVector)
 	return *this;
 }
 
-inline Vec2f& Vec2f::operator=(const POINT vVector)
+template<typename Type>
+inline Vec2<Type>& Vec2<Type>::operator=(const POINT vVector)
 {
 	x = (float)vVector.x;
 	y = (float)vVector.y;
@@ -54,27 +56,14 @@ inline Vec2f& Vec2f::operator=(const POINT vVector)
 	return *this;
 }
 
-inline Vec2f& Vec2f::operator=(XMVECTOR&& vVector)
+template<typename Type>
+inline Vec2<Type> Vec2<Type>::operator+(const Vec2& vVector) const
 {
-	XMStoreFloat2((XMFLOAT2*)this, vVector);
-
-	return *this;
+	return Vec2(x + vVector.x, y + vVector.y);
 }
 
-inline Vec2f& Vec2f::operator=(const XMVECTOR& vVector)
-{
-	if(this != (Vec2f*)&vVector)
-		XMStoreFloat2((XMFLOAT2*)this, vVector);
-
-	return *this;
-}
-
-inline Vec2f Vec2f::operator+(const Vec2f& vVector) const
-{
-	return Vec2f(x + vVector.x, y + vVector.y);
-}
-
-inline Vec2f& Vec2f::operator+=(const Vec2f& vVector)
+template<typename Type>
+inline Vec2<Type>& Vec2<Type>::operator+=(const Vec2& vVector)
 {
 	x += vVector.x;
 	y += vVector.y;
@@ -82,12 +71,14 @@ inline Vec2f& Vec2f::operator+=(const Vec2f& vVector)
 	return *this;
 }
 
-inline Vec2f Vec2f::operator-(const Vec2f& vVector) const
+template<typename Type>
+inline Vec2<Type> Vec2<Type>::operator-(const Vec2& vVector) const
 {
-	return Vec2f(x - vVector.x, y - vVector.y);
+	return Vec2(x - vVector.x, y - vVector.y);
 }
 
-inline Vec2f& Vec2f::operator-=(const Vec2f& vVector)
+template<typename Type>
+inline Vec2<Type>& Vec2<Type>::operator-=(const Vec2& vVector)
 {
 	x -= vVector.x;
 	y -= vVector.y;
@@ -95,22 +86,26 @@ inline Vec2f& Vec2f::operator-=(const Vec2f& vVector)
 	return *this;
 }
 
-inline Vec2f Vec2f::operator-()
+template<typename Type>
+inline Vec2<Type> Vec2<Type>::operator-()
 {
-	return Vec2f(-x, -y);
+	return Vec2(-x, -y);
 }
 
-inline Vec2f Vec2f::operator*(float fScalar) const
+template<typename Type>
+inline Vec2<Type> Vec2<Type>::operator*(float fScalar) const
 {
-	return Vec2f(x * fScalar, y * fScalar);
+	return Vec2(x * fScalar, y * fScalar);
 }
 
-inline Vec2f operator*(float fScalar, const Vec2f& vVector)
+template<typename Type>
+inline Vec2<Type> operator*(float fScalar, const Vec2<Type>& vVector)
 {
-	return Vec2f(vVector.x * fScalar, vVector.y * fScalar);
+	return Vec2(vVector.x * fScalar, vVector.y * fScalar);
 }
 
-inline Vec2f& Vec2f::operator*=(float fScalar)
+template<typename Type>
+inline Vec2<Type>& Vec2<Type>::operator*=(float fScalar)
 {
 	x *= fScalar;
 	y *= fScalar;
@@ -118,13 +113,15 @@ inline Vec2f& Vec2f::operator*=(float fScalar)
 	return *this;
 }
 
-inline Vec2f Vec2f::operator/(float fScalar) const
+template<typename Type>
+inline Vec2<Type> Vec2<Type>::operator/(float fScalar) const
 {
 	fScalar = 1 / fScalar;
-	return Vec2f(x * fScalar, y * fScalar);
+	return Vec2(x * fScalar, y * fScalar);
 }
 
-inline Vec2f& Vec2f::operator/=(float fScalar)
+template<typename Type>
+inline Vec2<Type>& Vec2<Type>::operator/=(float fScalar)
 {
 	fScalar = 1 / fScalar;
 
@@ -135,33 +132,39 @@ inline Vec2f& Vec2f::operator/=(float fScalar)
 }
 #pragma endregion
 
-#pragma region Vec2f Math Funcs
-inline float Vec2f::dot_product(const Vec2f& vVector) const
+#pragma region Vec2 Math Funcs
+template<typename Type>
+inline float Vec2<Type>::dot_product(const Vec2& vVector) const
 {
 	return (x * vVector.x) + (y * vVector.y);
 }
 
-inline float Vec2f::magnitude() const
+template<typename Type>
+inline float Vec2<Type>::magnitude() const
 {
 	return sqrt(x * x + y * y);
 }
 
-inline float Vec2f::length() const
+template<typename Type>
+inline float Vec2<Type>::length() const
 {
 	return magnitude();
 }
 
-inline float Vec2f::sq_magnitude() const
+template<typename Type>
+inline float Vec2<Type>::sq_magnitude() const
 {
 	return x * x + y * y;
 }
 
-inline float Vec2f::sq_length() const
+template<typename Type>
+inline float Vec2<Type>::sq_length() const
 {
 	return sq_magnitude();
 }
 
-inline Vec2f& Vec2f::normalize()
+template<typename Type>
+inline Vec2<Type>& Vec2<Type>::normalize()
 {
 	float mag = magnitude();
 
@@ -176,7 +179,8 @@ inline Vec2f& Vec2f::normalize()
 	return *this;
 }
 
-inline float Vec2f::angle_between(const Vec2f& vVector) const
+template<typename Type>
+inline float Vec2<Type>::angle_between(const Vec2& vVector) const
 {
 	float dotProduct = (x * vVector.x) + (y * vVector.y);
 
@@ -194,24 +198,28 @@ inline float Vec2f::angle_between(const Vec2f& vVector) const
 }
 #pragma endregion
 
-#pragma region Vec2f Global Funcs
-inline Vec2f Normalize(const Vec2f& vVector)
+#pragma region Vec2 Global Funcs
+template<typename Type>
+inline Vec2<Type> Normalize(const Vec2<Type>& vVector)
 {
-	Vec2f tmp(vVector);
+	Vec2<Type> tmp(vVector);
 	return tmp.normalize();
 }
 
-inline float DotProduct(const Vec2f& vVectorA, const Vec2f& vVectorB)
+template<typename Type>
+inline float DotProduct(const Vec2<Type>& vVectorA, const Vec2<Type>& vVectorB)
 {
 	return vVectorA.dot_product(vVectorB);
 }
 
-inline Vec2f Lerp(const Vec2f& vVectorA, const Vec2f& vVectorB, const float fLambda)
+template<typename Type>
+inline Vec2<Type> Lerp(const Vec2<Type>& vVectorA, const Vec2<Type>& vVectorB, const float fLambda)
 {
 	return vVectorA + (vVectorB - vVectorA) * fLambda;
 }
 
-inline float AngleBetween(const Vec2f& vVectorA, const Vec2f& vVectorB)
+template<typename Type>
+inline float AngleBetween(const Vec2<Type>& vVectorA, const Vec2<Type>& vVectorB)
 {
 	return vVectorA.angle_between(vVectorB);
 }

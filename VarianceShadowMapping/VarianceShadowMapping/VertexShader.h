@@ -1,26 +1,29 @@
 #ifndef VERTEXSHADER_H
 #define VERTEXSHADER_H
 
-#include <d3d11.h>
+#include "Shader.h"
 
-class VertexShader
+class VertexShader : public IShader
 {
 private:
 	ID3D11VertexShader* m_pShader;
-	ID3D11DeviceContext* m_pContext;
-
-protected:
 
 public:
 	VertexShader();
 	~VertexShader();
 
-	virtual HRESULT CreateVertexShader(ID3D11DeviceContext* pContext, ID3D11Device* pDevice, const void* pShaderBytecode, SIZE_T unBytecodeLength);
+	virtual HRESULT CreateVertexShader(ID3D11Device* pDevice, const void* pShaderBytecode, SIZE_T unBytecodeLength);
 
 	virtual void SetVertexShader()
 	{
 		if(m_pContext)
 			m_pContext->VSSetShader(m_pShader, NULL, 0);
+	}
+
+	static void ResetVertexShader()
+	{
+		if(m_pContext)
+			m_pContext->VSSetShader(NULL, NULL, 0);
 	}
 };
 

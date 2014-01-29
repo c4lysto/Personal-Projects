@@ -1,6 +1,6 @@
 #include "PixelShader.h"
 
-PixelShader::PixelShader() : m_pShader(nullptr), m_pContext(nullptr)
+PixelShader::PixelShader() : m_pShader(nullptr)
 {
 
 }
@@ -12,19 +12,15 @@ PixelShader::~PixelShader()
 		m_pShader->Release();
 		m_pShader = nullptr;
 	}
-
-	m_pContext = nullptr;
 }
 
-HRESULT PixelShader::CreatePixelShader(ID3D11DeviceContext* pContext, ID3D11Device* pDevice, const void* pShaderBytecode, SIZE_T unBytecodeLength)
+HRESULT PixelShader::CreatePixelShader(ID3D11Device* pDevice, const void* pShaderBytecode, SIZE_T unBytecodeLength)
 {
 	if(m_pShader)
 	{
 		m_pShader->Release();
 		m_pShader = nullptr;
 	}
-
-	m_pContext = pContext;
 
 	HRESULT retVal = S_OK;
 

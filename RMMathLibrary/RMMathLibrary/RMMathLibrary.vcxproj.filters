@@ -53,5 +53,8 @@
     <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\Vec4fA.inl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\..\..\Ryan%27s Projects Repository\RMMath\RMCollisions.inl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

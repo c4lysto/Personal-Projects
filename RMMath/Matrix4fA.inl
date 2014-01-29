@@ -19,6 +19,14 @@ inline Matrix4fA::Matrix4fA(float fXx, float fXy, float fXz, float fXw,
 	row4 = _mm_setr_ps(fWx, fWy, fWz, fWw);
 }
 
+inline Matrix4fA::Matrix4fA(const Matrix4f& mMatrix)
+{
+	row1 = _mm_loadu_ps(mMatrix.m);
+	row2 = _mm_loadu_ps(mMatrix.m + 4);
+	row3 = _mm_loadu_ps(mMatrix.m + 8);
+	row4 = _mm_loadu_ps(mMatrix.m + 12);
+}
+
 inline Matrix4fA::Matrix4fA(const Matrix4fA& mMatrix)
 {
 	row1 = mMatrix.row1;
@@ -496,7 +504,7 @@ inline Matrix4fA& Matrix4fA::MakeOrthographic(float fWidth, float fHeight, float
 	row1 = _mm_setr_ps(2 / fWidth, 0, 0, 0);
 	row2 = _mm_setr_ps(0, 2 / fHeight, 0, 0);
 	row3 = _mm_setr_ps(0, 0, 1 / (fFar - fNear), 0);
-	row4 = _mm_setr_ps(0, 0, fNear / (fNear - fFar), 1);
+	row4 = _mm_setr_ps(0, 0, -fNear / (fFar - fNear), 1);
 
 	return *this;
 }
@@ -510,6 +518,16 @@ inline Matrix4fA& Matrix4fA::OrthoNormalInvert()
 	Wx = -DotProduct(tmp.position, tmp.xAxis);
 	Wy = -DotProduct(tmp.position, tmp.yAxis);
 	Wz = -DotProduct(tmp.position, tmp.zAxis);
+
+	return *this;
+}
+
+inline Matrix4fA& Matrix4fA::MakeTextureMatrixOffsetLH(unsigned int unWidth, unsigned int unHeight)
+{
+	row1 = _mm_setr_ps(0.5f, 0.0f, 0.0f, 0.0f);
+	row2 = _mm_setr_ps(0.0f, -0.5f, 0.0f, 0.0f);
+	row3 =  _mm_setr_ps(0.0f, 0.0f, 1.0f, 0.0f);
+	row4 = _mm_setr_ps(0.5f + (0.5f / unWidth), 0.5f + (0.5f / unHeight), 0.0f, 1.0f);
 
 	return *this;
 }

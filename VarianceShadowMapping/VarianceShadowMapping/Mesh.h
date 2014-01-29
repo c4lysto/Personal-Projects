@@ -17,7 +17,7 @@ using std::string;
 
 class Model;
 
-enum MeshTextureEnum {MESH_TEX_DIFFUSE, MESH_TEX_NORMAL, MESH_TEX_SPECULAR, MESH_TEX_MAX};
+enum MeshTextureEnum {MESH_TEX_DIFFUSE, MESH_TEX_NORMAL, MESH_TEX_DISPLACEMENT, MESH_TEX_SPECULAR, MESH_TEX_MAX};
 
 class MeshPrimitiveData
 {
@@ -88,10 +88,16 @@ public:
 	inline VertexTypeEnum GetVertexType() const {return (m_pPrimitiveData) ? m_pPrimitiveData->m_eVertType : NUM_VERTEX_TYPES;}
 	inline const vector<unsigned int>* GetIndices() const {return (m_pPrimitiveData) ? &m_pPrimitiveData->m_vIndices : nullptr;}
 	inline unsigned int GetNumIndices() const {return (m_pPrimitiveData) ? m_pPrimitiveData->m_vIndices.size() : 0;}
-	inline string GetName() {return (m_pPrimitiveData) ? m_pPrimitiveData->m_szName : "";}
-	inline D3D11_PRIMITIVE_TOPOLOGY GetTopologyType() {return (m_pPrimitiveData) ? m_pPrimitiveData->m_eTopologyType : D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;}
+	inline string GetName() const {return (m_pPrimitiveData) ? m_pPrimitiveData->m_szName : "";}
+	inline D3D11_PRIMITIVE_TOPOLOGY GetTopologyType() const {return (m_pPrimitiveData) ? m_pPrimitiveData->m_eTopologyType : D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;}
+	inline void SetTopologyType(D3D11_PRIMITIVE_TOPOLOGY eTopologyType) {m_pPrimitiveData->m_eTopologyType = eTopologyType;}
 
-	inline void SetPSTextureSRVs(DirectXCore* pCore)
+	inline void SetDSTextureSRVs(DirectXCore* pCore) const
+	{
+		pCore->GetContext()->DSSetShaderResources(0, MESH_TEX_MAX, m_vTextures);
+	}
+
+	inline void SetPSTextureSRVs(DirectXCore* pCore) const
 	{
 		pCore->GetContext()->PSSetShaderResources(0, MESH_TEX_MAX, m_vTextures);
 	}

@@ -4,12 +4,6 @@
 #include <D3D11.h>
 #pragma comment(lib, "d3d11.lib")
 
-#include <D3DX11.h>
-#pragma comment(lib, "d3dx11.lib")
-
-#include <D3DX10.h>
-#pragma comment(lib, "d3dx10.lib")
-
 #include "VertexDeclarations.h"
 
 class DirectXCore;

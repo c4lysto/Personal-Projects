@@ -1,10 +1,11 @@
 #include "SpotLight.h"
+#include "Camera.h"
 
 ID3D11Buffer* SpotLight::m_pSpotLightConstBuffer = nullptr;
 ID3D11ClassInstance* SpotLight::m_pSpotLightClassInstance = nullptr;
 
 // NOTE: sizeof(void*) represents the vftable pointer
-const UINT g_SpotLightActualByteWidth = (sizeof(SpotLight) - sizeof(void*));
+const UINT g_SpotLightActualByteWidth = (sizeof(SpotLight) - (sizeof(void*) + (1 * sizeof(Matrix4f))));
 const UINT g_SpotLightConstByteWidth = (g_SpotLightActualByteWidth + (16 - (g_SpotLightActualByteWidth % 16)));
 
 void SpotLight::CreateConstantBufferAndClassLinkage(ID3D11Device* pDevice, LPCSTR szClassInstanceName)
@@ -46,4 +47,53 @@ void SpotLight::ReleaseConstantBufferAndClassLinkage()
 {
 	SAFE_RELEASE(m_pSpotLightConstBuffer);
 	SAFE_RELEASE(m_pSpotLightClassInstance);
+}
+
+void SpotLight::InitializeViewProjMatrix(const Camera* pCam)
+{
+
+}
+
+void SpotLight::BuildViewAndProjectionMatrices()
+{
+	Matrix4f worldMat;
+	worldMat.zAxis = m_vDirection;
+
+	worldMat.xAxis = CrossProduct(g_WorldUp, worldMat.zAxis);
+	worldMat.xAxis.normalize();
+
+	worldMat.yAxis = CrossProduct(worldMat.zAxis, worldMat.xAxis);
+	worldMat.yAxis.normalize();
+
+	worldMat.position = m_vPosition;
+
+	m_mViewMatrix = MatrixInverse(worldMat);
+
+	Matrix4f projMatrix;
+	projMatrix.MakePerspective(acos(m_fOuterConeRatio) * 2.0f, 1.0f, 0.1f, m_fRadius);
+
+	m_mViewProjMatrix = m_mViewMatrix * projMatrix;
+
+	Vec4f point = Vec4f(0.0f, 0.0f, 0.0f, 1.0f) * m_mViewProjMatrix;
+
+	float texelX = point.x * SHADOW_RESOLUTION * 0.5f;
+	float texelY = point.y * SHADOW_RESOLUTION * 0.5f;
+
+	float dX = floor(texelX + 0.5f) - texelX;
+	float dY = floor(texelY + 0.5f) - texelY;
+
+	dX /= SHADOW_RESOLUTION * 0.5f;
+	dY /= SHADOW_RESOLUTION * 0.5f;
+
+	m_mViewProjMatrix.Translate(dX, dY, 0.0f);
+
+	Matrix4f texOffset;
+	texOffset.MakeTextureMatrixOffsetLH(SHADOW_RESOLUTION, SHADOW_RESOLUTION);
+
+	m_mViewProjectionTexMatrix = m_mViewProjMatrix * texOffset;
+}
+
+void SpotLight::SetObjectMatrices(const Matrix4f& mMatrix, Camera* pCam)
+{
+	pCam->SetShaderObjectBuffer(mMatrix, mMatrix * m_mViewMatrix, mMatrix * m_mViewProjMatrix);
 }

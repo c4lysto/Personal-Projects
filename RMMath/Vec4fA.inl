@@ -26,6 +26,11 @@ inline Vec4fA::Vec4fA(float fR, float fG, float fB, float fA)
 	row = _mm_setr_ps(fR, fG, fB, fA);
 }
 
+inline Vec4fA::Vec4fA(const Vec4f& vVector)
+{
+	row = _mm_loadu_ps(vVector.vector);
+}
+
 inline Vec4fA::Vec4fA(Vec3f vVector, float fA)
 {
 	row = _mm_setr_ps(vVector.x, vVector.y, vVector.z, fA);
@@ -154,7 +159,9 @@ inline Vec4fA& Vec4fA::operator*=(const Matrix4fA& mMatrix)
 	tmp2 = _mm_add_ps(_mm_mul_ps(mMatrix.row3, tmp1), tmp2);
 	tmp1 = _mm_set1_ps(w);
 
-	return *this = _mm_add_ps(_mm_mul_ps(mMatrix.row4, tmp1), tmp2);
+	row = _mm_add_ps(_mm_mul_ps(mMatrix.row4, tmp1), tmp2);
+
+	return *this;
 }
 
 inline Vec4fA operator*(float fScalar, const Vec4fA& vVector)

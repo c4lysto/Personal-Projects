@@ -6,8 +6,9 @@
 namespace RMMath
 {
 #pragma region Unaligned Math Structures
-#pragma region Vec2f Definition
-struct Vec2f
+#pragma region Vec2 Definition
+template<typename Type>
+struct Vec2
 {
 	union
 	{
@@ -19,33 +20,32 @@ struct Vec2f
 		};
 	};
 
-	Vec2f();
-	Vec2f(const Vec2f& vVector);
-	Vec2f(Vec2f&& vVector);
-	Vec2f(XMVECTOR&& vVector);
-	Vec2f(float fX, float fY);
+	Vec2();
+	Vec2(const Vec2<Type>& vVector);
+	Vec2(Vec2<Type>&& vVector);
+	Vec2(Type fX, Type fY);
 
-	inline Vec2f operator-();
+	inline Vec2<Type> operator-();
 
-	inline Vec2f& operator=(const Vec2f& vVector);
-	inline Vec2f& operator=(Vec2f&& vVector);
-	inline Vec2f& operator=(const POINT vVector);
-	inline Vec2f& operator=(XMVECTOR&& vVector);
-	inline Vec2f& operator=(const XMVECTOR& vVector);
+	inline Vec2<Type>& operator=(const Vec2<Type>& vVector);
+	inline Vec2<Type>& operator=(Vec2<Type>&& vVector);
+	inline Vec2<Type>& operator=(const POINT vVector);
+	inline Vec2<Type>& operator=(XMVECTOR&& vVector);
+	inline Vec2<Type>& operator=(const XMVECTOR& vVector);
 
-	inline Vec2f operator+(const Vec2f& vVector) const;
-	inline Vec2f& operator+=(const Vec2f& vVector);
+	inline Vec2<Type> operator+(const Vec2<Type>& vVector) const;
+	inline Vec2<Type>& operator+=(const Vec2<Type> & vVector);
 
-	inline Vec2f operator-(const Vec2f& vVector) const;
-	inline Vec2f& operator-=(const Vec2f& vVector);
+	inline Vec2<Type> operator-(const Vec2<Type>& vVector) const;
+	inline Vec2<Type>& operator-=(const Vec2<Type>& vVector);
 
-	inline Vec2f operator*(float fScalar) const;
-	inline Vec2f& operator*=(float fScalar);
+	inline Vec2<Type> operator*(float fScalar) const;
+	inline Vec2<Type>& operator*=(float fScalar);
 
-	inline Vec2f operator/(float fScalar) const;
-	inline Vec2f& operator/=(float fScalar);
+	inline Vec2<Type> operator/(float fScalar) const;
+	inline Vec2<Type>& operator/=(float fScalar);
 
-	inline float dot_product(const Vec2f& vVector) const;
+	inline float dot_product(const Vec2& vVector) const;
 
 	inline float magnitude() const;
 	inline float length() const;
@@ -53,20 +53,33 @@ struct Vec2f
 	inline float sq_magnitude() const;
 	inline float sq_length() const;
 
-	inline Vec2f& normalize();
+	inline Vec2& normalize();
 
-	inline float angle_between(const Vec2f& vVector) const;
+	inline float angle_between(const Vec2& vVector) const;
 };
 
-inline Vec2f operator*(float fScalar, const Vec2f& vVector);
-inline Vec2f Normalize(const Vec2f& vVector);
-inline float DotProduct(const Vec2f& vVectorA, const Vec2f& vVectorB);
-inline Vec2f Lerp(const Vec2f& vVectorA, const Vec2f& vVectorB, const float fLambda);
-inline float AngleBetween(const Vec2f& vVectorA, const Vec2f& vVectorB);
+template<typename Type>
+inline Vec2<Type> operator*(float fScalar, const Vec2<Type>& vVector);
 
-typedef Vec2f vec2f;
-typedef Vec2f vec2;
+template<typename Type>
+inline Vec2<Type> Normalize(const Vec2<Type>& vVector);
+
+template<typename Type>
+inline float DotProduct(const Vec2<Type>& vVectorA, const Vec2<Type>& vVectorB);
+
+template<typename Type>
+inline Vec2<Type> Lerp(const Vec2<Type>& vVectorA, const Vec2<Type>& vVectorB, const float fLambda);
+
+template<typename Type>
+inline float AngleBetween(const Vec2<Type>& vVectorA, const Vec2<Type>& vVectorB);
+
+typedef Vec2<float> Vec2f;
 typedef Vec2f float2;
+typedef Vec2<double> Vec2d;
+typedef Vec2<int> Vec2i;
+typedef Vec2<unsigned int> Vec2ui;
+typedef Vec2<short> Vec2s;
+typedef Vec2<unsigned short> Vec2us;
 #pragma endregion
 
 #pragma region Vec3f Definition
@@ -157,6 +170,7 @@ typedef Vec3f vec3;
 extern const __declspec(selectany) Vec3f g_IdentityX3 = Vec3f(1.0f, 0.0f, 0.0f);
 extern const __declspec(selectany) Vec3f g_IdentityY3 = Vec3f(0.0f, 1.0f, 0.0f);
 extern const __declspec(selectany) Vec3f g_IdentityZ3 = Vec3f(0.0f, 0.0f, 1.0f);
+extern const __declspec(selectany) Vec3f g_WorldUp = g_IdentityY3;
 extern const __declspec(selectany) Vec3f g_ZeroVec3 = Vec3f(0.0f, 0.0f, 0.0f);
 #pragma endregion
 
@@ -471,7 +485,11 @@ struct Matrix4f
 	inline Matrix4f& MakeOrthographic(float fWidth, float fHeight, float fNear, float fFar);
 
 	inline Matrix4f& OrthoNormalInvert();
+
+	inline Matrix4f& MakeTextureMatrixOffsetLH(unsigned int unWidth, unsigned int unHeight);
 };
+
+
 
 inline Matrix4f MatrixTranspose(const Matrix4f& mMatrix);
 inline Matrix4f MatrixTranspos3x3(const Matrix4f& mMatrix);
@@ -482,6 +500,7 @@ inline Matrix4f Lerp(const Matrix4f& MatrixA, const Matrix4f& MatrixB, float fLa
 typedef Matrix4f Matrix44;
 typedef Matrix4f Mat4f;
 typedef Matrix4f float4x4;
+
 #pragma endregion
 #pragma endregion
 
@@ -526,6 +545,7 @@ __declspec(align(16)) struct Vec4fA
 	Vec4fA(Vec4fA&& vVector);
 	Vec4fA(__m128&& vVector);
 	Vec4fA(float fR, float fG, float fB, float fA);
+	Vec4fA(const Vec4f& vVector);
 	Vec4fA(Vec3f vVector, float fA);
 
 	inline Vec4fA operator-();
@@ -626,6 +646,7 @@ __declspec(align(16)) struct Matrix4fA
 		float fYx, float fYy, float fYz, float fYw,
 		float fZx, float fZy, float fZz, float fZw,
 		float fWx, float fWy, float fWz, float fWw);
+	Matrix4fA(const Matrix4f& mMatrix);
 	Matrix4fA(const Matrix4fA& mMatrix);
 	Matrix4fA(Matrix4fA&& mMatrix);
 	Matrix4fA(XMMATRIX&& mMatrix);
@@ -697,6 +718,8 @@ __declspec(align(16)) struct Matrix4fA
 	inline Matrix4fA& MakeOrthographic(float fWidth, float fHeight, float fNear, float fFar);
 
 	inline Matrix4fA& OrthoNormalInvert();
+
+	inline Matrix4fA& MakeTextureMatrixOffsetLH(unsigned int unWidth, unsigned int unHeight);
 };
 
 typedef Matrix4fA Matrix44A;
@@ -707,12 +730,59 @@ typedef Matrix4fA float4x4A;
 #pragma endregion
 #endif //SSE_MATH_AVAILABLE
 
+#ifndef SSE_MATH_AVAILABLE
+extern const __declspec(selectany) Matrix4f g_IdentityMatrix(1.0f, 0.0f, 0.0f, 0.0f,
+															0.0f, 1.0f, 0.0f, 0.0f,
+															0.0f, 0.0f, 1.0f, 0.0f,
+															0.0f, 0.0f, 0.0f, 1.0f);
+#else
+extern const __declspec(selectany) Matrix4fA g_IdentityMatrix(1.0f, 0.0f, 0.0f, 0.0f,
+															  0.0f, 1.0f, 0.0f, 0.0f,
+															  0.0f, 0.0f, 1.0f, 0.0f,
+															  0.0f, 0.0f, 0.0f, 1.0f);
+#endif
+
+#pragma region Collision Declarations
+struct Sphere
+{
+	Vec3f vCenter;
+	float fRadius;
+
+	inline void Build(const Vec3f* pVerts, unsigned int unNumVerts);
+};
+
+struct AABB
+{
+	Vec3f vMinPoint, vMaxPoint;
+};
+
+struct Plane
+{
+	Vec3f vNormal;
+	float fOffset;
+
+	inline void Build(const Vec3f& vTopLeft, const Vec3f& vBottomLeft, const Vec3f& vBottomRight);
+};
+
+enum FrustumCorners {FTL, FTR, FBR, FBL, NTL, NTR, NBR, NBL, NUM_FRUSTUM_CORNERS};
+enum FrustumPlanes {LEFT_PLANE, RIGHT_PLANE, NEAR_PLANE, FAR_PLANE, TOP_PLANE, BOTTOM_PLANE, NUM_FRUSTUM_PLANES};
+struct Frustum
+{
+	Plane Planes[NUM_FRUSTUM_PLANES];
+	Vec3f vCorners[NUM_FRUSTUM_CORNERS];
+
+	inline void Build(float fFov, float fNear, float fFar, float fAspectRatio, const Matrix4f& mCamera);
+};
+
+#pragma endregion
+
 #include "Vec2f.inl"
 #include "Vec3f.inl"
 #include "Vec4f.inl"
 #include "Matrix3f.inl"
 #include "Matrix34f.inl"
 #include "Matrix4f.inl"
+#include "RMCollisions.inl"
 
 #ifdef SSE_MATH_AVAILABLE
 #include "Vec4fA.inl"

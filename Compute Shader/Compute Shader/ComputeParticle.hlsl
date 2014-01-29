@@ -4,9 +4,11 @@
 #include "ShaderDeclarations.hlsl"
 
 #define MAX_PARTICLES 1024
-#define GRAVITY_STRENGTH 20.0f
+#define GRAVITY_STRENGTH 500.0f
 
 #define CAMERA_OFFSET 10.0f
+#define PARTICLE_MASS 10.0f
+static const float PARTICLE_WEIGHT = (PARTICLE_MASS * GRAVITY_STRENGTH);
 
 RWStructuredBuffer<ParticleData> particles : register(u0);
 
@@ -19,20 +21,28 @@ void main( uint ThreadID : SV_GroupIndex , uint3 GroupID : SV_GroupID)
 
 		float3 particlePos = particles[index].position;
 
-		/*float3 camToParticle = particlePos - CameraPos;
-		float dotVal = dot(CameraToGravity, camToParticle);
-
-		particlePos = CameraPos + normalize(camToParticle) * CAMERA_OFFSET;//CameraPos + (camToParticle * dotVal);*/
-
 		float3 vecToGravity = normalize(gravityPos - particlePos);
-		vecToGravity *= (GRAVITY_STRENGTH * (GRAVITY_STRENGTH * 0.5f));
 
-		float3 particleVelocity = particles[index].velocity + vecToGravity * fElapsedTime;
+		float3 force = vecToGravity * GRAVITY_STRENGTH;
 
-		particlePos += particleVelocity * fElapsedTime;
+
+		float3 savePos = particlePos; 
+
+		// now compute the new position using velocity verlet:  r(t+dt)=2*r(t)-r(t-dt)+a(t)*dt*dt 
+		// that is new position= 2*(current position)-(previous position)+ (current acceleration)dt*dt
+		//													acceleration
+		particlePos = 2 * particlePos - particles[index].prevPos + force * fDeltaTime * fDeltaTime;
+
+		float3 camToParticle = particlePos - CameraPos;
+		if(length(camToParticle) > CAMERA_FAR_CLIP)
+		{
+			particlePos = CameraPos + normalize(camToParticle) * CAMERA_FAR_CLIP;
+			savePos = particlePos;
+		}
 
 		particles[index].position = particlePos;
-		particles[index].velocity = particleVelocity;
+		particles[index].prevPos = savePos;
+		particles[index].force = force;
 	}
 }
 
