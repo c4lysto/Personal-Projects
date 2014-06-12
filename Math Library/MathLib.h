@@ -8,10 +8,12 @@
 #include "Vec4.inl"
 #include "Matrix44.inl"
 
+#if SSE_AVAILABLE
 #include "Vec2V.inl"
 #include "Vec3V.inl"
 #include "Vec4V.inl"
 #include "Mat44V.inl"
+#endif
 
 #include "GlobalMathFuncs.inl"
 

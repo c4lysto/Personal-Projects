@@ -1,6 +1,7 @@
 #include <iostream>
 using namespace std;
-#include <assert.h>
+
+#include <thread>
 
 #include "../../Math Library/MathLib.h"
 #include "../../RMMath/Timer.h"
@@ -14,10 +15,10 @@ int main()
 {
 	Timer timer;
 	double totalTime = 0;
-	Vec3f tst(1, 0, 0);
+	Vec3f tst(1, 2, 3);
 	Vec3f tst1(1, 0, 0);
 
-	Vec4f vec1(1, 0, 0, 0);
+	Vec4f vec1(1, 2, 3, 4);
 	Vec4f vec2(1, 0, 0, 0);
 	float result;
 
@@ -30,6 +31,12 @@ int main()
 	//	_ASSERT_EXPR(0, buff);
 	//	//_wassert((const wchar_t*)buff, _CRT_WIDE(__FILE__), __LINE__); 
 	//}
+
+	std::thread tstThread;
+
+	Mat44V convertTst(INIT_IDENTITY);
+	Mat44 convTst1;
+	convTst1 = MAT44V_TO_MAT44(convertTst);
 
 	int structSize = sizeof(Vec4f);
 

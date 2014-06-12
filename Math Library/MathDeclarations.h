@@ -33,6 +33,7 @@ enum eQuarterInitializer {INIT_QUARTER};
 enum eHalfInitializer {INIT_HALF};
 enum eIdentityInitializer { INIT_IDENTITY };
 
+template<typename Type> class Vec2;
 class Vec3f;
 class Vec4f;
 class Mat44;
@@ -54,21 +55,21 @@ class Mat44V;
 									VEC4F_TO_VEC4V(x.GetWAxis())))
 
 // Vectorized to Normal
-#define VEC2V_TO_VEC2F(x) (*(Vec2f*)&(x))
-#define VEC3V_TO_VEC3F(x) (*(Vec3f*)&(x))
-#define VEC4V_TO_VEC4F(x) (*(Vec4f*)&(x))
-#define MAT44V_TO_MAT44(x) (*(Mat44*)&(x))
+#define VEC2V_TO_VEC2F(x) (Vec2f(*(Vec2f*)&(x)))
+#define VEC3V_TO_VEC3F(x) (Vec3f(*(Vec3f*)&(x)))
+#define VEC4V_TO_VEC4F(x) (Vec4f(*(Vec4f*)&(x)))
+#define MAT44V_TO_MAT44(x) (Mat44(*(Mat44*)&(x)))
 
 // Conversion Macros - End
 
 #ifndef VEC_FILL_VAL
-#define VEC_FILL_VAL (0.0f) // by keeping this at Zero we only have to worry about resetting the value for the divide operation, which is already slow...
+#define VEC_FILL_VAL (0.0f)
 #endif //VEC_FILL_VAL
 #else
 #define Vec2V Vec2f
 #define Vec3V Vec3f
 #define Vec4V Vec4f
-#define Mat44V Matrix44
+#define Mat44V Mat44
 
 // Conversion Macros - Start
 // Normal to Vectorized
@@ -84,22 +85,14 @@ class Mat44V;
 #define MAT44V_TO_MAT44(x) x
 #endif//SSE_AVAILABLE
 
-#ifdef SSE_AVAILABLE
+#if SSE_AVAILABLE
 // Flipped the value around because __m128 stores the float in the opposite order that you think it does, TRUST ME!
 // _MM_FSHUFFLE makes using the _mm_shuffle_ps() function more intuitive by flipping the values that it passes to _MM_SHUFFLE()
 #define _MM_FSHUFFLE(fp0,fp1,fp2,fp3) _MM_SHUFFLE(fp3,fp2,fp1,fp0)
 #endif
 
-#ifndef SAFE_RELEASE
-#define SAFE_RELEASE(rel) { if(rel) {rel->Release(); rel = nullptr;}}
-#endif
-
-#ifndef SAFE_DELETE
-#define SAFE_DELETE(del) { if(del) {delete del; del = nullptr;} }
-#endif
-
 #ifndef PI
-#define PI 3.14159265359f
+#define PI 3.1415926535897932384626433832795f
 #endif
 
 #ifndef _2PI
@@ -118,19 +111,19 @@ class Mat44V;
 #define FLT_EPSILON     1.192092896e-07F
 #endif
 
-#ifndef _PI_OVER_180
-#define _PI_OVER_180 (PI/180.0f)
+#ifndef PI_OVER_180
+#define PI_OVER_180 (PI/180.0f)
 #endif
 
 #ifndef _180_OVER_PI
 #define _180_OVER_PI (180.0f/PI)
 #endif
 
-#ifndef DEG_TO_RAD
-#define DEGREES_TO_RADIANS(deg) ((deg) * _PI_OVER_180)
+#ifndef DEGREES_TO_RADIANS
+#define DEGREES_TO_RADIANS(deg) ((deg) * PI_OVER_180)
 #endif
 
-#ifndef RAD_TO_DEG
+#ifndef RADIANS_TO_DEGREES
 #define RADIANS_TO_DEGREES(rad) ((rad) * _180_OVER_PI)
 #endif
 
@@ -144,4 +137,4 @@ class Mat44V;
 #endif
 #define min(a,b) Min(a, b)
 
-#endif
+#endif //MATHDECLARATIONS_H

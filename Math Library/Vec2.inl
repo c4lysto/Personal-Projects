@@ -2,7 +2,7 @@
 #define VEC2_INL
 
 template<typename Type>
-struct Vec2
+class Vec2
 {
 #define DEFINE_VEC2_ENUM_CONSTRUCTOR(enumeration, valueToInit)\
 	explicit __forceinline Vec2(enumeration) : x(valueToInit), y(valueToInit){}

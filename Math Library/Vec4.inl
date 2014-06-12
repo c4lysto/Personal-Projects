@@ -161,7 +161,7 @@ extern const __declspec(selectany) Vec4f g_IdentityW4 = Vec4f(0.0f, 0.0f, 0.0f, 
 
 __forceinline Vec4f::Vec4f(Vec4f_In vVector)
 #if !SSE_AVAILABLE
-: r(vVector.r), g(vVector.g), b(vVector.b), a(vVector.a)
+: x(vVector.x), y(vVector.y), z(vVector.z), w(vVector.w)
 #endif
 {
 #if SSE_AVAILABLE

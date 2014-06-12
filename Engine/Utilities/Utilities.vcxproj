@@ -22,10 +22,12 @@
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\CriticalSection.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\DebugHelp.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\GlobalDefines.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\Thread.h" />
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\UtilitiesInclude.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\CriticalSection.cpp" />
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\Thread.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{10AE78BB-987D-4061-A1D4-8F4ADD9A86EB}</ProjectGuid>
@@ -55,7 +57,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>

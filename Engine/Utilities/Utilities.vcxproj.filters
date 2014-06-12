@@ -27,9 +27,15 @@
     <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\GlobalDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\Thread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\CriticalSection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\Thread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

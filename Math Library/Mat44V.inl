@@ -93,8 +93,8 @@ public:
 #error Mat44V MUTATORS NOT DEFINED!
 #endif
 
-	explicit operator XMMATRIX() const;
-	explicit operator XMMATRIX*() const;
+	//explicit operator XMMATRIX() const;
+	//explicit operator XMMATRIX*() const;
 
 	Mat44V& operator=(Mat44V_In mMatrix);
 	Mat44V& operator=(Mat44V&& mMatrix);
@@ -120,15 +120,11 @@ public:
 	Mat44V& Rotate_LocalY_Degrees(float fDegrees);
 	Mat44V& Rotate_LocalZ_Degrees(float fDegrees);
 
-	Mat44V& Scale(float fXScale, float fYScale, float fZScale);
 	Mat44V& Scale(const Vec3V& vScale);
 
-	Mat44V& SetScale(float fXScale, float fYScale, float fZScale);
 	Mat44V& SetScale(const Vec3V& vScale);
-	Mat44V& SetScale(float fScale);
 	Vec3V GetScale() const;
 
-	Mat44V& Translate(float fX, float fY, float fZ);
 	Mat44V& Translate(Vec3V_In vTranslation);
 
 	Mat44V& Transpose();
@@ -138,13 +134,11 @@ public:
 
 	Mat44V& Invert();
 
-	Mat44V& LookAt(const Vec3V& mPos, const Vec3V& vWorldUp = g_IdentityY3V);
+	Mat44V& LookAt(Vec3V_In mPos, Vec3V_In vWorldUp = g_IdentityY3V);
 
-	Mat44V& TurnTo(const Vec3V& vPos, float fTurnModifier = 1.0f);
+	Mat44V& TurnTo(Vec3V_In vPos, float fDeltaTime, float fTurnModifier = 1.0f);
 
 	Mat44V& OrthoNormalInvert();
-
-	Mat44V& MakeTextureMatrixOffsetLH(unsigned int unWidth, unsigned int unHeight);
 };
 
 __forceinline Mat44V::Mat44V(float fXx, float fXy, float fXz, float fXw,
@@ -201,15 +195,15 @@ __forceinline Mat44V::Mat44V(eIdentityInitializer eIdentity)
 	wAxis = g_IdentityW4V;
 }
 
-__forceinline Mat44V::operator XMMATRIX() const
-{
-	return *(XMMATRIX*)this;
-}
-
-__forceinline Mat44V::operator XMMATRIX*() const
-{
-	return (XMMATRIX*)this;
-}
+//__forceinline Mat44V::operator XMMATRIX() const
+//{
+//	return *(XMMATRIX*)this;
+//}
+//
+//__forceinline Mat44V::operator XMMATRIX*() const
+//{
+//	return (XMMATRIX*)this;
+//}
 
 __forceinline Mat44V& Mat44V::operator=(Mat44V_In mMatrix)
 {
@@ -470,50 +464,26 @@ __forceinline Mat44V& Mat44V::Rotate_LocalZ_Degrees(float fDegrees)
 	return Rotate_LocalZ_Radians(DEGREES_TO_RADIANS(fDegrees));
 }
 
-__forceinline Mat44V& Mat44V::Scale(float fXScale, float fYScale, float fZScale)
-{
-	xAxis *= fXScale;
-	yAxis *= fYScale;
-	zAxis *= fZScale;
-}
-
 __forceinline Mat44V& Mat44V::Scale(const Vec3V& vScale)
 {
-	return Scale(vScale.x, vScale.y, vScale.z);
+	xAxis.SetXYZ(xAxis.GetXYZ() * vScale.GetX());
+	yAxis.SetXYZ(yAxis.GetXYZ() * vScale.GetY());
+	zAxis.SetXYZ(zAxis.GetXYZ() * vScale.GetZ());
+	return *this;
 }
 
-__forceinline Mat44V& Mat44V::SetScale(float fXScale, float fYScale, float fZScale)
+__forceinline Mat44V& Mat44V::SetScale(Vec3V_In vScale)
 {
-	xAxis.Normalize();
-	xAxis *= fXScale;
-
-	yAxis.Normalize();
-	yAxis *= fYScale;
-
-	zAxis.Normalize();
-	zAxis *= fZScale;
-}
-
-__forceinline Mat44V& Mat44V::SetScale(const Vec3V& vScale)
-{
-	return SetScale(vScale.x, vScale.y, vScale.z);
-}
-
-__forceinline Mat44V& Mat44V::SetScale(float fScale)
-{
-	return SetScale(fScale, fScale, fScale);
+	xAxis.SetXYZ(Normalize(xAxis.GetXYZ()) * vScale.GetX());
+	yAxis.SetXYZ(Normalize(yAxis.GetXYZ()) * vScale.GetY());
+	zAxis.SetXYZ(Normalize(zAxis.GetXYZ()) * vScale.GetZ());
+	return *this;
 }
 
 __forceinline Vec3V Mat44V::GetScale() const
 {
 	Vec3V retVal(xAxis.Mag(), yAxis.Mag(), zAxis.Mag());
 	return retVal;
-}
-
-__forceinline Mat44V& Mat44V::Translate(float fX, float fY, float fZ)
-{
-	wAxis.SetXYZ(wAxis.GetXYZ() + Vec3V(fX, fY, fZ));
-	return *this;
 }
 
 __forceinline Mat44V& Mat44V::Translate(Vec3V_In vTranslation)
@@ -557,7 +527,7 @@ __forceinline Mat44V& Mat44V::NormalizeXYZ()
 
 __forceinline Mat44V& Mat44V::Invert()
 {
-	return *this = XMMatrixInverse(NULL, (XMMATRIX)*this);
+	return *this = XMMatrixInverse(NULL, *(XMMATRIX*)this);
 }
 
 __forceinline Mat44V& Mat44V::LookAt(Vec3V_In mPos, Vec3V_In vWorldUp)
@@ -579,9 +549,40 @@ __forceinline Mat44V& Mat44V::LookAt(Vec3V_In mPos, Vec3V_In vWorldUp)
 	return *this;
 }
 
-__forceinline Mat44V& Mat44V::TurnTo(const Vec3V& vPos, float fTurnModifier)
+__forceinline Mat44V& Mat44V::TurnTo(const Vec3V& vPos, float fDeltaTime, float fTurnModifier)
 {
+	Vec3V vecToPos = vPos - wAxis.GetXYZ();
+	vecToPos.Normalize();
 
+	float protection = DotProduct(vecToPos, zAxis.GetXYZ());
+
+	if (protection + 1 <= protection || protection != protection)
+	{
+		// You are already facing that exact direction
+		return *this;
+	}
+
+	float fRotation = DotProduct(vecToPos, xAxis.GetXYZ());
+
+	if(fRotation > FLT_EPSILON || fRotation < -FLT_EPSILON)
+	{
+		// protection to keep the matrix from turning slowly
+		// if the position is behind the matrix
+		if(DotProduct(vecToPos, zAxis.GetXYZ()) < 0.0f)
+			fRotation = (fRotation < 0.0f) ? -1.0f : 1.0f;
+
+		Rotate_LocalY_Radians(fRotation * fTurnModifier * fDeltaTime);
+	}
+
+	fRotation = DotProduct(vecToPos, yAxis.GetXYZ());
+
+	if(fRotation > FLT_EPSILON || fRotation < -FLT_EPSILON)
+		Rotate_LocalX_Radians(-fRotation * fTurnModifier * fDeltaTime);
+
+	xAxis.SetXYZ(Normalize(CrossProduct(g_WorldUp3V, zAxis.GetXYZ())));
+	yAxis.SetXYZ(Normalize(CrossProduct(zAxis.GetXYZ(), xAxis.GetXYZ())));
+
+	return *this;
 }
 
 __forceinline Mat44V& Mat44V::OrthoNormalInvert()
@@ -594,15 +595,6 @@ __forceinline Mat44V& Mat44V::OrthoNormalInvert()
 	Wy = -DotProduct(tmp.wAxis.GetXYZ(), tmp.yAxis.GetXYZ());
 	Wz = -DotProduct(tmp.wAxis.GetXYZ(), tmp.zAxis.GetXYZ());
 
-	return *this;
-}
-
-__forceinline Mat44V& Mat44V::MakeTextureMatrixOffsetLH(unsigned int unWidth, unsigned int unHeight)
-{
-	xAxis = Vec4V(0.5f,						0.0f,						0.0f,	0.0f);
-	yAxis = Vec4V(0.0f,						-0.5f,						0.0f,	0.0f);
-	zAxis = Vec4V(0.0f,						0.0f,						1.0f,	0.0f);
-	wAxis = Vec4V(0.5f + (0.5f / unWidth),	0.5f + (0.5f / unHeight),	0.0f,	1.0f);
 	return *this;
 }
 #endif //MAT44V_INL

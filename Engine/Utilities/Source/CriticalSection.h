@@ -12,6 +12,10 @@ public:
 	CriticalSection(DWORD dwSpinCount = 1000);
 	~CriticalSection();
 
+	// Undefined to avoid bad things.
+	CriticalSection(const CriticalSection& rhs);
+	CriticalSection& operator=(const CriticalSection& rhs);
+
 	void Lock();
 	bool TryLock();
 	void Unlock();

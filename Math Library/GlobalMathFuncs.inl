@@ -1,3 +1,6 @@
+#ifndef GLOBALMATHFUNCS_INL
+#define GLOBALMATHFUNCS_INL
+
 template<typename Type>
 __forceinline Type Max(Type lhs, Type rhs)
 {
@@ -8,6 +11,18 @@ template<typename Type>
 __forceinline Type Min(Type lhs, Type rhs)
 {
 	return (lhs < rhs) ? lhs : rhs;
+}
+
+template<typename Type>
+__forceinline Type Clamp(Type val, Type minVal, Type maxVal)
+{
+	return (val > minVal) ? (val < maxVal) ? val : maxVal : minVal;
+}
+
+template<typename Type>
+__forceinline Type Saturate(Type val)
+{
+	return Clamp(val, (Type)0, (Type)1);
 }
 
 template<typename Type>
@@ -59,7 +74,7 @@ __forceinline float DotProduct(Vec4f_In vVectorA, Vec4f_In vVectorB)
 }
 
 template<typename Type>
-__forceinline float AngleBetween(const Vec2f& lhs, const Vec2f& rhs)
+__forceinline float AngleBetween(const Vec2<Type>& lhs, const Vec2<Type>& rhs)
 {
 	float dotProduct = (lhs.x * rhs.x) + (lhs.y * rhs.y);
 
@@ -261,3 +276,4 @@ __forceinline Mat44V MatrixTranspos3x3(Mat44V mMatrix)
 	return retVal.Transpose3x3();
 }
 #endif //SSE_AVAILABLE
+#endif //GLOBALMATHFUNCS_INL

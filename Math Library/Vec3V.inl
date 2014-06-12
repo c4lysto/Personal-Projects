@@ -132,6 +132,7 @@ public:
 };
 
 Vec3V CrossProduct(Vec3V_In vVectorA, Vec3V_In vVectorB);
+Vec3V Normalize(Vec3V_In vVector);
 float DotProduct(Vec3V_In vVectorA, Vec3V_In vVectorB);
 
 extern const __declspec(selectany) Vec3V g_IdentityX3V = Vec3V(1.0f, 0.0f, 0.0f);

@@ -127,6 +127,7 @@ public:
 	float LengthSq() const;
 };
 
+Vec3f Normalize(Vec3f_In vVector);
 Vec3f CrossProduct(Vec3f_In vVectorA, Vec3f_In vVectorB);
 float DotProduct(Vec3f_In vVectorA, Vec3f_In vVectorB);
 
