@@ -13,12 +13,22 @@
 #include <assert.h>
 #endif
 
+#if DEBUG
+	#define DEBUG_TRACK_MEMORY_LEAKS(allocNum) \
+	do { \
+		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF); \
+		_CrtSetBreakAlloc(allocNum); \
+	} while(0)
+#else
+	#define DEBUG_TRACK_MEMORY_LEAKS(allocNum)
+#endif
+
 #ifndef DisplayDebugString
 #if DEBUG
 	#define DisplayDebugString(x, ...) \
 		char buff[256]; \
-		sprintf(buff, x, __VA_ARGS__); \
-		OutputDebugString(buff);
+		sprintf_s(buff, 256, x, __VA_ARGS__); \
+		OutputDebugStringA(buff);
 #else // !DEBUG
 	#define DisplayDebugString(x, ...)
 #endif // !DEBUG
@@ -26,16 +36,22 @@
 
 #ifndef Assert
 #if DEBUG
+	#define __ASSERT 1
 	#define Assert(condition, message, ...) \
 		(void) ((!!(condition)) || \
                 (1 != _CrtDbgReportW(_CRT_ASSERT, _CRT_WIDE(__FILE__), __LINE__, NULL, _CRT_WIDE(message), __VA_ARGS__)) || \
 				(__debugbreak(), 0))
-#define ASSERT_ONLY(x) x
 #else // !DEBUG
+	#define __ASSERT 0
 	#define Assert(condition, message, ...)
-	#define ASSERT_ONLY(x)
 #endif // !DEBUG
 #endif // ifndef Assert
+
+#if __ASSERT
+#define ASSERT_ONLY(x) x
+#else // !__ASSERT
+#define ASSERT_ONLY(x)
+#endif // !__ASSERT
 
 #ifndef Verify
 #if DEBUG

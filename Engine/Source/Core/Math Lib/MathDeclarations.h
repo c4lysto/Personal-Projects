@@ -1,7 +1,9 @@
 #ifndef MATHDECLARATIONS_H
 #define MATHDECLARATIONS_H
 
+#if WIN32 || _WIN64
 #include <Windows.h>
+#endif
 
 #include <DirectXMath.h>
 using namespace DirectX;

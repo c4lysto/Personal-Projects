@@ -84,10 +84,10 @@ public:
 #endif
 
 #ifdef Mat44V_MUTATOR
-	Mat44V_MUTATOR(SetXAxis, Vec4V, xAxis)
-	Mat44V_MUTATOR(SetYAxis, Vec4V, yAxis)
-	Mat44V_MUTATOR(SetZAxis, Vec4V, zAxis)
-	Mat44V_MUTATOR(SetWAxis, Vec4V, wAxis)
+	Mat44V_MUTATOR(SetXAxis, Vec4V_In, xAxis)
+	Mat44V_MUTATOR(SetYAxis, Vec4V_In, yAxis)
+	Mat44V_MUTATOR(SetZAxis, Vec4V_In, zAxis)
+	Mat44V_MUTATOR(SetWAxis, Vec4V_In, wAxis)
 #undef Mat44V_MUTATOR
 #else
 #error Mat44V MUTATORS NOT DEFINED!

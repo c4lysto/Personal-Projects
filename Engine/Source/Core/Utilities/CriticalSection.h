@@ -1,7 +1,6 @@
 #ifndef CRITICAL_SECTION_H
 #define CRITICAL_SECTION_H
-
-#include <Windows.h>
+#include "UtilitiesInclude.h"
 
 class CriticalSection
 {
@@ -9,16 +8,35 @@ private:
 	CRITICAL_SECTION m_CriticalSection;
 
 public:
-	CriticalSection(DWORD dwSpinCount = 1000);
-	~CriticalSection();
+	inline CriticalSection(DWORD dwSpinCount = 1000)
+	{
+		InitializeCriticalSectionAndSpinCount(&m_CriticalSection, dwSpinCount);
+	}
+
+	inline ~CriticalSection()
+	{
+		DeleteCriticalSection(&m_CriticalSection);
+	}
 
 	// Undefined to avoid bad things.
 	CriticalSection(const CriticalSection& rhs);
 	CriticalSection& operator=(const CriticalSection& rhs);
 
-	void Lock();
-	bool TryLock();
-	void Unlock();
+	inline void Lock()
+	{
+		EnterCriticalSection(&m_CriticalSection);
+	}
+
+	inline bool TryLock()
+	{
+		return TryEnterCriticalSection(&m_CriticalSection) ? true : false;
+	}
+
+	inline void Unlock()
+	{
+		if(m_CriticalSection.OwningThread == (HANDLE)GetCurrentThreadId())
+			LeaveCriticalSection(&m_CriticalSection);
+	}
 };
 
 class ScopedCriticalSection
@@ -27,7 +45,32 @@ private:
 	CriticalSection& m_CriticalSection;
 
 public:
-	ScopedCriticalSection(CriticalSection& critSection, bool bAutoLock = true);
-	~ScopedCriticalSection();
+	inline ScopedCriticalSection(CriticalSection& critSection, bool bAutoLock = true) : m_CriticalSection(critSection)
+	{
+		if(bAutoLock)
+			m_CriticalSection.Lock();
+	}
+
+	inline ~ScopedCriticalSection()
+	{
+		Unlock();
+	}
+
+	ScopedCriticalSection& operator=(const ScopedCriticalSection& rhs);
+
+	inline void Lock()
+	{
+		m_CriticalSection.Lock();
+	}
+
+	inline void TryLock()
+	{
+		m_CriticalSection.TryLock();
+	}
+
+	inline void Unlock()
+	{
+		m_CriticalSection.Unlock();
+	}
 };
 #endif

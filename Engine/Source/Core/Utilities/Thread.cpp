@@ -1,11 +1,9 @@
 #include "Thread.h"
-#include "UtilitiesInclude.h"
 #include <process.h>
-#include <WinBase.h>
 
-Thread::Thread() : m_hThread(nullptr), m_pArgs(nullptr), m_pThreadFunc(nullptr), m_pFinishedCallback(nullptr)
+Thread::Thread() : m_hThread(nullptr)
 {
-
+	StartThread();
 }
 	
 Thread::~Thread()
@@ -13,15 +11,60 @@ Thread::~Thread()
 	KillThread();
 }
 
+unsigned int __stdcall Thread::DefaultThreadProc(void* pArgs)
+{
+	u32 nProcRetVal = (u32)-1;
+
+	if(pArgs)
+	{
+		ThreadArgs& threadArgs = *(ThreadArgs*)pArgs;
+		WaitObject& jobWaitObject = threadArgs.m_JobWaitObject;
+		int jobRetVal;
+
+		while(true)
+		{
+			jobWaitObject.Wait();
+
+			if(threadArgs.m_pThreadFunc)
+			{
+				jobRetVal = (threadArgs.m_pThreadFunc)(threadArgs.m_pArgs);
+
+				if(threadArgs.m_pFinishedCallback)
+					(threadArgs.m_pFinishedCallback)(jobRetVal, threadArgs.m_pArgs);
+
+				threadArgs.Reset();
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		nProcRetVal = 0;
+	}
+
+#if __ASSERT
+	if(nProcRetVal == -1)
+	{
+		Assert(false, "Failed To Properly Start Thread!");
+	}
+#endif // __ASSERT
+
+	return nProcRetVal;
+}
+
 inline void Thread::CloseThread()
 {
 	if(m_hThread)
 	{
+		AssignTask(nullptr, nullptr);
+		m_ThreadWaitObject.Wait();
+
 		BOOL bHandleClosed = CloseHandle(m_hThread);
 
 		if(!bHandleClosed)
 		{
-			OutputDebugString("Failed To Close Handle (%p), Error Number: %d", GetLastError());
+			DisplayDebugString("Failed To Close Handle (%p), Error Number: %d", GetLastError());
 		}
 
 		m_hThread = nullptr;
@@ -33,18 +76,24 @@ inline void Thread::ExitThread()
 	_endthreadex(THREAD_KILL_RET_VAL);
 }
 
-void Thread::Init(ThreadFunc pThreadFunc, void* pArgs, bool bAutoStartThread /*= true*/, ThreadFinishCallback pFinishedCallback /*= nullptr*/)
+void Thread::AssignTask(ThreadProc pProc, void* pArgs, ThreadFinishCallback pFinishedCallback/* = nullptr*/, bool bAutoSignalWork /*= true*/)
 {
-	Assert(pThreadFunc, "Invalid Thread Function When Initializing New Thread!");
-
-	if(Verify(!m_hThread, "Thread Has Already Been Started!"))
+	if(m_hThread && !m_ThreadArgs.m_pThreadFunc)
 	{
-		m_pThreadFunc = pThreadFunc;
+		m_ThreadArgs.m_pArgs = pArgs;
+		m_ThreadArgs.m_pThreadFunc = pProc;
+		m_ThreadArgs.m_pFinishedCallback = pFinishedCallback;
 
-		m_pFinishedCallback = pFinishedCallback;
+		if(bAutoSignalWork)
+			m_ThreadArgs.m_JobWaitObject.Signal();
+	}
+}
 
-		if(bAutoStartThread)
-			StartThread();
+void Thread::SignalWork()
+{
+	if(m_hThread && !m_ThreadArgs.m_pThreadFunc)
+	{
+		m_ThreadArgs.m_JobWaitObject.Signal();
 	}
 }
 
@@ -54,9 +103,11 @@ bool Thread::StartThread()
 
 	if(Verify(!m_hThread, "Thread is Already Active, Start Thread will notdo anything."))
 	{
-		if(Verify(m_pThreadFunc, "No Function Set for the starting thread"))
+		//if(Verify(m_pThreadFunc, "No Function Set for the starting thread"))
 		{
-			m_hThread = (HANDLE)_beginthreadex(NULL, 0, (unsigned int(__stdcall*)(void*))m_pThreadFunc, m_pArgs, 0, NULL);
+			m_hThread = (void*)_beginthreadex(NULL, 0, Thread::DefaultThreadProc, &m_ThreadArgs, 0, NULL);
+			Sleep(1000);
+			m_ThreadWaitObject.SetWaitHandle(m_hThread);
 		}
 
 		return true;
@@ -69,7 +120,7 @@ void Thread::KillThread()
 {
 	if(m_hThread)
 	{
-		ExitThread();
+		//ExitThread();
 		CloseThread();
 	}
 }

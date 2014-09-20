@@ -1,38 +1,71 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-#include <windef.h>
+#include "CriticalSection.h"
+#include "WaitObject.h"
 
-typedef int(*ThreadFunc)(void*);
-typedef void(*ThreadFinishCallback)(int);
+typedef int(*ThreadProc)(void*);
+typedef void(*ThreadFinishCallback)(int, void*);
 
 #define THREAD_KILL_RET_VAL (0xCDCDCDCDU)
 
 class Thread
 {
 private:
-	HANDLE m_hThread;
-	void* m_pArgs;
-	ThreadFunc m_pThreadFunc;
-	ThreadFinishCallback m_pFinishedCallback;
+	struct ThreadArgs
+	{
+		void* m_pArgs;
+		ThreadProc m_pThreadFunc;
+		ThreadFinishCallback m_pFinishedCallback;
+		WaitObject m_JobWaitObject;
 
+		ThreadArgs() : m_pArgs(nullptr), m_pThreadFunc(nullptr), m_pFinishedCallback(nullptr)
+		{
+			m_JobWaitObject.CreateWaitHandle();
+		}
+
+		~ThreadArgs()
+		{
+			m_JobWaitObject.CloseWaitHandle();
+		}
+
+		inline void Reset()
+		{
+			m_pArgs = nullptr;
+			m_pThreadFunc = nullptr;
+			m_pFinishedCallback = nullptr;
+		}
+	};
+
+private:
+	void* m_hThread;
+	WaitObject m_ThreadWaitObject;
+	ThreadArgs m_ThreadArgs;
+	
+	bool StartThread();
 	void CloseThread();
 	void ExitThread();
+
+	static unsigned int __stdcall DefaultThreadProc(void* pArgs);
 
 public:
 	Thread();
 	~Thread();
 
 	// Undefined to avoid bad things.
-	Thread(const Thread& rhs) = delete;
-	Thread& operator=(const Thread& rhs) = delete;
+	Thread(const Thread& rhs);// = delete;
+	Thread& operator=(const Thread& rhs);// = delete;
 
+	WaitObject GetThreadWaitObject() const {return m_ThreadWaitObject;}
 	HANDLE GetThreadHandle() const {return m_hThread;}
 
-	// pArgs - dynamically allocated memory, will be deleted after the thread is finished
-	void Init(ThreadFunc pThreadFunc, void* pArgs, bool bAutoStartThread = true, ThreadFinishCallback pFinishedCallback = nullptr);
+	// pProc - Pass NULL to kill the thread
+	// pArgs - This memory should be allocated and deleted properly outside of the function
+	void AssignTask(ThreadProc pProc, void* pArgs, ThreadFinishCallback pFinishedCallback = nullptr, bool bAutoSignalWork = true);
 
-	bool StartThread();
+	// Will only signal Work if the Thread Proc Is Valid, see AssignTask
+	void SignalWork();
+
 	void KillThread();
 };
 
