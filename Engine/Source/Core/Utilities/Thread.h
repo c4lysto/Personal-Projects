@@ -1,8 +1,7 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-#include "CriticalSection.h"
-#include "WaitObject.h"
+#include "SysSemaphore.h"
 
 typedef int(*ThreadProc)(void*);
 typedef void(*ThreadFinishCallback)(int, void*);
@@ -17,16 +16,14 @@ private:
 		void* m_pArgs;
 		ThreadProc m_pThreadFunc;
 		ThreadFinishCallback m_pFinishedCallback;
-		WaitObject m_JobWaitObject;
+		SysSemaphore m_JobWaitObject;
 
 		ThreadArgs() : m_pArgs(nullptr), m_pThreadFunc(nullptr), m_pFinishedCallback(nullptr)
 		{
-			m_JobWaitObject.CreateWaitHandle();
 		}
 
 		~ThreadArgs()
 		{
-			m_JobWaitObject.CloseWaitHandle();
 		}
 
 		inline void Reset()
@@ -39,7 +36,7 @@ private:
 
 private:
 	void* m_hThread;
-	WaitObject m_ThreadWaitObject;
+	SysSemaphore m_ThreadWaitObject;
 	ThreadArgs m_ThreadArgs;
 	
 	bool StartThread();
@@ -56,8 +53,8 @@ public:
 	Thread(const Thread& rhs);// = delete;
 	Thread& operator=(const Thread& rhs);// = delete;
 
-	WaitObject GetThreadWaitObject() const {return m_ThreadWaitObject;}
-	HANDLE GetThreadHandle() const {return m_hThread;}
+	SysSyncObject GetThreadWaitObject() const {return m_ThreadWaitObject;}
+	void* GetThreadHandle() const {return m_hThread;}
 
 	// pProc - Pass NULL to kill the thread
 	// pArgs - This memory should be allocated and deleted properly outside of the function

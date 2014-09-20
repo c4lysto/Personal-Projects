@@ -5,12 +5,12 @@
 using std::list;
 
 #include "Thread.h"
-#include "WaitObject.h"
+#include "SysSyncObject.h"
 
 class ThreadGroup
 {
 private:
-	WaitObjectMultiple m_GroupSyncObject;
+	SysSyncObjectMultiple m_GroupSyncObject;
 	list<Thread*> m_lThreads;
 
 public:

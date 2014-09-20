@@ -18,7 +18,7 @@ unsigned int __stdcall Thread::DefaultThreadProc(void* pArgs)
 	if(pArgs)
 	{
 		ThreadArgs& threadArgs = *(ThreadArgs*)pArgs;
-		WaitObject& jobWaitObject = threadArgs.m_JobWaitObject;
+		SysSyncObject& jobWaitObject = threadArgs.m_JobWaitObject;
 		int jobRetVal;
 
 		while(true)
@@ -85,7 +85,7 @@ void Thread::AssignTask(ThreadProc pProc, void* pArgs, ThreadFinishCallback pFin
 		m_ThreadArgs.m_pFinishedCallback = pFinishedCallback;
 
 		if(bAutoSignalWork)
-			m_ThreadArgs.m_JobWaitObject.Signal();
+			SignalWork();
 	}
 }
 
