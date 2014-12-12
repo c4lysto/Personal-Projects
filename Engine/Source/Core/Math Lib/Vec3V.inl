@@ -11,13 +11,17 @@ typedef Vec3V Vec3V_In;
 typedef Vec3V_ConstRef Vec3V_In;
 #endif
 
+typedef Vec3V Vec3V_Out;
+
+typedef Vec3V_Ref Vec3V_InOut;
+
 // Other Vec3V Aliases
 typedef Vec3V float3V;
 
-class Vec3V
+ALIGN(16) class Vec3V
 {
 #define DEFINE_VEC3V_ENUM_CONSTRUCTOR(enumeration, valueToInit)\
-	explicit __forceinline Vec3V(enumeration) { row = _mm_set1_ps(valueToInit); }
+	explicit __forceinline Vec3V(enumeration) { row = VectorSet(valueToInit); }
 
 #define VEC3V_ACCESSOR(retType, funcName, retVal) \
 	__forceinline retType funcName() { return retVal; }
@@ -28,14 +32,12 @@ class Vec3V
 #define VEC3V_MUTATOR(funcName, inType, modifiedVal) \
 	__forceinline void funcName(inType rhs) { modifiedVal = rhs; }
 
-#define VEC3V_VEC_OP(name, lhs, rhs) name<VS_VALID,VS_VALID,VS_VALID,VS_INVALID>(lhs, rhs)
-
 	friend class Vec4V;
 
 private:
 	union
 	{
-		__m128 row;
+		Vector row;
 
 		union
 		{
@@ -50,10 +52,14 @@ public:
 	Vec3V(){}
 	explicit Vec3V(float fX, float fY, float fZ);
 	explicit Vec3V(float fX, float fY, float fZ, float fW);
-	Vec3V(Vec3V_ConstRef vVector);
+	//Vec3V(Vec3V_In vVector);
+#if !_WIN64
 	Vec3V(Vec3V&& vVector);
-	explicit Vec3V(const __m128& vVector);
-	Vec3V(__m128&& vVector);
+#endif // !_WIN_64
+	explicit Vec3V(Vector_In vVector);
+#if !_WIN64
+	Vec3V(Vector&& vVector);
+#endif // !_WIN64
 
 #ifdef DEFINE_VEC3V_ENUM_CONSTRUCTOR
 	DEFINE_VEC3V_ENUM_CONSTRUCTOR(eZeroInitializer, 0.0f)
@@ -100,49 +106,51 @@ public:
 #error VEC3V MUTATORS NOT DEFINED
 #endif
 
-	Vec3V operator-();
+	Vec3V operator-() const;
 
-	Vec3V_Ref operator=(Vec3V_ConstRef vVector);
-	Vec3V_Ref operator=(Vec3V&& vVector);
+	Vec3V_Out operator=(Vec3V_In vVector);
+#if !_WIN64
+	Vec3V_Out operator=(Vec3V&& vVector);
+#endif // !_WIN64
 
-	Vec3V_Ref operator=(const __m128& vVector);
-	Vec3V_Ref operator=(__m128&& vVector);
-
-	Vec3V_Ref operator*=(float fScalar);
-	Vec3V_Ref operator*=(Vec3V_In rhs);
+	Vec3V_Out operator*=(float fScalar);
+	Vec3V_Out operator*=(Vec3V_In rhs);
 
 	Vec3V operator/(float fScalar) const;
 	Vec3V operator/(Vec3V_In rhs) const;
 
-	Vec3V_Ref operator/=(float fScalar);
-	Vec3V_Ref operator/=(Vec3V_In rhs);
+	Vec3V_Out operator/=(float fScalar);
+	Vec3V_Out operator/=(Vec3V_In rhs);
 
 	Vec3V operator*(float fScalar) const;
 	friend Vec3V operator*(const float fScalar, Vec3V_In vVector);
 	Vec3V operator*(Vec3V_In rhs) const;
 
-	Vec3V_Ref operator+=(Vec3V_In vVector);
+	Vec3V_Out operator+=(Vec3V_In vVector);
 	Vec3V operator+(Vec3V_In vVector) const;
 
-	Vec3V_Ref operator-=(Vec3V_In vVector);
+	Vec3V_Out operator-=(Vec3V_In vVector);
 	Vec3V operator-(Vec3V_In vVector) const;
 
 	bool operator==(Vec3V_In vVector) const;
 
 	bool operator!=(Vec3V_In vVector) const;
 
-	Vec3V_Ref Normalize();
+	Vec3V_Out Normalize();
 
-	float Mag() const;
-	float Length() const;
 
-	float MagSq() const;
-	float LengthSq() const;
+	// Friend Functions For Easier Access To Data Members:
+	friend float DotProduct(Vec3V_In vVectorA, Vec3V_In vVectorB);
+
+	friend float Mag(Vec3V_In vVector);
+	friend float Length(Vec3V_In vVector);
+
+	friend float MagSq(Vec3V_In vVector);
+	friend float LengthSq(Vec3V_In vVector);
 };
 
 Vec3V CrossProduct(Vec3V_In vVectorA, Vec3V_In vVectorB);
 Vec3V Normalize(Vec3V_In vVector);
-float DotProduct(Vec3V_In vVectorA, Vec3V_In vVectorB);
 
 extern const __declspec(selectany) Vec3V g_IdentityX3V = Vec3V(1.0f, 0.0f, 0.0f);
 extern const __declspec(selectany) Vec3V g_IdentityY3V = Vec3V(0.0f, 1.0f, 0.0f);
@@ -151,110 +159,100 @@ extern const __declspec(selectany) Vec3V g_WorldUp3V = g_IdentityY3V;
 
 __forceinline Vec3V::Vec3V(float fX, float fY, float fZ)
 {
-	row = _mm_setr_ps(fX, fY, fZ, VEC_FILL_VAL);
+	row = VectorSet(fX, fY, fZ, VEC_FILL_VAL);
 }
 
 __forceinline Vec3V::Vec3V(float fX, float fY, float fZ, float fW)
 {
-	row = _mm_setr_ps(fX, fY, fZ, fW);
+	row = VectorSet(fX, fY, fZ, fW);
 }
 
-__forceinline Vec3V::Vec3V(Vec3V_ConstRef vVector)
-{
-	row = vVector.row;
-}
+//__forceinline Vec3V::Vec3V(Vec3V_In vVector)
+//{
+//	row = vVector.row;
+//}
 
+#if !_WIN64
 __forceinline Vec3V::Vec3V(Vec3V&& vVector)
 {
-	row = vVector.row;
+	row = move(vVector.row);
 }
+#endif // !_WIN64
 
-__forceinline Vec3V::Vec3V(const __m128& vVector)
+__forceinline Vec3V::Vec3V(Vector_In vVector)
 {
 	row = vVector;
 }
 
-__forceinline Vec3V::Vec3V(__m128&& vVector)
+#if !_WIN64
+__forceinline Vec3V::Vec3V(Vector&& vVector)
 {
-	row = vVector;
+	row = move(vVector);
+}
+#endif // !_WIN64
+
+__forceinline Vec3V Vec3V::operator-() const
+{
+	return Vec3V(VectorNegate(row));
 }
 
-__forceinline Vec3V Vec3V::operator-()
+__forceinline Vec3V_Out Vec3V::operator=(Vec3V_In vVector)
 {
-	return Vec3V(-x, -y, -z);
+	if(this != &vVector) { row = vVector.row; }
+	return *this;
 }
 
-__forceinline Vec3V_Ref Vec3V::operator=(Vec3V_ConstRef vVector)
+#if !_WIN64
+__forceinline Vec3V_Out Vec3V::operator=(Vec3V&& vVector)
 {
 	if(this != &vVector)
-	{
-		row = vVector.row;
-	}
+		row = move(vVector.row);
+	return *this;
+}
+#endif // !_WIN_64
 
+__forceinline Vec3V_Out Vec3V::operator*=(float fScalar)
+{
+	row = VectorDivide(row, VectorSet(fScalar));
 	return *this;
 }
 
-__forceinline Vec3V_Ref Vec3V::operator=(Vec3V&& vVector)
+__forceinline Vec3V_Out Vec3V::operator*=(Vec3V_In rhs)
 {
-	row = vVector.row;
-	return *this;
-}
-
-__forceinline Vec3V_Ref Vec3V::operator=(const __m128& vVector)
-{
-	row = vVector;
-	return *this;
-}
-
-__forceinline Vec3V_Ref Vec3V::operator=(__m128&& vVector)
-{
-	row = vVector;
-	return *this;
-}
-
-__forceinline Vec3V_Ref Vec3V::operator*=(float fScalar)
-{
-	row = VEC3V_VEC_OP(VectorDivide, row, _mm_set1_ps(fScalar));
-	return *this;
-}
-
-__forceinline Vec3V_Ref Vec3V::operator*=(Vec3V_In rhs)
-{
-	row = VEC3V_VEC_OP(VectorMultiply, row, rhs.row);
+	row = VectorMultiply(row, rhs.row);
 	return *this;
 }
 
 __forceinline Vec3V Vec3V::operator/(float fScalar) const
 {
-	Assert(fScalar, "Divide by Zero, undefined results!");
-	return Vec3V(VEC3V_VEC_OP(VectorDivide, row, _mm_set1_ps(fScalar)));
+	return Vec3V(VectorDivide(row, VectorSet(fScalar)));
 }
 
 __forceinline Vec3V Vec3V::operator/(Vec3V_In rhs) const
 {
-	return Vec3V(VEC3V_VEC_OP(VectorDivide, row, rhs.row));
+	return Vec3V(VectorDivide(row, rhs.row));
 }
 
-__forceinline Vec3V_Ref Vec3V::operator/=(float fScalar)
+__forceinline Vec3V_Out Vec3V::operator/=(float fScalar)
 {
-	row = VEC3V_VEC_OP(VectorDivide, row, _mm_set1_ps(fScalar));
+	row = VectorDivide(row, VectorSet(fScalar));
 	return *this;
 }
 
-__forceinline Vec3V_Ref Vec3V::operator/=(Vec3V_In rhs)
+__forceinline Vec3V_Out Vec3V::operator/=(Vec3V_In rhs)
 {
-	row = VEC3V_VEC_OP(VectorDivide, row, rhs.row);
+	row = VectorDivide(row, rhs.row);
 	return *this;
 }
 
 __forceinline Vec3V Vec3V::operator*(float fScalar) const
 {
-	return Vec3V(VEC3V_VEC_OP(VectorMultiply, row, _mm_set1_ps(fScalar)));
+	return Vec3V(VectorMultiply(row, VectorSet(fScalar)));
 }
 
 __forceinline Vec3V Vec3V::operator*(Vec3V_In rhs) const
 {
-	return Vec3V(VEC3V_VEC_OP(VectorMultiply, row, rhs.row));
+	return Vec3V(VectorMultiply(row, rhs.row));
 }
 
 __forceinline Vec3V operator*(const float fScalar, Vec3V_In vVector)
@@ -262,90 +260,80 @@ __forceinline Vec3V operator*(const float fScalar, Vec3V_In vVector)
 	return Vec3V(vVector.x * fScalar, vVector.y * fScalar, vVector.z * fScalar);
 }
 
-__forceinline Vec3V_Ref Vec3V::operator+=(Vec3V_In vVector)
+__forceinline Vec3V_Out Vec3V::operator+=(Vec3V_In vVector)
 {
-	row = VEC3V_VEC_OP(VectorAdd, row, vVector.row);
+	row = VectorAdd(row, vVector.row);
 	return *this;
 }
 
 __forceinline Vec3V Vec3V::operator+(Vec3V_In vVector) const
 {
-	return Vec3V(VEC3V_VEC_OP(VectorAdd, row, vVector.row));
+	return Vec3V(VectorAdd(row, vVector.row));
 }
 
-__forceinline Vec3V_Ref Vec3V::operator-=(Vec3V_In vVector)
+__forceinline Vec3V_Out Vec3V::operator-=(Vec3V_In vVector)
 {
-	row = VEC3V_VEC_OP(VectorSubtract, row, vVector.row);
+	row = VectorSubtract(row, vVector.row);
 	return *this;
 }
 
 __forceinline Vec3V Vec3V::operator-(Vec3V_In vVector) const
 {
-	return Vec3V(VEC3V_VEC_OP(VectorSubtract, row, vVector.row));
+	return Vec3V(VectorSubtract(row, vVector.row));
 }
 
 __forceinline bool Vec3V::operator==(Vec3V_In vVector) const
 {
-	if(x != vVector.x)
-		return false;
-
-	if(y != vVector.y)
-		return false;
-
-	if(z != vVector.z)
-		return false;
-
-	return true;
+	return IsEqualXYZ(row, vVector.row);
 }
 
 __forceinline bool Vec3V::operator!=(Vec3V_In vVector) const
 {
-	if(x != vVector.x)
-		return true;
-
-	if(y != vVector.y)
-		return true;
-
-	if(z != vVector.z)
-		return true;
-
-	return false;
+	return IsNotEqualXYZ(row, vVector.row);
 }
 
-__forceinline Vec3V_Ref Vec3V::Normalize()
+__forceinline Vec3V_Out Vec3V::Normalize()
 {
-	float mag = Mag();
+	float mag = Mag(*this);
 
 	// protection against divide by zero
-	if(mag)
-	{
-		*this = VEC3V_VEC_OP(VectorDivide, row, _mm_set1_ps(mag));
-	}
-
+	if(mag)	{ row = VectorDivide(row, VectorSet(mag)); }
 	return *this;
 }
 
-__forceinline float Vec3V::Mag() const
+__forceinline float DotProduct(Vec3V_In vVectorA, Vec3V_In vVectorB)
 {
-	return sqrt(x*x + y*y + z*z);
+#if _WIN64
+	vVectorA.w = 0.0f;
+	Vec3V dp = vVectorA * vVectorB;
+#else
+	Vec3V tmp(vVectorA.x, vVectorA.y, vVectorA.z, 0.0f);
+	Vec3V dp = tmp * vVectorB;
+#endif
+
+	Vector result = VectorHAdd(dp.row, dp.row);
+	return VectorExtract<VecElem::X>(VectorHAdd(result, result));
 }
 
-__forceinline float Vec3V::Length() const
+__forceinline float Mag(Vec3V_In vVector)
 {
-	return Mag();
+	return sqrtf(MagSq(vVector));
 }
 
-__forceinline float Vec3V::MagSq() const
+__forceinline float Length(Vec3V_In vVector)
 {
-	return x*x + y*y + z*z;
+	return Mag(vVector);
 }
 
-__forceinline float Vec3V::LengthSq() const
+__forceinline float MagSq(Vec3V_In vVector)
 {
-	return MagSq();
+	return DotProduct(vVector, vVector);
 }
 
-#undef VEC3V_VEC_OP
+__forceinline float LengthSq(Vec3V_In vVector)
+{
+	return MagSq(vVector);
+}
 
 #endif //VEC3V_INL
 #endif //SSE_AVAILABLE

@@ -45,36 +45,7 @@ __forceinline Vec4f Normalize(Vec4f_In vVector)
 }
 
 template<typename Type>
-__forceinline float DotProduct(const Vec2<Type>& vVectorA, const Vec2<Type>& vVectorB)
-{
-	return (vVectorA.GetX() * vVectorB.GetX()) + (vVectorA.GetY() * vVectorB.GetY());
-}
-
-__forceinline float DotProduct(Vec3f_In vVectorA, Vec3f_In vVectorB)
-{
-	return (vVectorA.GetX() * vVectorB.GetX()) + (vVectorA.GetY() * vVectorB.GetY()) + (vVectorA.GetZ() * vVectorB.GetZ());
-}
-
-__forceinline float DotProduct(Vec4f_In vVectorA, Vec4f_In vVectorB)
-{
-#if SSE_AVAILABLE && IS_SLOWER
-	__m128 vec1 = _mm_loadu_ps(vVectorA.vector);
-	__m128 vec2 = _mm_loadu_ps(vVectorB.vector);
-
-	vec1 = _mm_mul_ps(vec1, vec2);
-
-	__m128 tmp = _mm_shuffle_ps(vec1, vec1, _MM_FSHUFFLE(2, 3, 0, 0));
-
-	vec1 = _mm_add_ps(vec1, tmp);
-
-	return _mm_add_ss(vec1, _mm_shuffle_ps(vec1, vec1, _MM_FSHUFFLE(1, 0, 0, 0))).m128_f32[0];
-#else
-	return vVectorA.GetX() * vVectorB.GetX() + vVectorA.GetY() * vVectorB.GetY() + vVectorA.GetZ() * vVectorB.GetZ() + vVectorA.GetW() * vVectorB.GetW();
-#endif
-}
-
-template<typename Type>
-__forceinline float AngleBetween(const Vec2<Type>& lhs, const Vec2<Type>& rhs)
+inline float AngleBetween(const Vec2<Type>& lhs, const Vec2<Type>& rhs)
 {
 	float dotProduct = (lhs.x * rhs.x) + (lhs.y * rhs.y);
 
@@ -116,12 +87,10 @@ __forceinline Type Lerp(const Type& lhs, const Type& rhs, const float fLambda)
 __forceinline Mat44 Lerp(Mat44_In MatrixA, Mat44_In MatrixB, const float fLambda)
 {
 	Mat44 result;
-
 	result.GetXAxisRef().SetXYZ(Lerp(MatrixA.GetXAxis().GetXYZ(), MatrixB.GetXAxis().GetXYZ(), fLambda));
 	result.GetYAxisRef().SetXYZ(Lerp(MatrixA.GetYAxis().GetXYZ(), MatrixB.GetYAxis().GetXYZ(), fLambda));
 	result.GetZAxisRef().SetXYZ(Lerp(MatrixA.GetZAxis().GetXYZ(), MatrixB.GetZAxis().GetXYZ(), fLambda));
 	result.GetWAxisRef().SetXYZ(Lerp(MatrixA.GetWAxis().GetXYZ(), MatrixB.GetWAxis().GetXYZ(), fLambda));
-
 	return result;
 }
 
@@ -135,19 +104,31 @@ __forceinline Vec3f CrossProduct(Vec3f_In vVectorA, Vec3f_In vVectorB)
 __forceinline Mat44 MatrixInverse(Mat44_In mMatrix)
 {
 	Mat44 retVal(mMatrix);
-	return retVal.Invert();
+	retVal.Invert();
+	return retVal;
 }
 
 __forceinline Mat44 MatrixTranspose(Mat44_In mMatrix)
 {
 	Mat44 retVal(mMatrix);
-	return retVal.Transpose();
+	retVal.Transpose();
+	return retVal;
 }
 
 __forceinline Mat44 MatrixTranspos3x3(Mat44_In mMatrix)
 {
 	Mat44 retVal(mMatrix);
-	return retVal.Transpose3x3();
+	retVal.Transpose3x3();
+	return retVal;
+}
+
+__forceinline Mat44_Out RotateAround(Vec3f_In origin, Mat44_In rotatorsMatrix, Mat44_In rotationMatrix)
+{
+	Mat44 newMat(rotatorsMatrix);
+	newMat.Translate(-origin);
+	newMat *= rotationMatrix;
+	newMat.Translate(origin);
+	return newMat;
 }
 
 __forceinline Mat44V MakePerspectiveMatrix(float fFOV, float fAspectRatio, float fNearClip, float fFarClip)
@@ -155,10 +136,10 @@ __forceinline Mat44V MakePerspectiveMatrix(float fFOV, float fAspectRatio, float
 	float yScale = 1 / tan(fFOV * 0.5f);
 	float xScale = yScale / fAspectRatio;
 
-	return Mat44V(	xScale,		0.0f,	0.0f,											0.0f,
-					0.0f,		yScale,	0.0f,											0.0f,
-					0.0f,		0.0f,	fFarClip / (fFarClip - fNearClip),				1.0f,
-					0.0f,		0.0f,	-fNearClip * fFarClip / (fFarClip - fNearClip),	0.0f);
+	return Mat44V(	xScale,		0.0f,	0.0f,												0.0f,
+					0.0f,		yScale,	0.0f,												0.0f,
+					0.0f,		0.0f,	fFarClip / (fFarClip - fNearClip),					1.0f,
+					0.0f,		0.0f,	(-fNearClip * fFarClip) / (fFarClip - fNearClip),	0.0f);
 }
 
 __forceinline Mat44V MakeOrthographicMatrix(float fWidth, float fHeight, float fNear, float fFar)
@@ -177,13 +158,13 @@ __forceinline Mat44V MakeTextureMatrixOffset(unsigned int unWidth, unsigned int 
 				  0.5f + (0.5f / unWidth),	0.5f + (0.5f / unHeight),	0.0f,	1.0f);
 }
 
- float CalculateGaussianWeight(int nOffset, float fSigma = 1.0f)
+float CalculateGaussianWeight(int nOffset, float fSigma = 1.0f)
 {
 	return (1 / sqrt(_2PI * (fSigma * fSigma))) * exp(-(nOffset * nOffset) / (2 * (fSigma * fSigma)));
 }
 
 // unRadius - Number of Pixels to Blur In a Single Direction Including the Center Pixel
- void CalculateGaussianWeights(_Out_writes_all_(unRadius) float* pGaussianWeights, unsigned int unRadius, float fLimit = 1.0f)
+inline void CalculateGaussianWeights(_Out_writes_all_(unRadius) float* pGaussianWeights, unsigned int unRadius, float fLimit = 1.0f)
 {
 	unsigned int i;
 	float fCurrWeight;
@@ -206,40 +187,29 @@ __forceinline Mat44V MakeTextureMatrixOffset(unsigned int unWidth, unsigned int 
 }
 
 #if SSE_AVAILABLE
-__forceinline Vec3V Normalize(Vec3V_In vVector)
+__forceinline Vec2V_Out Normalize(Vec2V_In vVector)
+{
+	Vec2V tmp(vVector);
+	return tmp.Normalize();
+}
+
+__forceinline Vec3V_Out Normalize(Vec3V_In vVector)
 {
 	Vec3V tmp(vVector);
 	return tmp.Normalize();
 }
 
-__forceinline Vec4V Normalize(Vec4V_In vVector)
+__forceinline Vec4V_Out Normalize(Vec4V_In vVector)
 {
 	Vec4V tmp(vVector);
 	return tmp.Normalize();
 }
 
-__forceinline float DotProduct(Vec2V_In vVectorA, Vec2V_In vVectorB)
-{
-	return (vVectorA.GetX() * vVectorB.GetX()) + (vVectorA.GetY() * vVectorB.GetY());
-}
-
-__forceinline float DotProduct(Vec3V_In vVectorA, Vec3V_In vVectorB)
-{
-	Vec3V tmp = vVectorA * vVectorB;
-	return tmp.GetX() + tmp.GetY() + tmp.GetZ();
-}
-
-__forceinline float DotProduct(Vec4V_In vVectorA, Vec4V_In vVectorB)
-{
-	Vec4V tmp = vVectorA * vVectorB;
-	return tmp.GetX() + tmp.GetY() + tmp.GetZ() + tmp.GetW();
-}
-
-__forceinline float AngleBetween(Vec2V_In lhs, Vec2V_In rhs)
+inline float AngleBetween(Vec2V_In lhs, Vec2V_In rhs)
 {
 	float dotProduct = (lhs.GetX() * rhs.GetX()) + (lhs.GetY() * rhs.GetY());
 
-	float length = lhs.Mag() * rhs.Mag();
+	float length = Mag(lhs) * Mag(rhs);
 
 	if(!length)
 		return 0.0f;
@@ -267,41 +237,51 @@ __forceinline float AngleBetween(Vec2V_In lhs, Vec2V_In rhs)
 //	return vVectorA + (vVectorB - vVectorA) * fLambda;
 //}
 
-//__forceinline Mat44V Lerp(Mat44V_In MatrixA, Mat44V_In MatrixB, const float fLambda)
-//{
-//	Mat44V result;
-//
-//	result.GetXAxisRef().SetXYZ(Lerp(MatrixA.GetXAxis().GetXYZ(), MatrixB.GetXAxis().GetXYZ(), fLambda));
-//	result.GetYAxisRef().SetXYZ(Lerp(MatrixA.GetYAxis().GetXYZ(), MatrixB.GetYAxis().GetXYZ(), fLambda));
-//	result.GetZAxisRef().SetXYZ(Lerp(MatrixA.GetZAxis().GetXYZ(), MatrixB.GetZAxis().GetXYZ(), fLambda));
-//	result.GetWAxisRef().SetXYZ(Lerp(MatrixA.GetWAxis().GetXYZ(), MatrixB.GetWAxis().GetXYZ(), fLambda));
-//
-//	return result;
-//}
+inline Mat44V Lerp(Mat44V_In MatrixA, Mat44V_In MatrixB, const float fLambda)
+{
+	Mat44V result;
+	result.GetXAxisRef().SetXYZ(Lerp(MatrixA.GetXAxis().GetXYZ(), MatrixB.GetXAxis().GetXYZ(), fLambda));
+	result.GetYAxisRef().SetXYZ(Lerp(MatrixA.GetYAxis().GetXYZ(), MatrixB.GetYAxis().GetXYZ(), fLambda));
+	result.GetZAxisRef().SetXYZ(Lerp(MatrixA.GetZAxis().GetXYZ(), MatrixB.GetZAxis().GetXYZ(), fLambda));
+	result.GetWAxisRef().SetXYZ(Lerp(MatrixA.GetWAxis().GetXYZ(), MatrixB.GetWAxis().GetXYZ(), fLambda));
+	return result;
+}
 
-__forceinline Vec3V CrossProduct(Vec3V_In vVectorA, Vec3V_In vVectorB)
+__forceinline Vec3V_Out CrossProduct(Vec3V_In vVectorA, Vec3V_In vVectorB)
 {
 	return Vec3V(vVectorA.GetY() * vVectorB.GetZ() - vVectorA.GetZ() * vVectorB.GetY(),
 				 vVectorA.GetZ() * vVectorB.GetX() - vVectorA.GetX() * vVectorB.GetZ(),
 				 vVectorA.GetX() * vVectorB.GetY() - vVectorA.GetY() * vVectorB.GetX());
 }
 
-__forceinline Mat44V MatrixInverse(Mat44V_In mMatrix)
+__forceinline Mat44V_Out MatrixInverse(Mat44V_In mMatrix)
 {
 	Mat44V retVal(mMatrix);
-	return retVal.Invert();
+	retVal.Invert();
+	return retVal;
 }
 
-__forceinline Mat44V MatrixTranspose(Mat44V mMatrix)
+__forceinline Mat44V_Out MatrixTranspose(Mat44V_In mMatrix)
 {
 	Mat44V retVal(mMatrix);
-	return retVal.Transpose();
+	retVal.Transpose();
+	return retVal;
 }
 
-__forceinline Mat44V MatrixTranspos3x3(Mat44V mMatrix)
+__forceinline Mat44V_Out MatrixTranspose3x3(Mat44V_In mMatrix)
 {
 	Mat44V retVal(mMatrix);
-	return retVal.Transpose3x3();
+	retVal.Transpose3x3();
+	return retVal;
+}
+
+__forceinline Mat44V_Out RotateAround(Vec3V_In origin, Mat44V_In rotatorsMatrix, Mat44V_In rotationMatrix)
+{
+	Mat44V newMat(rotatorsMatrix);
+	newMat.Translate(-origin);
+	newMat *= rotationMatrix;
+	newMat.Translate(origin);
+	return newMat;
 }
 #endif //SSE_AVAILABLE
 #endif //GLOBALMATHFUNCS_INL

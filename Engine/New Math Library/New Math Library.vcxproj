@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -18,6 +18,23 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Source\Core\Math Lib\GlobalMathFuncs.inl" />
+    <None Include="..\Source\Core\Math Lib\Mat44V.inl" />
+    <None Include="..\Source\Core\Math Lib\Matrix44.inl" />
+    <None Include="..\Source\Core\Math Lib\Vec2.inl" />
+    <None Include="..\Source\Core\Math Lib\Vec2V.inl" />
+    <None Include="..\Source\Core\Math Lib\Vec3.inl" />
+    <None Include="..\Source\Core\Math Lib\Vec3V.inl" />
+    <None Include="..\Source\Core\Math Lib\Vec4.inl" />
+    <None Include="..\Source\Core\Math Lib\Vec4V.inl" />
+    <None Include="..\Source\Core\Math Lib\VectorWrapper.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Source\Core\Math Lib\MathDeclarations.h" />
+    <ClInclude Include="..\Source\Core\Math Lib\MathLib.h" />
+    <ClInclude Include="..\Source\Core\Math Lib\VectorWrapper.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3C69EFDB-7DFC-4C91-9230-D6C8CDD88425}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -31,9 +48,9 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -146,23 +163,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Math Library\MathDeclarations.h" />
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Math Library\MathLib.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\Ryan%27s Projects Repository\Math Library\GlobalMathFuncs.inl">
-      <FileType>Document</FileType>
-    </None>
-    <None Include="..\..\..\Ryan%27s Projects Repository\Math Library\Mat44V.inl" />
-    <None Include="..\..\..\Ryan%27s Projects Repository\Math Library\Vec2V.inl" />
-    <None Include="..\..\..\Ryan%27s Projects Repository\Math Library\Vec3V.inl" />
-    <None Include="..\..\..\Ryan%27s Projects Repository\Math Library\Vec4V.inl" />
-    <None Include="..\..\Math Library\Matrix44.inl" />
-    <None Include="..\..\..\Ryan%27s Projects Repository\Math Library\Vec2.inl" />
-    <None Include="..\..\..\Ryan%27s Projects Repository\Math Library\Vec3.inl" />
-    <None Include="..\..\..\Ryan%27s Projects Repository\Math Library\Vec4.inl" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

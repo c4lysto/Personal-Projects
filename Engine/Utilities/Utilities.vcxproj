@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,15 +19,28 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\CriticalSection.h" />
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\DebugHelp.h" />
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\GlobalDefines.h" />
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\Thread.h" />
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\UtilitiesInclude.h" />
+    <ClInclude Include="..\Source\Core\Utilities\BitSet.h" />
+    <ClInclude Include="..\Source\Core\Utilities\Color.h" />
+    <ClInclude Include="..\Source\Core\Utilities\CriticalSection.h" />
+    <ClInclude Include="..\Source\Core\Utilities\Debugging\DebugHelp.h" />
+    <ClInclude Include="..\Source\Core\Utilities\Debugging\DebugWindow.h" />
+    <ClInclude Include="..\Source\Core\Utilities\SysEvent.h" />
+    <ClInclude Include="..\Source\Core\Utilities\GlobalDefines.h" />
+    <ClInclude Include="..\Source\Core\Utilities\SysMutex.h" />
+    <ClInclude Include="..\Source\Core\Utilities\SysSemaphore.h" />
+    <ClInclude Include="..\Source\Core\Utilities\SmartPointer.h" />
+    <ClInclude Include="..\Source\Core\Utilities\SysSyncObject.h" />
+    <ClInclude Include="..\Source\Core\Utilities\Thread.h" />
+    <ClInclude Include="..\Source\Core\Utilities\ThreadGroup.h" />
+    <ClInclude Include="..\Source\Core\Utilities\Timer.h" />
+    <ClInclude Include="..\Source\Core\Utilities\UtilitiesInclude.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\CriticalSection.cpp" />
-    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\Thread.cpp" />
+    <ClCompile Include="..\Source\Core\Utilities\Debugging\DebugWindow.cpp" />
+    <ClCompile Include="..\Source\Core\Utilities\SysSyncObject.cpp" />
+    <ClCompile Include="..\Source\Core\Utilities\Thread.cpp" />
+    <ClCompile Include="..\Source\Core\Utilities\ThreadGroup.cpp" />
+    <ClCompile Include="..\Source\Core\Utilities\Timer.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{10AE78BB-987D-4061-A1D4-8F4ADD9A86EB}</ProjectGuid>
@@ -42,9 +55,9 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Utility</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -111,6 +124,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>"../Source/Core"</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

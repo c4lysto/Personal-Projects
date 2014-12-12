@@ -11,6 +11,10 @@ typedef Vec2V Vec2V_In;
 typedef Vec2V_ConstRef Vec2V_In;
 #endif
 
+typedef Vec2V Vec2V_Out;
+
+typedef Vec2V_Ref Vec2V_InOut;
+
 // Other Vec2V Aliases
 typedef Vec2V float2V;
 
@@ -18,7 +22,7 @@ typedef Vec2V float2V;
 ALIGN(16) class Vec2V
 {
 #define DEFINE_VEC2V_ENUM_CONSTRUCTOR(enumeration, valueToInit)\
-	explicit __forceinline Vec2V(enumeration) { row = _mm_set1_ps(valueToInit); }
+	explicit __forceinline Vec2V(enumeration) { row = VectorSet(valueToInit); }
 
 #define VEC2V_ACCESSOR(retType, funcName, retVal) \
 	__forceinline retType funcName() { return retVal; }
@@ -29,13 +33,11 @@ ALIGN(16) class Vec2V
 #define VEC2V_MUTATOR(funcName, inType, modifiedVal) \
 	__forceinline void funcName(inType rhs) { modifiedVal = rhs; }
 
-#define VEC2V_VEC_OP(name, lhs, rhs) name<VS_VALID,VS_VALID,VS_INVALID,VS_INVALID>(lhs, rhs)
-
 
 private:
 	union
 	{
-		__m128 row;
+		Vector row;
 
 		union
 		{
@@ -50,12 +52,16 @@ public:
 	Vec2V(){}
 	explicit Vec2V(float fX, float fY);
 	explicit Vec2V(float fX, float fY, float fZ, float fW);
-	Vec2V(Vec2V_ConstRef vVector);
+	//Vec2V(Vec2V_In vVector);
+#if !_WIN64
 	Vec2V(Vec2V&& vVector);
+#endif // !_WIN64
 	~Vec2V(){}
 
-	explicit Vec2V(const __m128& rhs);
-	Vec2V(__m128&& rhs);
+	explicit Vec2V(Vector_In rhs);
+#if !_WIN64
+	Vec2V(Vector&& rhs);
+#endif // !_WIN64
 
 #if defined(DEFINE_VEC2V_ENUM_CONSTRUCTOR)
 	DEFINE_VEC2V_ENUM_CONSTRUCTOR(eZeroInitializer, 0.0f)
@@ -105,214 +111,217 @@ public:
 #error VEC2V MUTATORS NOT DEFINED
 #endif
 
-	Vec2V operator-();
+	Vec2V operator-() const;
 
-	Vec2V_Ref operator=(Vec2V_ConstRef vVector);
-	Vec2V_Ref operator=(Vec2V&& vVector);
-	Vec2V_Ref operator=(const POINT vVector);
-	Vec2V_Ref operator=(const __m128& vVector);
-	Vec2V_Ref operator=(__m128&& vVector);
+	Vec2V_Out operator=(Vec2V_In vVector);
+#if !_WIN64
+	Vec2V_Out operator=(Vec2V&& vVector);
+#endif // !_WIN64
 
 	Vec2V operator+(Vec2V_In vVector) const;
-	Vec2V_Ref operator+=(const Vec2V & vVector);
+	Vec2V_Out operator+=(Vec2V_In vVector);
 
 	Vec2V operator-(Vec2V_In vVector) const;
-	Vec2V_Ref operator-=(Vec2V_In vVector);
+	Vec2V_Out operator-=(Vec2V_In vVector);
 
 	Vec2V operator*(Vec2V_In vVector) const;
 	Vec2V operator*(float fScalar) const;
 	friend Vec2V operator*(const float fScalar, Vec2V_In vVector);
 
-	Vec2V_Ref operator*=(Vec2V_In vVector);
-	Vec2V_Ref operator*=(float fScalar);
+	Vec2V_Out operator*=(Vec2V_In vVector);
+	Vec2V_Out operator*=(float fScalar);
 
 	Vec2V operator/(Vec2V_In vVector) const;
 	Vec2V operator/(float fScalar) const;
 
-	Vec2V_Ref operator/=(Vec2V_In vVector);
-	Vec2V_Ref operator/=(float fScalar);
+	Vec2V_Out operator/=(Vec2V_In vVector);
+	Vec2V_Out operator/=(float fScalar);
 
-	float Mag() const;
-	float Length() const;
+	bool operator==(Vec2V_In vVector) const;
+	bool operator!=(Vec2V_In vVector) const;
 
-	float MagSq() const;
-	float LengthSq() const;
+	// Friend Functions For Easier Access To Data Members:
+	friend float DotProduct(Vec2V_In vVectorA, Vec2V_In vVectorB);
 
-	Vec2V_Ref Normalize();
+	friend float Mag(Vec2V_In vVector);
+	friend float Length(Vec2V_In vVector);
+
+	friend float MagSq(Vec2V_In vVector);
+	friend float LengthSq(Vec2V_In vVector);
+
+	Vec2V_Out Normalize();
 };
 
 __forceinline Vec2V::Vec2V(float fX, float fY)
 {
-	row = _mm_setr_ps(fX, fY, VEC_FILL_VAL, VEC_FILL_VAL);
+	row = VectorSet(fX, fY, VEC_FILL_VAL, VEC_FILL_VAL);
 }
 
 __forceinline Vec2V::Vec2V(float fX, float fY, float fZ, float fW)
 {
-	row = _mm_setr_ps(fX, fY, fZ, fW);
+	row = VectorSet(fX, fY, fZ, fW);
 }
 
-__forceinline Vec2V::Vec2V(Vec2V_ConstRef vVector)
-{
-	row = vVector.row;
-}
+//__forceinline Vec2V::Vec2V(Vec2V_In vVector)
+//{
+//	row = vVector.row;
+//}
 
+#if !_WIN64
 __forceinline Vec2V::Vec2V(Vec2V&& vVector)
 {
-	row = vVector.row;
+	row = move(vVector.row);
 }
+#endif // !_WIN64
 
-__forceinline Vec2V::Vec2V(const __m128& rhs)
+__forceinline Vec2V::Vec2V(Vector_In rhs)
 {
 	row = rhs;
 }
 
-__forceinline Vec2V::Vec2V(__m128&& rhs)
+#if !_WIN64
+__forceinline Vec2V::Vec2V(Vector&& rhs)
 {
-	row = rhs;
+	row = move(rhs);
+}
+#endif // !_WIN64
+
+__forceinline Vec2V Vec2V::operator-() const
+{
+	return Vec2V(VectorNegate(row));
 }
 
-__forceinline Vec2V Vec2V::operator-()
+__forceinline Vec2V_Out Vec2V::operator=(Vec2V_In vVector)
 {
-	return Vec2V(-x, -y);
-}
-
-__forceinline Vec2V_Ref Vec2V::operator=(Vec2V_ConstRef vVector)
-{
-	if(this != &vVector)
-		row = vVector.row;
+	if(this != &vVector) { row = vVector.row; }
 	return *this;
 }
 
-__forceinline Vec2V_Ref Vec2V::operator=(Vec2V&& vVector)
+#if !_WIN64
+__forceinline Vec2V_Out Vec2V::operator=(Vec2V&& vVector)
 {
-	row = vVector.row;
+	if(this != vVector)
+		row = move(vVector.row);
 	return *this;
 }
-
-__forceinline Vec2V_Ref Vec2V::operator=(const POINT vVector)
-{
-	x = (float)vVector.x;
-	y = (float)vVector.y;
-	return *this;
-}
-
-__forceinline Vec2V_Ref Vec2V::operator=(const __m128& vVector)
-{
-	row = vVector;
-	return *this;
-}
-
-__forceinline Vec2V_Ref Vec2V::operator=(__m128&& vVector)
-{
-	row = vVector;
-	return *this;
-}
+#endif // !_WIN64
 
 __forceinline Vec2V Vec2V::operator+(Vec2V_In vVector) const
 {
-	return Vec2V(VEC2V_VEC_OP(VectorAdd, row, vVector.row));
+	return Vec2V(VectorAdd(row, vVector.row));
 }
 
-__forceinline Vec2V_Ref Vec2V::operator+=(const Vec2V & vVector)
+__forceinline Vec2V_Out Vec2V::operator+=(Vec2V_In vVector)
 {
-	row = VEC2V_VEC_OP(VectorAdd, row, vVector.row);
+	row = VectorAdd(row, vVector.row);
 	return *this;
 }
 
 __forceinline Vec2V Vec2V::operator-(Vec2V_In vVector) const
 {
-	return Vec2V(VEC2V_VEC_OP(VectorSubtract, row, vVector.row));
+	return Vec2V(VectorSubtract(row, vVector.row));
 }
 
-__forceinline Vec2V_Ref Vec2V::operator-=(Vec2V_In vVector)
+__forceinline Vec2V_Out Vec2V::operator-=(Vec2V_In vVector)
 {
-	row = VEC2V_VEC_OP(VectorSubtract, row, vVector.row);
+	row = VectorSubtract(row, vVector.row);
 	return *this;
 }
 
 __forceinline Vec2V Vec2V::operator*(Vec2V_In vVector) const
 {
-	return Vec2V(VEC2V_VEC_OP(VectorMultiply, row, vVector.row));
+	return Vec2V(VectorMultiply(row, vVector.row));
 }
 
 __forceinline Vec2V Vec2V::operator*(float fScalar) const
 {
-	return Vec2V(VEC2V_VEC_OP(VectorMultiply, row, _mm_set1_ps(fScalar)));
+	return Vec2V(VectorMultiply(row, VectorSet(fScalar)));
 }
 
 __forceinline Vec2V operator*(const float fScalar, Vec2V_In vVector)
 {
-	return Vec2V(VEC2V_VEC_OP(VectorMultiply, vVector.row, _mm_set1_ps(fScalar)));
+	return Vec2V(VectorMultiply(vVector.row, VectorSet(fScalar)));
 }
 
-__forceinline Vec2V_Ref Vec2V::operator*=(float fScalar)
+__forceinline Vec2V_Out Vec2V::operator*=(float fScalar)
 {
-	row = VEC2V_VEC_OP(VectorMultiply, row, _mm_set1_ps(fScalar));
+	row = VectorMultiply(row, VectorSet(fScalar));
 	return *this;
 }
 
-__forceinline Vec2V_Ref Vec2V::operator*=(Vec2V_In vVector)
+__forceinline Vec2V_Out Vec2V::operator*=(Vec2V_In vVector)
 {
-	row = VEC2V_VEC_OP(VectorMultiply, row, vVector.row);
+	row = VectorMultiply(row, vVector.row);
 	return *this;
 }
 
 __forceinline Vec2V Vec2V::operator/(Vec2V_In vVector) const
 {
-	return Vec2V(VEC2V_VEC_OP(VectorDivide, row, vVector.row));
+	return Vec2V(VectorDivide(row, vVector.row));
 }
 
 __forceinline Vec2V Vec2V::operator/(float fScalar) const
 {
-	return Vec2V(VEC2V_VEC_OP(VectorDivide, row, _mm_set1_ps(fScalar)));
+	return Vec2V(VectorDivide(row, VectorSet(fScalar)));
 }
 
-__forceinline Vec2V_Ref Vec2V::operator/=(Vec2V_In vVector)
+__forceinline Vec2V_Out Vec2V::operator/=(Vec2V_In vVector)
 {
-	row = VEC2V_VEC_OP(VectorDivide, row, vVector.row);
+	row = VectorDivide(row, vVector.row);
 	return *this;
 }
 
-__forceinline Vec2V_Ref Vec2V::operator/=(float fScalar)
+__forceinline Vec2V_Out Vec2V::operator/=(float fScalar)
 {
-	row = VEC2V_VEC_OP(VectorDivide, row, _mm_set1_ps(fScalar));
+	row = VectorDivide(row, VectorSet(fScalar));
 	return *this;
 }
 
-__forceinline float Vec2V::Mag() const
+__forceinline bool Vec2V::operator==(Vec2V_In vVector) const
 {
-	return sqrtf(x*x + y*y);
+	return IsEqualXY(row, vVector.row);
 }
 
-__forceinline float Vec2V::Length() const
+__forceinline bool Vec2V::operator!=(Vec2V_In vVector) const
 {
-	return Mag();
+	return IsNotEqualXY(row, vVector.row);
 }
 
-__forceinline float Vec2V::MagSq() const
+// Friend Functions For Easier Access To Data Members:
+__forceinline float DotProduct(Vec2V_In vVectorA, Vec2V_In vVectorB)
 {
-	return x*x + y*y;
+	Vector dp = vVectorA.row * vVectorB.row;
+	return VectorExtract<VecElem::X>(VectorHAdd(dp, dp));
 }
 
-__forceinline float Vec2V::LengthSq() const
+__forceinline float Mag(Vec2V_In vVector)
 {
-	return MagSq();
+	return sqrtf(MagSq(vVector));
 }
 
-__forceinline Vec2V_Ref Vec2V::Normalize()
+__forceinline float Length(Vec2V_In vVector)
 {
-	float mag = Mag();
+	return Mag(vVector);
+}
+
+__forceinline float MagSq(Vec2V_In vVector)
+{
+	return DotProduct(vVector, vVector);
+}
+
+__forceinline float LengthSq(Vec2V_In vVector)
+{
+	return MagSq(vVector);
+}
+
+__forceinline Vec2V_Out Vec2V::Normalize()
+{
+	float mag = Mag(*this);
 
 	// protection against divide by zero
-	if(mag)
-	{
-		row = VEC2V_VEC_OP(VectorDivide, row, _mm_set1_ps(mag));
-	}
-
+	if(mag)	{ row = VectorDivide(row, VectorSet(mag)); }
 	return *this;
 }
-
-#undef VEC2V_VEC_OP
 
 #endif //VEC2V_INL
 #endif //SSE_AVAILABLE

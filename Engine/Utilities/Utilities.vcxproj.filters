@@ -13,29 +13,74 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Threading">
+      <UniqueIdentifier>{1d8abc7f-efe5-4cf6-99bb-39d93ec3c342}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Threading">
+      <UniqueIdentifier>{01ea2f93-e5d2-4195-82fb-be2bd4e51151}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\DebugHelp.h">
+    <ClInclude Include="..\Source\Core\Utilities\GlobalDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\UtilitiesInclude.h">
+    <ClInclude Include="..\Source\Core\Utilities\SmartPointer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\CriticalSection.h">
+    <ClInclude Include="..\Source\Core\Utilities\UtilitiesInclude.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\GlobalDefines.h">
+    <ClInclude Include="..\Source\Core\Utilities\Debugging\DebugHelp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\Thread.h">
+    <ClInclude Include="..\Source\Core\Utilities\Debugging\DebugWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\Utilities\Thread.h">
+      <Filter>Header Files\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\Utilities\ThreadGroup.h">
+      <Filter>Header Files\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\Utilities\CriticalSection.h">
+      <Filter>Header Files\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\Utilities\SysEvent.h">
+      <Filter>Header Files\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\Utilities\SysSemaphore.h">
+      <Filter>Header Files\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\Utilities\SysMutex.h">
+      <Filter>Header Files\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\Utilities\SysSyncObject.h">
+      <Filter>Header Files\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\Utilities\Timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\Utilities\Color.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\Utilities\BitSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\CriticalSection.cpp">
+    <ClCompile Include="..\Source\Core\Utilities\Debugging\DebugWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Ryan%27s Projects Repository\Engine\Utilities\Source\Thread.cpp">
+    <ClCompile Include="..\Source\Core\Utilities\ThreadGroup.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Core\Utilities\Thread.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Core\Utilities\SysSyncObject.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Core\Utilities\Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

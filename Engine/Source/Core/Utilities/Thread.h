@@ -1,7 +1,7 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-#include "SysSemaphore.h"
+#include "SysEvent.h"
 
 typedef int(*ThreadProc)(void*);
 typedef void(*ThreadFinishCallback)(int, void*);
@@ -16,7 +16,7 @@ private:
 		void* m_pArgs;
 		ThreadProc m_pThreadFunc;
 		ThreadFinishCallback m_pFinishedCallback;
-		SysSemaphore m_JobWaitObject;
+		SysEvent m_JobEvent;
 
 		ThreadArgs() : m_pArgs(nullptr), m_pThreadFunc(nullptr), m_pFinishedCallback(nullptr)
 		{
@@ -36,7 +36,7 @@ private:
 
 private:
 	void* m_hThread;
-	SysSemaphore m_ThreadWaitObject;
+	SysSyncObject m_ThreadWaitObject;
 	ThreadArgs m_ThreadArgs;
 	
 	bool StartThread();

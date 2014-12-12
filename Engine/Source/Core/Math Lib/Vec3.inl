@@ -3,7 +3,9 @@
 
 typedef Vec3f& Vec3f_Ref;
 typedef const Vec3f& Vec3f_ConstRef;
+
 typedef Vec3f_ConstRef Vec3f_In;
+typedef Vec3f_Ref Vec3f_InOut;
 
 // Other Vec3f Aliases
 typedef Vec3f float3;
@@ -41,7 +43,11 @@ public:
 	Vec3f(Vec3f&& vVector);
 
 #if SSE_AVAILABLE
-	explicit Vec3f(const __m128& vVector);
+	explicit Vec3f(Vector_In vVector);
+
+#if !_WIN64
+	explicit Vec3f(Vector&& vVector);
+#endif
 #endif
 
 #ifdef DEFINE_VEC3_ENUM_CONSTRUCTOR
@@ -86,13 +92,17 @@ public:
 #error VEC3 MUTATORS NOT DEFINED
 #endif
 
-	Vec3f operator-();
+	Vec3f operator-() const;
 
 	Vec3f_Ref operator=(Vec3f_In vVector);
 	Vec3f_Ref operator=(Vec3f&& vVector);
+
 #if SSE_AVAILABLE
-	Vec3f_Ref operator=(const __m128& vVector);
-	Vec3f_Ref operator=(const __m128&& vVector);
+	Vec3f_Ref operator=(Vector_In vVector);
+
+#if !_WIN64
+	Vec3f_Ref operator=(Vector&& vVector);
+#endif // !_WIN64
 #endif
 
 	Vec3f_Ref operator*=(float fScalar);
@@ -120,11 +130,13 @@ public:
 
 	Vec3f_Ref Normalize();
 
-	float Mag() const;
-	float Length() const;
+	friend float DotProduct(Vec3f_In vVectorA, Vec3f_In vVectorB);
 
-	float MagSq() const;
-	float LengthSq() const;
+	friend float Mag(Vec3f_In vVector);
+	friend float Length(Vec3f_In vVector);
+
+	friend float MagSq(Vec3f_In vVector);
+	friend float LengthSq(Vec3f_In vVector);
 };
 
 Vec3f Normalize(Vec3f_In vVector);
@@ -153,21 +165,32 @@ __forceinline Vec3f::Vec3f(Vec3f_In vVector) : x(vVector.x), y(vVector.y), z(vVe
 
 }
 
-__forceinline Vec3f::Vec3f(Vec3f&& vVector) : x(vVector.x), y(vVector.y), z(vVector.z)
+__forceinline Vec3f::Vec3f(Vec3f&& vVector)
 {
-
+	x = move(vVector.x);
+	y = move(vVector.y);
+	z = move(vVector.z);
 }
 
 #if SSE_AVAILABLE
-__forceinline Vec3f::Vec3f(const __m128& vVector)
+__forceinline Vec3f::Vec3f(Vector_In vVector)
 {
-	x = vVector.m128_f32[0];
-	y = vVector.m128_f32[1];
-	z = vVector.m128_f32[2];
+	x = VectorExtract<VecElem::X>(vVector);
+	y = VectorExtract<VecElem::Y>(vVector);
+	z = VectorExtract<VecElem::Z>(vVector);
 }
-#endif
 
-__forceinline Vec3f Vec3f::operator-()
+#if !_WIN64
+__forceinline Vec3f::Vec3f(Vector&& vVector)
+{
+	x = VectorExtract<VecElem::X>(vVector);
+	y = VectorExtract<VecElem::Y>(vVector);
+	z = VectorExtract<VecElem::Z>(vVector);
+}
+#endif // !_WIN64
+#endif // SSE_AVAILABLE
+
+__forceinline Vec3f Vec3f::operator-() const
 {
 	return Vec3f(-x, -y, -z);
 }
@@ -186,30 +209,35 @@ __forceinline Vec3f_Ref Vec3f::operator=(Vec3f_In vVector)
 
 __forceinline Vec3f_Ref Vec3f::operator=(Vec3f&& vVector)
 {
-	x = vVector.x;
-	y = vVector.y;
-	z = vVector.z;
+	if(this != &vVector)
+	{
+		x = move(vVector.x);
+		y = move(vVector.y);
+		z = move(vVector.z);
+	}
 
 	return *this;
 }
 
 #if SSE_AVAILABLE
-__forceinline Vec3f_Ref Vec3f::operator=(const __m128& vVector)
+__forceinline Vec3f_Ref Vec3f::operator=(Vector_In vVector)
 {
-	x = vVector.m128_f32[0];
-	y = vVector.m128_f32[1];
-	z = vVector.m128_f32[2];
+	x = VectorExtract<VecElem::X>(vVector);
+	y = VectorExtract<VecElem::Y>(vVector);
+	z = VectorExtract<VecElem::Z>(vVector);
 	return *this;
 }
 
-__forceinline Vec3f_Ref Vec3f::operator=(const __m128&& vVector)
+#if !_WIN64
+__forceinline Vec3f_Ref Vec3f::operator=(Vector&& vVector)
 {
-	x = vVector.m128_f32[0];
-	y = vVector.m128_f32[1];
-	z = vVector.m128_f32[2];
+	x = VectorExtract<VecElem::X>(vVector);
+	y = VectorExtract<VecElem::Y>(vVector);
+	z = VectorExtract<VecElem::Z>(vVector);
 	return *this;
 }
-#endif
+#endif // !_WIN64
+#endif // SSE_AVAILABLE
 
 __forceinline Vec3f_Ref Vec3f::operator*=(float fScalar)
 {
@@ -232,12 +260,10 @@ __forceinline Vec3f_Ref Vec3f::operator*=(Vec3f_In vScale)
 __forceinline Vec3f Vec3f::operator/(float fScalar) const
 {
 #if SSE_AVAILABLE
-	__m128 result = _mm_div_ps(_mm_setr_ps(x, y, z, 0), _mm_set1_ps(fScalar));
-
-	return Vec3f(result.m128_f32[0], result.m128_f32[1], result.m128_f32[2]);
+	Vector result = VectorDivide(VectorSet(x, y, z, 0.0f), VectorSet(fScalar));
+	return Vec3f(VectorExtract<VecElem::X>(result), VectorExtract<VecElem::Y>(result), VectorExtract<VecElem::Z>(result));
 #else
 	fScalar = 1 / fScalar;
-
 	return Vec3f(x * fScalar, y * fScalar, z * fScalar);
 #endif
 }
@@ -340,13 +366,13 @@ __forceinline bool Vec3f::operator!=(Vec3f_In vVector) const
 
 __forceinline Vec3f_Ref Vec3f::Normalize()
 {
-	float mag = Mag();
+	float mag = Mag(*this);
 
 	// protection against divide by zero
 	if(mag)
 	{
 #if SSE_AVAILABLE
-		*this = Vec3f(_mm_div_ps(_mm_setr_ps(x, y, z, 0), _mm_set1_ps(mag)));
+		*this = Vec3f(VectorDivide(VectorSet(x, y, z, 0.0f), VectorSet(mag)));
 #else 
 		mag = 1 / mag;
 
@@ -359,24 +385,29 @@ __forceinline Vec3f_Ref Vec3f::Normalize()
 	return *this;
 }
 
-__forceinline float Vec3f::Mag() const
+__forceinline float DotProduct(Vec3f_In vVectorA, Vec3f_In vVectorB)
 {
-	return sqrt(x*x + y*y + z*z);
+	return (vVectorA.x * vVectorB.x) + (vVectorA.y * vVectorB.y) + (vVectorA.z * vVectorB.z);
 }
 
-__forceinline float Vec3f::Length() const
+__forceinline float Mag(Vec3f_In vVector)
 {
-	return Mag();
+	return sqrtf(MagSq(vVector));
 }
 
-__forceinline float Vec3f::MagSq() const
+__forceinline float Length(Vec3f_In vVector)
 {
-	return x*x + y*y + z*z;
+	return Mag(vVector);
 }
 
-__forceinline float Vec3f::LengthSq() const
+__forceinline float MagSq(Vec3f_In vVector)
 {
-	return MagSq();
+	return DotProduct(vVector, vVector);
+}
+
+__forceinline float LengthSq(Vec3f_In vVector)
+{
+	return MagSq(vVector);
 }
 
 #endif VEC3_INL

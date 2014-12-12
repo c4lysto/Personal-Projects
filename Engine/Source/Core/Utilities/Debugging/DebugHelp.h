@@ -65,11 +65,7 @@
 #endif // ifndef Verify
 
 #ifndef CompileTimeAssert
-#if DEBUG
-#define CompileTimeAssert(contition) static_assert(!!(contition), "Compile Error!!!")
-#else // !DEBUG
-	#define CompileTimeAssert(condition)
-#endif // !DEBUG
+#define CompileTimeAssert(contition, message) static_assert(!!(contition), message)
 #endif // ifndef CompileTimeAssert
 
 #endif // DEBUGHELP_H

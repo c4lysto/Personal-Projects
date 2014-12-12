@@ -5,6 +5,7 @@ typedef Vec4f& Vec4f_Ref;
 typedef const Vec4f& Vec4f_ConstRef;
 
 typedef Vec4f_ConstRef Vec4f_In;
+typedef Vec4f_Ref Vec4f_InOut;
 
 // Other Vec4f Aliases
 typedef Vec4f float4;
@@ -15,8 +16,8 @@ class Vec4f
 #define DEFINE_VEC4_ENUM_CONSTRUCTOR(enumeration, valueToInit)\
 	explicit __forceinline Vec4f(enumeration)\
 	{\
-	_mm_storeu_ps(vector, _mm_set1_ps(valueToInit)); \
-}
+		VectorStoreU(VectorSet(valueToInit), vector); \
+	}
 #else
 #define DEFINE_VEC4_ENUM_CONSTRUCTOR(enumeration, valueToInit)\
 	explicit __forceinline Vec4f(enumeration) : x(valueToInit), y(valueToInit), z(valueToInit), w(valueToInit){}
@@ -40,7 +41,6 @@ class Vec4f
 private:
 	union
 	{
-		float color[4];
 		float vector[4];
 
 		union
@@ -64,9 +64,11 @@ public:
 	Vec4f(Vec3f_In vVector, float fA);
 
 #if SSE_AVAILABLE
-	explicit Vec4f(const __m128& vVector);
-	explicit Vec4f(__m128&& vVector);
-#endif
+	explicit Vec4f(Vector_In vVector);
+#if !_WIN64
+	explicit Vec4f(Vector&& vVector);
+#endif // !_WIN64
+#endif //SSE_AVAILABLE
 
 #if defined(VEC4_ACCESSOR) && defined(VEC4_ACCESSOR_CONST)
 	VEC4_ACCESSOR_CONST(float, GetX, x)
@@ -125,9 +127,12 @@ public:
 	Vec4f_Ref operator=(Vec4f&& vVector);
 
 #if SSE_AVAILABLE
-	Vec4f_Ref operator=(const __m128& vVector);
-	Vec4f_Ref operator=(__m128&& vVector);
-#endif
+	Vec4f_Ref operator=(Vector_In vVector);
+
+#if !_WIN64
+	Vec4f_Ref operator=(Vector&& vVector);
+#endif // !_WIN64
+#endif // SSE_AVAILABLE
 
 	Vec4f operator-(Vec4f_In vVector) const;
 	Vec4f_Ref operator-=(Vec4f_In vVector);
@@ -144,11 +149,13 @@ public:
 	Vec4f operator*(Vec4f_In vVector) const;
 	Vec4f_Ref operator*=(Vec4f_In vVector);
 
-	float Mag() const;
-	float Length() const;
+	friend float DotProduct(Vec4f_In vVectorA, Vec4f_In vVectorB);
 
-	float MagSq() const;
-	float LengthSq() const;
+	friend float Mag(Vec4f_In vVector);
+	friend float Length(Vec4f_In vVector);
+
+	friend float MagSq(Vec4f_In vVector);
+	friend float LengthSq(Vec4f_In vVector);
 
 	Vec4f_Ref Normalize();
 };
@@ -165,7 +172,7 @@ __forceinline Vec4f::Vec4f(Vec4f_In vVector)
 #endif
 {
 #if SSE_AVAILABLE
-	_mm_storeu_ps(color, _mm_loadu_ps(vVector.color));
+	VectorStoreU(VectorLoadU(vVector.vector), vector);
 #endif
 }
 
@@ -175,20 +182,22 @@ __forceinline Vec4f::Vec4f(Vec4f&& vVector)
 #endif
 {
 #if SSE_AVAILABLE
-	_mm_storeu_ps(color, _mm_loadu_ps(vVector.color));
+	VectorStoreU(VectorLoadU(vVector.vector), vector);
 #endif
 }
 
 #if SSE_AVAILABLE
-__forceinline Vec4f::Vec4f(const __m128& vVector)
+__forceinline Vec4f::Vec4f(Vector_In vVector)
 {
-	_mm_storeu_ps(vector, vVector);
+	VectorStoreU(vVector, vector);
 }
 
-__forceinline Vec4f::Vec4f(__m128&& vVector)
+#if !_WIN64
+__forceinline Vec4f::Vec4f(Vector&& vVector)
 {
-	_mm_storeu_ps(vector, vVector);
+	VectorStoreU(vVector, vector);
 }
+#endif // !_WIN64
 #endif //SSE_AVAILABLE
 
 __forceinline Vec4f::Vec4f(float fX, float fY, float fZ, float fW) : x(fX), y(fY), z(fZ), w(fW)
@@ -209,7 +218,7 @@ __forceinline Vec4f Vec4f::operator-()
 __forceinline Vec4f_Ref Vec4f::operator=(Vec4f_In vVector)
 {
 #if SSE_AVAILABLE
-	_mm_storeu_ps(color, _mm_loadu_ps(vVector.color));
+	VectorStoreU(VectorLoadU(vVector.vector), vector);
 #else
 	x = vVector.x;
 	y = vVector.y;
@@ -223,7 +232,7 @@ __forceinline Vec4f_Ref Vec4f::operator=(Vec4f_In vVector)
 __forceinline Vec4f_Ref Vec4f::operator=(Vec4f&& vVector)
 {
 #if SSE_AVAILABLE
-	_mm_storeu_ps(color, _mm_loadu_ps(vVector.color));
+	VectorStoreU(VectorLoadU(vVector.vector), vector);
 #else
 	x = vVector.x;
 	y = vVector.y;
@@ -234,24 +243,26 @@ __forceinline Vec4f_Ref Vec4f::operator=(Vec4f&& vVector)
 }
 
 #if SSE_AVAILABLE
-__forceinline Vec4f_Ref Vec4f::operator=(const __m128& vVector)
+__forceinline Vec4f_Ref Vec4f::operator=(Vector_In vVector)
 {
-	_mm_storeu_ps(vector, vVector);
+	VectorStoreU(vVector, vector);
 	return *this;
 }
 
-__forceinline Vec4f_Ref Vec4f::operator=(__m128&& vVector)
+#if !_WIN64
+__forceinline Vec4f_Ref Vec4f::operator=(Vector&& vVector)
 {
-	_mm_storeu_ps(vector, vVector);
+	VectorStoreU(vVector, vector);
 	return *this;
 }
+#endif // !_WIN64
 #endif //SSE_AVAILABLE
 
 __forceinline Vec4f Vec4f::operator-(Vec4f_In vVector) const
 {
 #if SSE_AVAILABLE
 	Vec4f result;
-	_mm_storeu_ps(result.color, _mm_sub_ps(_mm_loadu_ps(color), _mm_loadu_ps(vVector.color)));
+	VectorStoreU(VectorSubtract(VectorLoadU(vector), VectorLoadU(vVector.vector)), result.vector);
 	return result;
 #else
 	return Vec4f(x - vVector.x, y - vVector.y, z - vVector.z, w - vVector.w);
@@ -261,7 +272,7 @@ __forceinline Vec4f Vec4f::operator-(Vec4f_In vVector) const
 __forceinline Vec4f_Ref Vec4f::operator-=(Vec4f_In vVector)
 {
 #if SSE_AVAILABLE
-	_mm_storeu_ps(color, _mm_sub_ps(_mm_loadu_ps(color), _mm_loadu_ps(vVector.color)));
+	VectorStoreU(VectorSubtract(VectorLoadU(vector), VectorLoadU(vVector.vector)), vector);
 #else
 	x -= vVector.x;
 	y -= vVector.y;
@@ -275,7 +286,7 @@ __forceinline Vec4f Vec4f::operator+(Vec4f_In vVector) const
 {
 #if SSE_AVAILABLE
 	Vec4f result;
-	_mm_storeu_ps(result.color, _mm_add_ps(_mm_loadu_ps(color), _mm_loadu_ps(vVector.color)));
+	VectorStoreU(VectorAdd(VectorLoadU(vector), VectorLoadU(vVector.vector)), result.vector);
 	return result;
 #else
 	return Vec4f(x + vVector.x, y + vVector.y, z + vVector.z, w + vVector.w);
@@ -285,7 +296,7 @@ __forceinline Vec4f Vec4f::operator+(Vec4f_In vVector) const
 __forceinline Vec4f_Ref Vec4f::operator+=(Vec4f_In vVector)
 {
 #if SSE_AVAILABLE
-	_mm_storeu_ps(color, _mm_add_ps(_mm_loadu_ps(color), _mm_loadu_ps(vVector.color)));
+	VectorStoreU(VectorAdd(VectorLoadU(vector), VectorLoadU(vVector.vector)), vector);
 #else
 	x += vVector.x;
 	y += vVector.y;
@@ -300,7 +311,7 @@ __forceinline Vec4f Vec4f::operator/(float fScalar) const
 {
 #if SSE_AVAILABLE
 	Vec4f result;
-	_mm_storeu_ps(result.color, _mm_div_ps(_mm_loadu_ps(color), _mm_set1_ps(fScalar)));
+	VectorStoreU(VectorDivide(VectorLoadU(vector), VectorSet(fScalar)), result.vector);
 	return result;
 #else
 	fScalar = 1 / fScalar;
@@ -311,7 +322,7 @@ __forceinline Vec4f Vec4f::operator/(float fScalar) const
 __forceinline Vec4f_Ref Vec4f::operator/=(float fScalar)
 {
 #if SSE_AVAILABLE
-	_mm_storeu_ps(color, _mm_div_ps(_mm_loadu_ps(color), _mm_set1_ps(fScalar)));
+	VectorStoreU(VectorDivide(VectorLoadU(vector), VectorSet(fScalar)), vector);
 #else
 	fScalar = 1 / fScalar;
 
@@ -328,7 +339,7 @@ __forceinline Vec4f Vec4f::operator*(Vec4f_In vVector) const
 {
 #if SSE_AVAILABLE
 	Vec4f result;
-	_mm_storeu_ps(result.color, _mm_mul_ps(_mm_loadu_ps(color), _mm_loadu_ps(vVector.color)));
+	VectorStoreU(VectorMultiply(VectorLoadU(vector), VectorLoadU(vVector.vector)), result.vector);
 	return result;
 #else
 	return Vec4f(x * vVector.x, y * vVector.y, z * vVector.z, w * vVector.w);
@@ -338,7 +349,7 @@ __forceinline Vec4f Vec4f::operator*(Vec4f_In vVector) const
 __forceinline Vec4f_Ref Vec4f::operator*=(Vec4f_In vVector)
 {
 #if SSE_AVAILABLE
-	_mm_storeu_ps(color, _mm_mul_ps(_mm_loadu_ps(color), _mm_loadu_ps(vVector.color)));
+	VectorStoreU(VectorMultiply(VectorLoadU(vector), VectorLoadU(vVector.vector)), vector);
 #else
 	x *= vVector.x;
 	y *= vVector.y;
@@ -353,7 +364,7 @@ __forceinline Vec4f Vec4f::operator*(float fScalar) const
 {
 #if SSE_AVAILABLE
 	Vec4f result;
-	_mm_storeu_ps(result.color, _mm_mul_ps(_mm_loadu_ps(color), _mm_set1_ps(fScalar)));
+	VectorStoreU(VectorMultiply(VectorLoadU(vector), VectorSet(fScalar)), result.vector);
 	return result;
 #else
 	return Vec4f(x * fScalar, y * fScalar, z * fScalar, w * fScalar);
@@ -363,7 +374,7 @@ __forceinline Vec4f Vec4f::operator*(float fScalar) const
 __forceinline Vec4f_Ref Vec4f::operator*=(float fScalar)
 {
 #if SSE_AVAILABLE
-	_mm_storeu_ps(color, _mm_mul_ps(_mm_loadu_ps(color), _mm_set1_ps(fScalar)));
+	VectorStoreU(VectorMultiply(VectorLoadU(vector), VectorSet(fScalar)), vector);
 #else
 	x *= fScalar;
 	y *= fScalar;
@@ -378,65 +389,62 @@ __forceinline Vec4f operator*(float fScalar, Vec4f_In vVector)
 {
 #if SSE_AVAILABLE
 	Vec4f result;
-	_mm_storeu_ps(result.color, _mm_mul_ps(_mm_loadu_ps(vVector.color), _mm_set1_ps(fScalar)));
+	VectorStoreU(VectorMultiply(VectorLoadU(vVector.vector), VectorSet(fScalar)), result.vector);
 	return result;
 #else
 	return Vec4f(vVector.x * fScalar, vVector.y * fScalar, vVector.z * fScalar, vVector.w * fScalar);
 #endif
 }
 
-__forceinline float Vec4f::Mag() const
+__forceinline float DotProduct(Vec4f_In vVectorA, Vec4f_In vVectorB)
 {
 #if SSE_AVAILABLE
-	__m128 vec = _mm_setr_ps(x, y, z, w);
-
-	vec = _mm_mul_ps(vec, vec);
-
-	__m128 tmp = _mm_shuffle_ps(vec, vec, _MM_SHUFFLE(1, 0, 3, 2));
-
-	vec = _mm_add_ps(vec, tmp);
-
-	return sqrt(_mm_add_ss(vec, _mm_shuffle_ps(vec, vec, _MM_SHUFFLE(2, 2, 0, 0))).m128_f32[0]);
+	__m128 vec1 = VectorLoadU(vVectorA.vector);
+	__m128 vec2 = VectorLoadU(vVectorB.vector);
+	vec1 = VectorMultiply(vec1, vec2);
+	vec1 = VectorHAdd(vec1, vec1);
+	return VectorExtract<VecElem::X>(VectorHAdd(vec1, vec1));
 #else
-	return sqrt(x*x + y*y + z*z + w*w);
+	return (vVectorA.x * vVectorB.x) + (vVectorA.y * vVectorB.y) + (vVectorA.z * vVectorB.z) + (vVectorA.w * vVectorB.w);
 #endif
 }
 
-__forceinline float Vec4f::Length() const
-{
-	return Mag();
-}
-
-__forceinline float Vec4f::MagSq() const
+__forceinline float Mag(Vec4f_In vVector)
 {
 #if SSE_AVAILABLE
-	__m128 vec = _mm_setr_ps(x, y, z, w);
-
-	vec = _mm_mul_ps(vec, vec);
-
-	__m128 tmp = _mm_shuffle_ps(vec, vec, _MM_SHUFFLE(1, 0, 3, 2));
-
-	vec = _mm_add_ps(vec, tmp);
-
-	return _mm_add_ss(vec, _mm_shuffle_ps(vec, vec, _MM_SHUFFLE(2, 2, 0, 0))).m128_f32[0];
+	Vector vec = VectorLoadU(vVector.vector);
+	Vector magSq = vec * vec;
+	magSq = VectorHAdd(magSq, magSq);
+	magSq = VectorHAdd(magSq, magSq);
+	return VectorExtract<VecElem::X>(Sqrt(magSq));
 #else
-	return x*x + y*y + z*z + w*w;
+	return sqrtf(MagSq());
 #endif
 }
 
-__forceinline float Vec4f::LengthSq() const
+__forceinline float Length(Vec4f_In vVector)
 {
-	return MagSq();
+	return Mag(vVector);
+}
+
+__forceinline float MagSq(Vec4f_In vVector)
+{
+	DotProduct(vVector, vVector);
+}
+
+__forceinline float LengthSq(Vec4f_In vVector)
+{
+	return MagSq(vVector);
 }
 
 __forceinline Vec4f_Ref Vec4f::Normalize()
 {
-	float mag = Mag();
+	float mag = Mag(*this);
 
 	if(mag)
 	{
 #if SSE_AVAILABLE
-		*this = _mm_div_ps(_mm_setr_ps(x, y, z, w), _mm_set1_ps(mag));
+		*this = VectorDivide(VectorSet(x, y, z, w), VectorSet(mag));
 #else
 		mag = 1 / mag;
 

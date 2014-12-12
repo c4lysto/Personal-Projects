@@ -6,7 +6,7 @@
 #endif
 
 #include <DirectXMath.h>
-using namespace DirectX;
+using DirectX::XMMATRIX;
 
 #ifndef SSE_AVAILABLE
 #if defined(_M_IX86) || defined(_M_AMD64)
@@ -33,6 +33,10 @@ enum eTwoPIInitializer { INIT_TWOPI };
 enum eQuarterInitializer {INIT_QUARTER};
 enum eHalfInitializer {INIT_HALF};
 enum eIdentityInitializer { INIT_IDENTITY };
+
+enum eXRotationInitializer { INIT_ROTATION_X };
+enum eYRotationInitializer { INIT_ROTATION_Y };
+enum eZRotationInitializer { INIT_ROTATION_Z };
 
 #define FLOAT_AS_INT_REP(valName, value) \
 	extern const __declspec(selectany) int FLT_##valName##_AS_INT = value;

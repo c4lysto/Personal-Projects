@@ -53,7 +53,7 @@ public:
 
 	Vec2(const Vec2<Type>& vVector);
 	Vec2(Vec2<Type>&& vVector);
-	Vec2(Type fX, Type fY);
+	Vec2(const Type& fX, const Type& fY);
 
 #if defined(VEC2_ACCESSOR) && defined(VEC2_ACCESSOR_CONST)
 	VEC2_ACCESSOR_CONST(Type, GetX, x)
@@ -75,11 +75,10 @@ public:
 #error VEC2 MUTATORS NOT DEFINED
 #endif
 
-	Vec2<Type> operator-();
+	Vec2<Type> operator-() const;
 
 	Vec2<Type>& operator=(const Vec2<Type>& vVector);
 	Vec2<Type>& operator=(Vec2<Type>&& vVector);
-	Vec2<Type>& operator=(const POINT vVector);
 
 	Vec2<Type> operator+(const Vec2<Type>& vVector) const;
 	Vec2<Type>& operator+=(const Vec2<Type> & vVector);
@@ -94,11 +93,13 @@ public:
 	Vec2<Type> operator/(float fScalar) const;
 	Vec2<Type>& operator/=(float fScalar);
 
-	float Mag() const;
-	float Length() const;
+	friend float DotProduct(const Vec2<Type>& vVectorA, const Vec2<Type>& vVectorB);
 
-	float MagSq() const;
-	float LengthSq() const;
+	friend float Mag(Vec2<Type>& vVector);
+	friend float Length(Vec2<Type>& vVector);
+
+	friend float MagSq(Vec2<Type>& vVector);
+	friend float LengthSq(Vec2<Type>& vVector);
 
 	Vec2<Type>& Normalize();
 };
@@ -118,15 +119,16 @@ __forceinline Vec2<Type>::Vec2(const Vec2& vVector) : x(vVector.x), y(vVector.y)
 }
 
 template<typename Type>
-__forceinline Vec2<Type>::Vec2(Vec2&& vVector) : x(vVector.x), y(vVector.y)
+__forceinline Vec2<Type>::Vec2(Vec2&& vVector)
 {
-
+	x = std::forward(fX);
+	y = std::forward(fY);
 }
 
 template<typename Type>
-__forceinline Vec2<Type>::Vec2(Type fX, Type fY) : x(fX), y(fY)
+__forceinline Vec2<Type>::Vec2(const Type& fX, const Type& fY) : x(fX), y(fY)
 {
-
+	
 }
 
 template<typename Type>
@@ -137,25 +139,17 @@ __forceinline Vec2<Type>& Vec2<Type>::operator=(const Vec2<Type>& vVector)
 		x = vVector.x;
 		y = vVector.y;
 	}
-
 	return *this;
 }
 
 template<typename Type>
 __forceinline Vec2<Type>& Vec2<Type>::operator=(Vec2&& vVector)
 {
-	x = vVector.x;
-	y = vVector.y;
-
-	return *this;
-}
-
-template<typename Type>
-__forceinline Vec2<Type>& Vec2<Type>::operator=(const POINT vVector)
-{
-	x = (float)vVector.x;
-	y = (float)vVector.y;
-
+	if(this != &vVector)
+	{
+		x = std::forward(vVector.x);
+		y = std::forward(vVector.y);
+	}
 	return *this;
 }
 
@@ -190,7 +184,7 @@ __forceinline Vec2<Type>& Vec2<Type>::operator-=(const Vec2& vVector)
 }
 
 template<typename Type>
-__forceinline Vec2<Type> Vec2<Type>::operator-()
+__forceinline Vec2<Type> Vec2<Type>::operator-() const
 {
 	return Vec2(-x, -y);
 }
@@ -235,33 +229,39 @@ __forceinline Vec2<Type>& Vec2<Type>::operator/=(float fScalar)
 }
 
 template<typename Type>
-__forceinline float Vec2<Type>::Mag() const
+__forceinline float DotProduct(const Vec2<Type>& vVectorA, const Vec2<Type>& vVectorB)
 {
-	return sqrt(x * x + y * y);
+	return (vVectorA.x * vVectorB.x) + (vVectorA.y * vVectorB.y);
 }
 
 template<typename Type>
-__forceinline float Vec2<Type>::Length() const
+__forceinline float Mag(Vec2<Type>& vVector)
 {
-	return Mag();
+	return sqrt(MagSq(vVector));
 }
 
 template<typename Type>
-__forceinline float Vec2<Type>::MagSq() const
+__forceinline float Length(Vec2<Type>& vVector)
 {
-	return x * x + y * y;
+	return Mag(vVector);
 }
 
 template<typename Type>
-__forceinline float Vec2<Type>::LengthSq() const
+__forceinline float MagSq(Vec2<Type>& vVector)
 {
-	return MagSq();
+	return DotProduct(vVector, vVector);
+}
+
+template<typename Type>
+__forceinline float LengthSq(Vec2<Type>& vVector)
+{
+	return MagSq(vVector);
 }
 
 template<typename Type>
 __forceinline Vec2<Type>& Vec2<Type>::Normalize()
 {
-	float mag = Mag();
+	float mag = Mag(*this);
 
 	if(mag)
 	{

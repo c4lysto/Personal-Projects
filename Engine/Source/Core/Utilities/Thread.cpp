@@ -18,12 +18,15 @@ unsigned int __stdcall Thread::DefaultThreadProc(void* pArgs)
 	if(pArgs)
 	{
 		ThreadArgs& threadArgs = *(ThreadArgs*)pArgs;
-		SysSyncObject& jobWaitObject = threadArgs.m_JobWaitObject;
+		SysEvent& jobEvent = threadArgs.m_JobEvent;
 		int jobRetVal;
+
+		// Signal to the creating thread that we have started
+		jobEvent.Signal();
 
 		while(true)
 		{
-			jobWaitObject.Wait();
+			jobEvent.Wait();
 
 			if(threadArgs.m_pThreadFunc)
 			{
@@ -73,7 +76,10 @@ inline void Thread::CloseThread()
 
 inline void Thread::ExitThread()
 {
-	_endthreadex(THREAD_KILL_RET_VAL);
+	if(m_hThread)
+	{
+		TerminateThread(m_hThread, THREAD_KILL_RET_VAL);
+	}
 }
 
 void Thread::AssignTask(ThreadProc pProc, void* pArgs, ThreadFinishCallback pFinishedCallback/* = nullptr*/, bool bAutoSignalWork /*= true*/)
@@ -93,7 +99,7 @@ void Thread::SignalWork()
 {
 	if(m_hThread && !m_ThreadArgs.m_pThreadFunc)
 	{
-		m_ThreadArgs.m_JobWaitObject.Signal();
+		m_ThreadArgs.m_JobEvent.Signal();
 	}
 }
 
@@ -106,7 +112,9 @@ bool Thread::StartThread()
 		//if(Verify(m_pThreadFunc, "No Function Set for the starting thread"))
 		{
 			m_hThread = (void*)_beginthreadex(NULL, 0, Thread::DefaultThreadProc, &m_ThreadArgs, 0, NULL);
-			Sleep(1000);
+
+			// Wait For the Thread to Start...
+			m_ThreadArgs.m_JobEvent.Wait();
 			m_ThreadWaitObject.SetWaitHandle(m_hThread);
 		}
 
