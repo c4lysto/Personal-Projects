@@ -2,34 +2,20 @@
 #define SYSSEMAPHORE_H
 #include "SysSyncObject.h"
 
+// Semaphore Can Only Be Created Via SysCreateSemaphore(int)
+// Semaphore Must Be Closed Via SysCloseSemaphore(SysSemaphore&)
 class SysSemaphore : public SysSyncObject
 {
-private:
+public:
+	SysSemaphore() {}
+	~SysSemaphore() {}
 
-	void InitSemaphore(int nInitCount)
-	{
-		if(!m_pHandle)
-			m_pHandle = CreateSemaphore(NULL, nInitCount, LONG_MAX, NULL);
-	}
+	void Signal(int nSignalCount = 1);
 
 public:
-	SysSemaphore(int nInitCount = 0) {InitSemaphore(nInitCount);}
-	~SysSemaphore() { CloseSemaphore(); }
 
-	void CloseSemaphore()
-	{
-		if(m_pHandle)
-		{
-			CloseHandle(m_pHandle);
-			m_pHandle = nullptr;
-		}
-	}
-
-	void Signal(int nSignalCount = 1)
-	{
-		if(m_pHandle)
-			ReleaseSemaphore(m_pHandle, nSignalCount, NULL);
-	}
+	friend SysSemaphore SysCreateSemaphore(int nInitialCount = 0);
+	friend void SysCloseSemaphore(SysSemaphore& sysSemaphore);
 };
 
 #endif // SYSSEMAPHORE_H

@@ -1,7 +1,7 @@
 #include "Entity.h"
 #include "Component.h"
 
-CEntity::CEntity()
+CEntity::CEntity() : m_ID(INVALID_ENTITY_ID)
 {
 	m_Components.clear();
 }
@@ -14,13 +14,10 @@ CEntity::~CEntity()
 template<typename ComponentClass>
 void CEntity::AddComponent(ComponentClass* pComponent)
 {
-	Assert(pComponent, "Attempting To Add An Invalid Component To The Entity", pComponent->GetID());
-
-	if(pComponent)
+	if(Verify(pComponent, "Attempting To Add An Invalid Component To The Entity", COMPONENT_ID(ComponentClass)))
 	{
-		Assert(pComponent->GetID() != INVALID_COMPONENT_ID, "Attempting To Add A Component With Invalid ID");
-
-		if(pComponent->GetID() != INVALID_COMPONENT_ID && m_Components.find(pComponent->GetID()) == m_Components.end())
+		if(/*Verify(COMPONENT_ID(ComponentClass) != INVALID_COMPONENT_ID, "Attempting To Add A Component With Invalid ID") &&*/ 
+		   m_Components.find(COMPONENT_ID(ComponentClass)) == m_Components.end())
 		{
 			m_Components.insert(pComponent);
 			pComponent->PostAdd();
@@ -31,13 +28,10 @@ void CEntity::AddComponent(ComponentClass* pComponent)
 template<typename ComponentClass>
 void CEntity::RemoveComponent(ComponentClass* pComponent)
 {
-	Assert(pComponent, "Attempting To Remove An Invalid Component (%i) To The Entity", pComponent->GetID());
-
-	if(pComponent)
+	if(Verify(pComponent, "Attempting To Remove An Invalid Component (%i) To The Entity", COMPONENT_ID(ComponentClass)))
 	{
-		Assert(pComponent->GetID() != INVALID_COMPONENT_ID, "Attempting To Remove A Component With Invalid ID");
-
-		if(pComponent->GetID() != INVALID_COMPONENT_ID && m_Components.find(pComponent->GetID()) == m_Components.end())
+		if(/*Verify(COMPONENT_ID(ComponentClass) != INVALID_COMPONENT_ID, "Attempting To Remove A Component With Invalid ID") &&*/ 
+			m_Components.find(COMPONENT_ID(ComponentClass)) == m_Components.end())
 		{
 			m_Components.erase(pComponent);
 			pComponent->PostRemove();
@@ -48,9 +42,9 @@ void CEntity::RemoveComponent(ComponentClass* pComponent)
 template<typename ComponentClass>
 IComponent* CEntity::GetComponent()
 {
-	if(pComponent->GetID() != INVALID_COMPONENT_ID)
+	//if(COMPONENT_ID(ComponentClass) != INVALID_COMPONENT_ID)
 	{
-		EntityComponentContainer::iterator iter = m_Components.find(pComponent->GetID());
+		EntityComponentContainer::iterator iter = m_Components.find(COMPONENT_ID(ComponentClass));
 
 		if(iter != m_Component.end())
 		{

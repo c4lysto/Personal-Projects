@@ -1,13 +1,17 @@
 #include <iostream>
 using namespace std;
 
-#include <thread>
+#include <tchar.h>
 
+#include <thread>
+#include <list>
+
+#include "../../RMMath/Timer.h"
 #include "Math Lib\MathLib.h"
-#include "Utilities\Color.h"
-#include "Utilities\Timer.h"
-#include "Utilities\Thread.h"
-#include "Utilities\BitSet.h"
+#include "Utilities\ThreadPool.h"
+//#include "Utilities\SmartPointer.h"
+#include "Utilities\FunctionPointer.h"
+#include "Utilities\HashString.h"
 
 using namespace VecElem;
 
@@ -16,8 +20,12 @@ using namespace VecElem;
 #define TEST_SETS 1
 #define TEST_REPS 1000000000
 
-int TstThreadProc(void* pArgs);
-void TstThreadCallback(int retVal, void* pArgs);
+int __stdcall TestThisBitch(int& nVal)
+{
+	//cout << "Val: " << nVal << endl;
+	cout << "TestThisBitch() Called!" << endl;
+	return -1;
+}
 
 struct TstThreadArgs
 {
@@ -31,173 +39,126 @@ struct TstThreadArgs
 		{
 			operation[i] = rand() & 3;
 			vals1[i] = (rand() & 15) + 1;
-			vals1[i] = (rand() & 15) + 1;
+			vals2[i] = (rand() & 15) + 1;
 		}
+	}
+
+	int TstMethod(int& nVal) const
+	{
+		//cout << "Val: " << nVal << endl;
+		cout << "TstMethod() Called!" << endl;
+		nVal = -1;
+		return -1;
+	}
+
+	virtual void TstVirtual()
+	{
+		cout << "TstThreadArgs::TstVirtual()" << endl;
 	}
 };
 
-//__forceinline u32 GetNonZeroMask(u32 x) // returns (x ? 0xffffffff : 0) without branching
-//{
-//	return (u32)( ( (s32)(x) | -(s32)(x) ) >> 31 );
-//}
-//
-//float GetFloat32_FromFloat16_NoIntrinsics(u16 m_data)
-//{
-//	u32 e,z,s;
-//
-//	e = (u32)m_data << 16; // [seeeeemm.mmmmmmmm.00000000.00000000]
-//	s = 0x80000000u & e;   // [s0000000.00000000.00000000.00000000]
-//	e = 0x7fff0000u & e;   // [0eeeeemm.mmmmmmmm.00000000.00000000]
-//	z = GetNonZeroMask(e); // all 1's if e!=0
-//	z = 0x38000000u & z;
-//	e = ((e >> 3) + z)|s;
-//
-//	return *(float*)&e; // [LHS]
-//}
-
-#define PERMUTE_TEST(x, y, z, w, vecs) \
-		; \
-			if(!((x < VecElem::X2 && y < VecElem::X2 && z < VecElem::X2 && w < VecElem::X2) || (x > VecElem::W1 && y > VecElem::W1 && z > VecElem::W1 && w > VecElem::W1))) \
-			{ \
-				Vector perResult = Permute<x, y, z, w>(vecs[0], vecs[1]); \
-				cout << perResult.m128_f32[0] << ", " << perResult.m128_f32[1] << ", " << perResult.m128_f32[2] << ", " << perResult.m128_f32[3]; \
-				cout << "\tExpected: " << vecs[x >> 4].m128_f32[x & 0x3] << ", " << vecs[y >> 4].m128_f32[y & 0x3] << ", " << vecs[z >> 4].m128_f32[z & 0x3] << ", " << vecs[w >> 4].m128_f32[w & 0x3] << endl; \
-				Assert(perResult.m128_f32[0] == vecs[x >> 4].m128_f32[x & 0x3], ""); \
-				Assert(perResult.m128_f32[1] == vecs[y >> 4].m128_f32[y & 0x3], ""); \
-				Assert(perResult.m128_f32[2] == vecs[z >> 4].m128_f32[z & 0x3], ""); \
-				Assert(perResult.m128_f32[3] == vecs[w >> 4].m128_f32[w & 0x3], ""); \
-			}
-
-#define W_VARIATIONS(x, y, z, vecs) \
-		PERMUTE_TEST(x, y, z, X1, vecs); \
-		PERMUTE_TEST(x, y, z, Y1, vecs); \
-		PERMUTE_TEST(x, y, z, Z1, vecs); \
-		PERMUTE_TEST(x, y, z, W1, vecs); \
-		PERMUTE_TEST(x, y, z, X2, vecs); \
-		PERMUTE_TEST(x, y, z, Y2, vecs); \
-		PERMUTE_TEST(x, y, z, Z2, vecs); \
-		PERMUTE_TEST(x, y, z, W2, vecs);
+struct TstDerivedClass : public TstThreadArgs
+{
+	virtual void TstVirtual()
+	{
+		cout << "TstDerivedClass::TstVirtual()" << endl;
+	}
+};
 
 
+void TstThreadProc(void* pArgs);
+float TstGlobal()
+{
+	cout << "TstGlobal() called !" << endl;
+	return PI;
+}
 
-#define Z_VARIATIONS(x, y, vecs) \
-		W_VARIATIONS(x, y, X1, vecs); \
-		W_VARIATIONS(x, y, Y1, vecs); \
-		W_VARIATIONS(x, y, Z1, vecs); \
-		W_VARIATIONS(x, y, W1, vecs); \
-		W_VARIATIONS(x, y, X2, vecs); \
-		W_VARIATIONS(x, y, Y2, vecs); \
-		W_VARIATIONS(x, y, Z2, vecs); \
-		W_VARIATIONS(x, y, W2, vecs);
+typedef float (TstThreadArgs::*tstFunc)(void);
 
-#define Y_VARIATIONS(x, vecs) \
-		Z_VARIATIONS(x, X1, vecs); \
-		Z_VARIATIONS(x, Y1, vecs); \
-		Z_VARIATIONS(x, Z1, vecs); \
-		Z_VARIATIONS(x, W1, vecs); \
-		Z_VARIATIONS(x, X2, vecs); \
-		Z_VARIATIONS(x, Y2, vecs); \
-		Z_VARIATIONS(x, Z2, vecs); \
-		Z_VARIATIONS(x, W2, vecs);
-		
-
-#define PERM_TEST (vecs) \
-		Y_VARIATIONS(X1, vecs); \
-		Y_VARIATIONS(Y1, vecs); \
-		Y_VARIATIONS(Z1, vecs); \
-		Y_VARIATIONS(W1, vecs); \
-		Y_VARIATIONS(X2, vecs); \
-		Y_VARIATIONS(Y2, vecs); \
-		Y_VARIATIONS(Z2, vecs); \
-		Y_VARIATIONS(W2, vecs);
-		
+void CallFuncPtr(FunctionPointer<int, int&> funcPtr)
+{
+	int val;
+	funcPtr(val);
+}
 
 int main()
 {
-	//Timer::Init();
-	/*Timer timer;
-	double totalTime = 0;
-	Vec3f tst(1, 2, 3);
-	Vec3f tst1(1, 0, 0);
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	_CrtSetBreakAlloc(-1);
 
-	Vec4f vec1(1, 2, 3, 4);
-	Vec4f vec2(1, 0, 0, 0);
-	float result;*/
+	//Timer timer;
+	//double totalTime = 0;
+	//Vec3f tst(1, 2, 3);
+	//Vec3f tst1(1, 0, 0);
 
-	//float thisVal = GetFloat32_FromFloat16_NoIntrinsics(27362);
+	//Vec4f vec1(1, 2, 3, 4);
+	//Vec4f vec2(1, 0, 0, 0);
+	//float result;
 
-	/*TimeCounter startTime = Timer::UpdateCounter();
-	Sleep(5500);
-	TimeCounter totalTime = Timer::UpdateCounter() - startTime;
-	cout << "Time in S: " << totalTime.InSeconds();
-	cout << "Time in MS: " << totalTime.InMilliseconds();*/
+	//tstFunc testThis;
+	//testThis = &TstThreadArgs::TstMethod;
 
-	Mat44V rotMat(INIT_IDENTITY);
-	rotMat.Rotate_LocalX(DEGREES_TO_RADIANS(50.0f));
+	TstThreadArgs* pTstArgs = new TstThreadArgs;
 
-	Vector vecs[2] = { VectorSet(1.0f, 2.0f, 3.0f, 4.0f), VectorSet(5.0f, 6.0f, 7.0f, 8.0f) };
+	//(pTstArgs->*testThis)();
+	//(((TstThreadArgs*)nullptr)->*testThis)();
 
-	/*PERM_TEST(vecs);*/
-	//Y_VARIATIONS(X1, vecs);
-	//Y_VARIATIONS(Y1, vecs);
-	//Y_VARIATIONS(Z1, vecs);
-	//Y_VARIATIONS(W1, vecs);
-	//Y_VARIATIONS(X2, vecs);
-	//Y_VARIATIONS(Y2, vecs);
-	//Y_VARIATIONS(Z2, vecs);
-	//Y_VARIATIONS(W2, vecs);
+	//auto func = FunctionPtr(&TstThreadArgs::TstMethod);
+	//func.SetInvokingObject(pTstArgs);
+	//int retVal = func(250);
 
-	/*Vector perResult = Permute<X1, X1, X2, X2>(vecs[0], vecs[1]);
+	//ThreadPool tstThreadPool;//s[10];
+	//tstThreadPool.Init(20);
 
-	for(int i = 0; i < 4; ++i)
+	//CallFuncPtr(TestThisBitch);
+
+	int tstVal = 250;
+
+	//std::function<int(int)> memFunc;
+	//memFunc = std::bind(&TstThreadArgs::TstMethod, pTstArgs, std::placeholders::_1);
+	//FunctionPointer<int, int&> memFunc;
+	//memFunc = CreateFunctionPointer(pTstArgs, &TstThreadArgs::TstMethod);
+	//memFunc(tstVal);
+
+	std::function<int(int&)> globalFunc = TestThisBitch;
+	//StaticFunctionPointer<int, int&> globalFunc = TestThisBitch;
+	//memFunc = globalFunc;
+	//memFunc(250);
+	//globalFunc(tstVal);
+
+	//StaticFunctionPointer<int, int&> tmp = TestThisBitch;
+	//tmp(tstVal);
+
+	//(pTstArgs->*memFunc)(tstVal);
+
+	//std::function<float(void)> pStdFunc;
+	//pStdFunc = std::bind(TstGlobal);
+	//pStdFunc();
+
+	//TstThreadArgs* pVirtualTst = new TstDerivedClass;
+	//pVirtualTst->TstVirtual();
+	//delete pVirtualTst;
+
+	/*for(int i = 0; i < 20; ++i)
 	{
-		cout << perResult.m128_f32[i] << endl;
+		Sleep(rand() % 1000);
+		for(int j = 0; j < 1000; ++j)
+		{
+			tstThreadPool.AddWork(TstThreadProc, pTstArgs);
+		}
 	}*/
 
-	//Assert(0, "This is a Test %i, %i", 1, 2);
-
-	//std::thread tstThread;
-
-	//Mat44V convertTst(INIT_IDENTITY);
-	//Mat44 convTst1;
-	//convTst1 = MAT44V_TO_MAT44(convertTst);
-
-	//int structSize = sizeof(Vec4f);
-
-	//Vec4V vectst(1, 2, 3, 4);
-	//Vec4V vectst2;
-	//vectst2 = vectst;
-
-	//Mat44 invMat = MAT44V_TO_MAT44(Mat44V(INIT_IDENTITY));
-	//invMat.Invert();
-
-	////invMat.GetWAxisRef().SetXYZ(vectst2.GetXYZ());
-
-	//for(unsigned long long i = 0; i < TEST_SETS; ++i)
-	//{
-	//	timer.Reset();
-	//	timer.StartTimer();
-	//	for(unsigned long long j = 0; j < TEST_REPS; ++j)
-	//	{
-	//		result = vec1.MagSq();
-	//	}
-	//	timer.StopTimer();
-	//	totalTime += timer.GetDeltaTimeD();
-
-	//	cout << "Rep Time: " << timer.GetDeltaTimeD() << endl;
-	//	cout << "Waste Time: " << result << endl;
-	//}
-
-	//cout << "Average Time: " << totalTime / TEST_SETS << endl;
-
-	return 0;
-}
+	/*Mat44V convertTst(INIT_IDENTITY);
+	Mat44 convTst1;
+	convTst1 = MAT44V_TO_MAT44(convertTst);
 
 int TstThreadProc(void* pArgs)
 {
 	TstThreadArgs* pThreadArgs = (TstThreadArgs*)pArgs;
 
-	unsigned int finalVal = 0;
+	Vec3V vectst(2, 4, 6, 8);
+	Vec3V vectst2(2, 4, 6, 8);
+	vectst2 *= vectst;
 
 	for(int i = 0; i < 256; ++i)
 	{
@@ -233,7 +194,49 @@ int TstThreadProc(void* pArgs)
 	return 0;
 }
 
-void TstThreadCallback(int retVal, void* pArgs)
+	cout << vectst2.GetX() << ' ' << vectst2.GetY() << ' ' << vectst2.GetZ() << ' ' << vectst2.GetW() << endl;*/
+
+	//tstThreadPool.Shutdown();
+	delete pTstArgs;
+	return 0;
+}
+
+void TstThreadProc(void* pArgs)
 {
-	cout << "Thread Returned Val of :" << retVal << endl;
+	TstThreadArgs* pTstThreadArgs = (TstThreadArgs*)pArgs;
+
+	unsigned int finalVal = 0;
+
+	for(int i = 0; i < 256; ++i)
+	{
+		switch(pTstThreadArgs->operation[i])
+		{
+			case 0:
+			{
+				finalVal += pTstThreadArgs->vals1[i] + pTstThreadArgs->vals2[i];
+			}
+			break;
+
+			case 1:
+			{
+				finalVal += pTstThreadArgs->vals1[i] - pTstThreadArgs->vals2[i];
+			}
+			break;
+
+			case 2:
+			{
+				finalVal += pTstThreadArgs->vals1[i] * pTstThreadArgs->vals2[i];
+			}
+			break;
+
+			case 3:
+			{
+				finalVal += pTstThreadArgs->vals1[i] / pTstThreadArgs->vals2[i];
+			}
+			break;
+		}
+
+	}
+
+	cout << "Final Val: " << finalVal << endl;
 }

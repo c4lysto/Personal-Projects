@@ -19,8 +19,8 @@ public:
 	}
 
 	// Undefined to avoid bad things.
-	CriticalSection(const CriticalSection& rhs);
-	CriticalSection& operator=(const CriticalSection& rhs);
+	CriticalSection(const CriticalSection& rhs) = delete;
+	CriticalSection& operator=(const CriticalSection& rhs) = delete;
 
 	inline void Lock()
 	{
@@ -34,29 +34,30 @@ public:
 
 	inline void Unlock()
 	{
-		if(m_CriticalSection.OwningThread == (HANDLE)GetCurrentThreadId())
+		if(m_CriticalSection.OwningThread == (void*)GetCurrentThreadId())
 			LeaveCriticalSection(&m_CriticalSection);
 	}
 };
 
-class ScopedCriticalSection
+// This Class Is Meant For An Easy Wrapper Of A Scoped Critical Section
+class LocalCriticalSection
 {
 private:
 	CriticalSection& m_CriticalSection;
 
 public:
-	inline ScopedCriticalSection(CriticalSection& critSection, bool bAutoLock = true) : m_CriticalSection(critSection)
+	inline LocalCriticalSection(CriticalSection& critSection, bool bAutoLock = true) : m_CriticalSection(critSection)
 	{
 		if(bAutoLock)
 			m_CriticalSection.Lock();
 	}
 
-	inline ~ScopedCriticalSection()
+	inline ~LocalCriticalSection()
 	{
 		Unlock();
 	}
 
-	ScopedCriticalSection& operator=(const ScopedCriticalSection& rhs);
+	LocalCriticalSection& operator=(const LocalCriticalSection& rhs);
 
 	inline void Lock()
 	{

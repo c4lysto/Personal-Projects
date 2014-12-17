@@ -2,40 +2,21 @@
 #define SYSEVENT_H
 #include "SysSyncObject.h"
 
+// Event Can Only Be Created Via SysCreateEvent(bool,bool)
+// Event Must Be Closed Via SysCloseEvent(SysEvent&)
 class SysEvent : public SysSyncObject
 {
-private:
+public:
+	SysEvent() {}
+	~SysEvent() {}
 
-	void InitEvent()
-	{
-		if(!m_pHandle)
-			m_pHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
-	}
+	void Signal();
+	void Reset();
 
 public:
-	SysEvent() { InitEvent(); }
-	~SysEvent() { CloseEvent(); }
 
-	void CloseEvent()
-	{
-		if(m_pHandle)
-		{
-			CloseHandle(m_pHandle);
-			m_pHandle = nullptr;
-		}
-	}
-
-	void Signal()
-	{
-		if(m_pHandle)
-			SetEvent(m_pHandle);
-	}
-
-	void Reset()
-	{
-		if(m_pHandle)
-			ResetEvent(m_pHandle);
-	}
+	friend SysEvent SysCreateEvent(bool bManuallyManaged = false, bool bInitialState = false);
+	friend void SysCloseEvent(SysEvent& sysEvent);
 };
 
 #endif // SYSEVENT_H

@@ -2,36 +2,20 @@
 #define SYSMUTEX_H
 #include "SysSyncObject.h"
 
+// Mutex Can Only Be Created Via SysCreateMutex(bool)
+// Mutex Must Be Closed Via SysMutex::CloseMutex(SysMutex&)
 class SysMutex : public SysSyncObject
 {
-private:
+public:
+	SysMutex() {}
+	~SysMutex() {}
 
-	void InitMutex()
-	{
-		if(!m_pHandle)
-			m_pHandle = CreateMutex(NULL, FALSE, NULL);
-	}
+	void Signal();
 
 public:
-	SysMutex() { InitMutex(); }
-	~SysMutex() { CloseMutex(); }
 
-	void CloseMutex()
-	{
-		if(m_pHandle)
-		{
-			CloseHandle(m_pHandle);
-			m_pHandle = nullptr;
-		}
-	}
-
-	void Signal()
-	{
-		if(m_pHandle)
-		{
-			ReleaseMutex(m_pHandle);
-		}
-	}
+	friend SysMutex SysCreateMutex(bool bInitialOwner = false);
+	friend void SysCloseMutex(SysMutex& sysMutex);
 };
 
 #endif // SYSMUTEX_H

@@ -15,34 +15,45 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Source\Core\Math Lib\GlobalMathFuncs.inl">
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\MathDeclarations.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\MathLib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\VectorWrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\GlobalMathFuncs.inl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\Source\Core\Math Lib\Mat44V.inl">
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Mat44V.inl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\Source\Core\Math Lib\Matrix44.inl">
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Matrix44.inl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\Source\Core\Math Lib\Vec2.inl">
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Vec2.inl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\Source\Core\Math Lib\Vec2V.inl">
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Vec2V.inl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\Source\Core\Math Lib\Vec3.inl">
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Vec3.inl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\Source\Core\Math Lib\Vec3V.inl">
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Vec3V.inl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\Source\Core\Math Lib\Vec4.inl">
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Vec4.inl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\Source\Core\Math Lib\Vec4V.inl">
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Vec4V.inl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\Source\Core\Math Lib\VectorWrapper.inl">
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\VectorWrapper.inl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

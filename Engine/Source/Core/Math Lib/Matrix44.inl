@@ -113,7 +113,7 @@ public:
 
 	void NormalizeXYZ();
 
-	friend float MatrixDeterminant(Mat44_In mMatrix);
+	//friend float MatrixDeterminant(Mat44_In mMatrix);
 
 	void Invert();
 
@@ -582,49 +582,49 @@ __forceinline void Mat44::NormalizeXYZ()
 	zAxis.SetXYZ(Normalize(zAxis.GetXYZ()));
 }
 
-float MatrixDeterminant(Mat44_In mMatrix)
-{
-	const Vec4f& row1 = mMatrix.xAxis;
-	const Vec4f& row2 = mMatrix.yAxis;
-	const Vec4f& row3 = mMatrix.zAxis;
-	const Vec4f& row4 = mMatrix.wAxis;
-
-	float det = row1.x*row2.y*row3.z*row4.w +
-				row1.x*row2.z*row3.w*row4.y + 
-				row1.x*row2.w*row3.y*row4.z + 
-
-				row1.y*row2.x*row3.w*row4.z + 
-				row1.y*row2.z*row3.x*row4.w + 
-				row1.y*row2.w*row3.z*row4.x + 
-
-				row1.z*row2.x*row3.y*row4.w + 
-				row1.z*row2.y*row3.w*row4.x + 
-				row1.z*row2.w*row3.x*row4.y + 
-
-				row1.w*row2.x*row3.z*row4.y + 
-				row1.w*row2.y*row3.x*row4.z + 
-				row1.w*row2.z*row3.y*row4.x 
-
-				-
-
-				row1.x*row2.y*row3.w*row4.z - 
-				row1.x*row2.z*row3.y*row4.w - 
-				row1.x*row2.w*row3.z*row4.y - 
-
-				row1.y*row2.x*row3.z*row4.w - 
-				row1.y*row2.z*row3.w*row4.x - 
-				row1.y*row2.w*row3.x*row4.z - 
-
-				row1.z*row2.x*row3.w*row4.y - 
-				row1.z*row2.y*row3.x*row4.w - 
-				row1.z*row2.w*row3.y*row4.x - 
-
-				row1.w*row2.x*row3.y*row4.z - 
-				row1.w*row2.y*row3.z*row4.x - 
-				row1.w*row2.z*row3.x*row4.y;
-
-	return det;
-}
+//float MatrixDeterminant(Mat44_In mMatrix)
+//{
+//	const Vec4f& row1 = mMatrix.xAxis;
+//	const Vec4f& row2 = mMatrix.yAxis;
+//	const Vec4f& row3 = mMatrix.zAxis;
+//	const Vec4f& row4 = mMatrix.wAxis;
+//
+//	float det = row1.x*row2.y*row3.z*row4.w +
+//				row1.x*row2.z*row3.w*row4.y + 
+//				row1.x*row2.w*row3.y*row4.z + 
+//
+//				row1.y*row2.x*row3.w*row4.z + 
+//				row1.y*row2.z*row3.x*row4.w + 
+//				row1.y*row2.w*row3.z*row4.x + 
+//
+//				row1.z*row2.x*row3.y*row4.w + 
+//				row1.z*row2.y*row3.w*row4.x + 
+//				row1.z*row2.w*row3.x*row4.y + 
+//
+//				row1.w*row2.x*row3.z*row4.y + 
+//				row1.w*row2.y*row3.x*row4.z + 
+//				row1.w*row2.z*row3.y*row4.x 
+//
+//				-
+//
+//				row1.x*row2.y*row3.w*row4.z - 
+//				row1.x*row2.z*row3.y*row4.w - 
+//				row1.x*row2.w*row3.z*row4.y - 
+//
+//				row1.y*row2.x*row3.z*row4.w - 
+//				row1.y*row2.z*row3.w*row4.x - 
+//				row1.y*row2.w*row3.x*row4.z - 
+//
+//				row1.z*row2.x*row3.w*row4.y - 
+//				row1.z*row2.y*row3.x*row4.w - 
+//				row1.z*row2.w*row3.y*row4.x - 
+//
+//				row1.w*row2.x*row3.y*row4.z - 
+//				row1.w*row2.y*row3.z*row4.x - 
+//				row1.w*row2.z*row3.x*row4.y;
+//
+//	return det;
+//}
 
 __forceinline void Mat44::Invert()
 {

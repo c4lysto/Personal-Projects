@@ -42,7 +42,7 @@ __forceinline void VectorStore(Vector_In lhs, float* alignedFloat4Ptr)
 }
 
 // Used to store in Unaligned Data
-void VectorStoreU(Vector_In lhs, float* unalignedFloat4Ptr)
+__forceinline void VectorStoreU(Vector_In lhs, float* unalignedFloat4Ptr)
 {
 	_mm_storeu_ps(unalignedFloat4Ptr, lhs);
 }
@@ -54,7 +54,7 @@ __forceinline float VectorExtract(Vector_In vec)
 	return _mm_cvtss_f32(Permute<index, index, index, index>(vec));
 }
 
-template<> float VectorExtract<VecElem::X>(Vector_In vec) {return _mm_cvtss_f32(vec);}
+template<> __forceinline float VectorExtract<VecElem::X>(Vector_In vec) {return _mm_cvtss_f32(vec);}
 
 // Arithmetic Operations: 
 
@@ -97,7 +97,7 @@ __forceinline Vector_Out VectorSubtractInt(Vector_In lhs, Vector_In rhs)
 
 // Operates in the following manner:
 // {lhs.x-lhs.y, lhs.z-lhs.w, rhs.x-rhs.y, rhs.z-rhs.w}
-Vector_Out VectorHSub(Vector_In lhs, Vector_In rhs)
+__forceinline Vector_Out VectorHSub(Vector_In lhs, Vector_In rhs)
 {
 	return _mm_hsub_ps(lhs, rhs);
 }

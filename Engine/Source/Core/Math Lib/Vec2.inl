@@ -147,8 +147,8 @@ __forceinline Vec2<Type>& Vec2<Type>::operator=(Vec2&& vVector)
 {
 	if(this != &vVector)
 	{
-		x = std::forward(vVector.x);
-		y = std::forward(vVector.y);
+		x = std::forward<Type>(vVector.x);
+		y = std::forward<Type>(vVector.y);
 	}
 	return *this;
 }

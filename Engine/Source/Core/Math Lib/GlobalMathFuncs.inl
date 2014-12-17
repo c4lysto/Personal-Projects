@@ -157,8 +157,7 @@ __forceinline Mat44V MakeTextureMatrixOffset(unsigned int unWidth, unsigned int 
 				  0.0f,						0.0f,						1.0f,	0.0f,
 				  0.5f + (0.5f / unWidth),	0.5f + (0.5f / unHeight),	0.0f,	1.0f);
 }
-
-float CalculateGaussianWeight(int nOffset, float fSigma = 1.0f)
+__forceinline float CalculateGaussianWeight(int nOffset, float fSigma = 1.0f)
 {
 	return (1 / sqrt(_2PI * (fSigma * fSigma))) * exp(-(nOffset * nOffset) / (2 * (fSigma * fSigma)));
 }

@@ -19,21 +19,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Source\Core\Math Lib\GlobalMathFuncs.inl" />
-    <None Include="..\Source\Core\Math Lib\Mat44V.inl" />
-    <None Include="..\Source\Core\Math Lib\Matrix44.inl" />
-    <None Include="..\Source\Core\Math Lib\Vec2.inl" />
-    <None Include="..\Source\Core\Math Lib\Vec2V.inl" />
-    <None Include="..\Source\Core\Math Lib\Vec3.inl" />
-    <None Include="..\Source\Core\Math Lib\Vec3V.inl" />
-    <None Include="..\Source\Core\Math Lib\Vec4.inl" />
-    <None Include="..\Source\Core\Math Lib\Vec4V.inl" />
-    <None Include="..\Source\Core\Math Lib\VectorWrapper.inl" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\MathDeclarations.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\MathLib.h" />
+    <ClInclude Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\VectorWrapper.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Source\Core\Math Lib\MathDeclarations.h" />
-    <ClInclude Include="..\Source\Core\Math Lib\MathLib.h" />
-    <ClInclude Include="..\Source\Core\Math Lib\VectorWrapper.h" />
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\GlobalMathFuncs.inl" />
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Mat44V.inl" />
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Matrix44.inl" />
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Vec2.inl" />
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Vec2V.inl" />
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Vec3.inl" />
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Vec3V.inl" />
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Vec4.inl" />
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\Vec4V.inl" />
+    <None Include="..\..\..\Ryan%27s Projects Repository\Engine\Source\Core\Math Lib\VectorWrapper.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3C69EFDB-7DFC-4C91-9230-D6C8CDD88425}</ProjectGuid>
@@ -42,28 +42,28 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>CTP_Nov2013</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>CTP_Nov2013</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>CTP_Nov2013</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>CTP_Nov2013</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>

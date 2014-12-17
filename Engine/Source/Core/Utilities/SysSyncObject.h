@@ -14,16 +14,7 @@ public:
 	SysSyncObject(void* pWaitHandle);
 	~SysSyncObject();
 
-	SysSyncObject& operator=(const SysSyncObject& rhs)
-	{
-		if(this != &rhs)
-		{
-			m_pHandle = rhs.m_pHandle;
-		}
-		return *this;
-	}
-
-	void SetWaitHandle(void* pWaitHandle);
+	void SetHandle(void* pWaitHandle);
 
 	void Wait(unsigned int nWaitTimeInMS = INFINITE);
 

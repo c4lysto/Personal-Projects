@@ -10,6 +10,7 @@
 #endif
 
 #if DEBUG
+#include <crtdbg.h>
 #include <assert.h>
 #endif
 
@@ -26,9 +27,11 @@
 #ifndef DisplayDebugString
 #if DEBUG
 	#define DisplayDebugString(x, ...) \
+		do { \
 		char buff[256]; \
 		sprintf_s(buff, 256, x, __VA_ARGS__); \
-		OutputDebugStringA(buff);
+		OutputDebugStringA(buff); \
+		} while(0)
 #else // !DEBUG
 	#define DisplayDebugString(x, ...)
 #endif // !DEBUG
@@ -48,9 +51,9 @@
 #endif // ifndef Assert
 
 #if __ASSERT
-#define ASSERT_ONLY(x) x
+	#define ASSERT_ONLY(x) x
 #else // !__ASSERT
-#define ASSERT_ONLY(x)
+	#define ASSERT_ONLY(x)
 #endif // !__ASSERT
 
 #ifndef Verify
@@ -60,7 +63,7 @@
 	(1 != _CrtDbgReportW(_CRT_ASSERT, _CRT_WIDE(__FILE__), __LINE__, NULL, _CRT_WIDE(message), __VA_ARGS__)) || \
 	(__debugbreak(), 0))
 #else // !DEBUG
-#define Verify(condition, message, ...) condition
+	#define Verify(condition, message, ...) condition
 #endif // !DEBUG
 #endif // ifndef Verify
 

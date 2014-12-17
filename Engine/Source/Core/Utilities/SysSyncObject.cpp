@@ -6,7 +6,7 @@ SysSyncObject::SysSyncObject() : m_pHandle(nullptr)
 
 SysSyncObject::SysSyncObject(void* pWaitHandle) : m_pHandle(nullptr)
 {
-	SetWaitHandle(pWaitHandle);
+	SetHandle(pWaitHandle);
 }
 
 SysSyncObject::~SysSyncObject()
@@ -14,7 +14,7 @@ SysSyncObject::~SysSyncObject()
 	m_pHandle = nullptr;
 }
 
-void SysSyncObject::SetWaitHandle(void* pWaitHandle)
+void SysSyncObject::SetHandle(void* pWaitHandle)
 {
 	if(!m_pHandle && pWaitHandle)
 	{
