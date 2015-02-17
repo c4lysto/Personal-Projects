@@ -11,6 +11,8 @@
 using std::move;
 
 #pragma warning(disable : 4127) // Conditional Expression is Constant
+#pragma warning(disable : 4512) // Assignment Operator Was Implicitly Defined As Deleted
+#pragma warning(disable : 4010) // Single-Line Comment Contains Line-Continuation Character
 
 #include "GlobalDefines.h"
 #include "HashString.h"
