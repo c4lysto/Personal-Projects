@@ -9,6 +9,53 @@ public:
 	virtual _FuncPtrBase<retType, tArgs...>* CreateCopy() const = 0;
 };
 
+template<typename funcPtrType, typename retType, typename... tArgs>
+class _DeferredFuncPtr : public _FuncPtrBase<retType, tArgs...>
+{
+public:
+	funcPtrType m_pFunc;
+
+public:
+	_DeferredFuncPtr(const _DeferredFuncPtr& rhs) : m_pFunc(rhs.m_pFunc){}
+	_DeferredFuncPtr(_DeferredFuncPtr&& rhs) : m_pFunc(rhs.m_pFunc) {}
+	_DeferredFuncPtr(const funcPtrType& pFunc) : m_pFunc(pFunc) {}
+
+	virtual __forceinline retType operator()(tArgs... args) const
+	{
+		return (m_pFunc)(args...);
+	}
+
+	virtual _FuncPtrBase<retType, tArgs...>* CreateCopy() const
+	{
+		return new _DeferredFuncPtr<funcPtrType, retType, tArgs...>(*this);
+	}
+};
+
+template<typename funcPtrType, typename retType, typename className, typename... tArgs>
+class _DeferredMemberFuncPtr : public _DeferredFuncPtr<funcPtrType, retType, tArgs...>
+{
+protected:
+	className* m_pInvokingObject;
+
+public:
+	_DeferredMemberFuncPtr(const _DeferredMemberFuncPtr& rhs) : _DeferredFuncPtr(rhs.m_pFunc), m_pInvokingObject(rhs.m_pInvokingObject) {}
+	_DeferredMemberFuncPtr(_DeferredMemberFuncPtr&& rhs) : _DeferredFuncPtr(rhs.m_pFunc), m_pInvokingObject(rhs.m_pInvokingObject) {}
+	_DeferredMemberFuncPtr(className* pInvokingObject, const funcPtrType& pFunc) : _DeferredFuncPtr(pFunc), m_pInvokingObject(pInvokingObject) {}
+	_DeferredMemberFuncPtr(className* pInvokingObject, funcPtrType&& pFunc) : _DeferredFuncPtr(pFunc), m_pInvokingObject(pInvokingObject) {}
+	_DeferredMemberFuncPtr(const funcPtrType& pFunc) : m_pFunc(pFunc) {}
+
+	virtual __forceinline retType operator()(tArgs... args) const
+	{
+		return (m_pInvokingObject->*m_pFunc)(args...);
+	}
+
+	virtual _FuncPtrBase<retType, tArgs...>* CreateCopy() const
+	{
+		return new _DeferredMemberFuncPtr<funcPtrType, retType, className, tArgs...>(*this);
+	}
+};
+
+// Wrapper Around __cdecl Calling Convention Function Pointer
 template<typename retType, typename... tArgs>
 class StaticFunctionPointer : public _FuncPtrBase<retType, tArgs...>
 {
@@ -22,7 +69,12 @@ public:
 	StaticFunctionPointer(const StaticFunctionPointer& rhs) : m_pFunc(rhs.m_pFunc) {}
 	StaticFunctionPointer(StaticFunctionPointer&& rhs) : m_pFunc(rhs.m_pFunc) {}
 	StaticFunctionPointer(const _FuncPtr& pFunc) : m_pFunc(pFunc) {}
-	StaticFunctionPointer(_FuncPtr&& pFunc) : m_pFunc(pFunc) {}
+
+	template<typename funcPtrType>
+	StaticFunctionPointer(const _DeferredFuncPtr<funcPtrType, retType, tArgs...>& rhs) : m_pFunc(rhs.m_pFunc) {}
+
+	template<typename funcPtrType>
+	StaticFunctionPointer(_DeferredFuncPtr<funcPtrType, retType, tArgs...>&& rhs) : m_pFunc(rhs.m_pFunc) {}
 
 
 	StaticFunctionPointer& operator=(const StaticFunctionPointer& rhs)
@@ -50,6 +102,20 @@ public:
 	StaticFunctionPointer& operator=(_FuncPtr&& pFunc)
 	{
 		m_pFunc = pFunc;
+		return *this;
+	}
+
+	template<typename funcPtrType>
+	StaticFunctionPointer& operator=(const _DeferredFuncPtr<funcPtrType, retType, tArgs...>& rhs)
+	{
+		m_pFunc = rhs.m_pFunc;
+		return *this;
+	}
+	
+	template<typename funcPtrType>
+	StaticFunctionPointer& operator=(_DeferredFuncPtr<funcPtrType, retType, tArgs...>&& rhs)
+	{
+		m_pFunc = rhs.m_pFunc;
 		return *this;
 	}
 
@@ -84,11 +150,16 @@ public:
 	MemberFunctionPointer(const MemberFunctionPointer& rhs) : m_pFunc((_FuncPtr)rhs.m_pFunc), m_pInvokingObject(rhs.m_pInvokingObject) {}
 	MemberFunctionPointer(MemberFunctionPointer&& rhs) : m_pFunc((_FuncPtr)rhs.m_pFunc), m_pInvokingObject(rhs.m_pInvokingObject) {}
 	MemberFunctionPointer(const _FuncPtr& pFunc) : m_pFunc(pFunc), m_pInvokingObject(nullptr) {}
-	MemberFunctionPointer(_FuncPtr&& pFunc) : m_pFunc(pFunc), m_pInvokingObject(nullptr) {}
 	MemberFunctionPointer(className* pInvokinObject, const _FuncPtr& pFunc) : m_pFunc(pFunc), m_pInvokingObject(pInvokinObject) {}
 	MemberFunctionPointer(className* pInvokinObject, _FuncPtr&& pFunc) : m_pFunc(pFunc), m_pInvokingObject(pInvokinObject) {}
 	MemberFunctionPointer(const className* pInvokinObject, const _FuncPtrConst& pFunc) : m_pFunc((_FuncPtr)pFunc), m_pInvokingObject((className*)pInvokinObject) {}
 	MemberFunctionPointer(const className* pInvokinObject, _FuncPtrConst&& pFunc) : m_pFunc((_FuncPtr)pFunc), m_pInvokingObject((className*)pInvokinObject) {}
+
+	template<typename funcPtrType>
+	MemberFunctionPointer(const _DeferredMemberFuncPtr<funcPtrType, retType, className, tArgs...>& rhs) : m_pFunc(rhs.m_pFunc){}
+
+	template<typename funcPtrType>
+	MemberFunctionPointer(_DeferredMemberFuncPtr<funcPtrType, retType, className, tArgs...>&& rhs) : m_pFunc(rhs.m_pFunc){}
 
 
 	MemberFunctionPointer& operator=(const MemberFunctionPointer& rhs)
@@ -123,6 +194,20 @@ public:
 		return *this;
 	}
 
+	template<typename funcPtrType>
+	StaticFunctionPointer& operator=(const _DeferredMemberFuncPtr<funcPtrType, retType, tArgs...>& rhs)
+	{
+		m_pFunc = rhs.m_pFunc;
+		return *this;
+	}
+
+	template<typename funcPtrType>
+	StaticFunctionPointer& operator=(_DeferredMemberFuncPtr<funcPtrType, retType, tArgs...>&& rhs)
+	{
+		m_pFunc = rhs.m_pFunc;
+		return *this;
+	}
+
 	void SetInvokingObject(className* pInvokingObject)
 	{
 		m_pInvokingObject = pInvokingObject;
@@ -144,6 +229,7 @@ public:
 	}
 };
 
+
 template<typename retType, typename... tArgs>
 class FunctionPointer
 {
@@ -160,6 +246,13 @@ private:
 			delete m_pFuncWrapper;
 			m_pFuncWrapper = nullptr;
 		}
+	}
+
+	template<typename funcPtrWrapperType>
+	inline void Assign(funcPtrWrapperType rhs)
+	{
+		Clean();
+		m_pFuncWrapper = rhs.CreateCopy();
 	}
 
 public:
@@ -184,6 +277,18 @@ public:
 	
 	template<typename className>
 	FunctionPointer(const MemberFunctionPointer<retType, className, tArgs...>& rhs)
+	{
+		m_pFuncWrapper = rhs.CreateCopy();
+	}
+
+	template<typename funcPtrType>
+	FunctionPointer(const _DeferredFuncPtr<funcPtrType, retType, tArgs...>& rhs)
+	{
+		m_pFuncWrapper = rhs.CreateCopy();
+	}
+
+	template<typename funcPtrType, typename className>
+	FunctionPointer(const _DeferredFuncPtr<funcPtrType, retType, className, tArgs...>& rhs)
 	{
 		m_pFuncWrapper = rhs.CreateCopy();
 	}
@@ -217,27 +322,38 @@ public:
 
 	FunctionPointer& operator=(_StaticFuncPtr pFuncPtr)
 	{
-		Clean();
-		m_pFuncWrapper = StaticFunctionPointer<retType, tArgs...>(pFuncPtr).CreateCopy();
+		Assign(StaticFunctionPointer<retType, tArgs...>(pFuncPtr));
 		return *this;
 	}
 
 	FunctionPointer& operator=(const StaticFunctionPointer<retType, tArgs...>& rhs)
 	{
-		Clean();
-		m_pFuncWrapper = rhs.CreateCopy();
+		Assign(rhs);
 		return *this;
 	}
 	
 	template<typename className>
 	FunctionPointer& operator=(const MemberFunctionPointer<retType, className, tArgs...>& rhs)
 	{
-		Clean();
-		m_pFuncWrapper = rhs.CreateCopy();
+		Assign(rhs);
 		return *this;
 	}
 
-	retType operator()(tArgs... args)
+	template<typename funcPtrType>
+	FunctionPointer& operator=(const _DeferredFuncPtr<funcPtrType, retType, tArgs...>& rhs)
+	{
+		Assign(rhs);
+		return *this;
+	}
+
+	template<typename funcPtrType, typename className>
+	FunctionPointer& operator=(const _DeferredFuncPtr<funcPtrType, retType, className, tArgs...>& rhs)
+	{
+		Assign(rhs);
+		return *this;
+	}
+
+	__forceinline retType operator()(tArgs... args) const
 	{
 		Assert(m_pFuncWrapper, "Function Pointer - Calling an Invalid Function Pointer!");
 		return (m_pFuncWrapper->operator()(args...));
@@ -249,22 +365,59 @@ public:
 	}
 };
 
-template<typename retType, typename... tArgs>
-__forceinline StaticFunctionPointer<retType, tArgs...> CreateFunctionPointer(retType(*funcPtr)(tArgs...))
-{
-	return StaticFunctionPointer<retType, tArgs...>(funcPtr);
+#pragma warning(disable : 4003) // Not Enough Actual Parameters For Macro '...'
+
+#define CREATE_FUNC_PTR_WRAP(createFuncWrap, callConv, constQualifier) createFuncWrap(callConv, constQualifier)
+
+#if _WIN64
+#define CREATE_FUNC_PTR_WRAP_ALL(createFuncWrap, constQualifier) \
+		CREATE_FUNC_PTR_WRAP(createFuncWrap, __cdecl, constQualifier) \
+		CREATE_FUNC_PTR_WRAP(createFuncWrap, __vectorcall, constQualifier) //\
+		CREATE_FUNC_PTR_WRAP(createFuncWrap, __clrcall, constQualifier)
+#else // if !_WIN64
+#define CREATE_FUNC_PTR_WRAP_ALL(createFuncWrap, constQualifier) \
+		CREATE_FUNC_PTR_WRAP(createFuncWrap, __stdcall, constQualifier) \
+		CREATE_FUNC_PTR_WRAP(createFuncWrap, __cdecl, constQualifier) \
+		CREATE_FUNC_PTR_WRAP(createFuncWrap, __fastcall, constQualifier) \
+		CREATE_FUNC_PTR_WRAP(createFuncWrap, __vectorcall, constQualifier) \
+		CREATE_FUNC_PTR_WRAP(createFuncWrap, __thiscall, constQualifier) //\
+		CREATE_FUNC_PTR_WRAP(createFuncWrap, __clrcall, constQualifier)
+#endif // !_WIN64
+
+// START - Static Function Pointers
+
+#define CREATE_STATIC_FUNC_WRAP(callConv, constQualifier) \
+template<typename retType, typename... tArgs> \
+__forceinline _DeferredFuncPtr<retType(callConv *)(tArgs...), retType, tArgs...> \
+			CreateFunctionPointer(retType(callConv *funcPtr)(tArgs...)) \
+{ \
+	return _DeferredFuncPtr<retType(callConv *)(tArgs...), retType, tArgs...>(funcPtr); \
 }
 
-template<typename retType, typename className, typename... tArgs>
-__forceinline MemberFunctionPointer<retType, className, tArgs...> CreateFunctionPointer(className* pInvokingObject, retType(className::*funcPtr)(tArgs...))
-{
-	return MemberFunctionPointer<retType, className, tArgs...>(pInvokingObject, funcPtr);
+// Lambda Support
+//template<typename funcPtrType, typename... tArgs> \
+//__forceinline _DeferredFuncPtr<
+
+CREATE_FUNC_PTR_WRAP_ALL(CREATE_STATIC_FUNC_WRAP, )
+#undef CREATE_STATIC_FUNC_WRAP
+
+// END - Static Function Pointers
+
+#define CREATE_MEMBER_FUNC_WRAP(callConv, constQualifier) \
+template<typename retType, typename className, typename... tArgs> \
+__forceinline _DeferredMemberFuncPtr<retType(callConv className::*)(tArgs...) constQualifier, retType, className, tArgs...> \
+			CreateFunctionPointer(constQualifier className* pInvokingObject, retType(callConv className::*funcPtr)(tArgs...) constQualifier) \
+{ \
+	return _DeferredMemberFuncPtr<retType(callConv className::*)(tArgs...) constQualifier, retType, className, tArgs...>(pInvokingObject, funcPtr); \
 }
 
-template<typename retType, typename className, typename... tArgs>
-__forceinline MemberFunctionPointer<retType, className, tArgs...> CreateFunctionPointer(const className* pInvokingObject, retType(className::*funcPtr)(tArgs...) const)
-{
-	return MemberFunctionPointer<retType, className, tArgs...>(pInvokingObject, funcPtr);
-}
+CREATE_FUNC_PTR_WRAP_ALL(CREATE_MEMBER_FUNC_WRAP, )
+CREATE_FUNC_PTR_WRAP_ALL(CREATE_MEMBER_FUNC_WRAP, const)
+#undef CREATE_MEMBER_FUNC_WRAP
+
+#undef CREATE_FUNC_PTR_WRAP_ALL
+#undef CREATE_FUNC_PTR_WRAP
+
+#pragma warning(default : 4003)
 
 #endif // FUNCTIONPOINTER_H
