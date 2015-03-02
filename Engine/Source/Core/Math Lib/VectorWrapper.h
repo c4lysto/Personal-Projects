@@ -1,8 +1,9 @@
 #ifndef VECTORWRAPPER_H
 #define VECTORWRAPPER_H
 
-//#if SSE_AVAILABLE
-#include "../Utilities/GlobalDefines.h"
+#include "MathDeclarations.h"
+
+#if SSE_AVAILABLE
 
 #include <xmmintrin.h>
 #include <intrin.h>
@@ -22,32 +23,15 @@ typedef const Vector& Vector_ConstRef;
 
 typedef Vector Vector_Out;
 
-namespace VecElem
-{
-	// Used For Permutations And Indexing Into a Vector
-	SELECTANY const int X = 0x0;
-	SELECTANY const int Y = 0x1;
-	SELECTANY const int Z = 0x2;
-	SELECTANY const int W = 0x3;
-
-	SELECTANY const int X1 = X;
-	SELECTANY const int Y1 = Y;
-	SELECTANY const int Z1 = Z;
-	SELECTANY const int W1 = W;
-	SELECTANY const int X2 = (0x10 | X1);
-	SELECTANY const int Y2 = (0x10 | Y1);
-	SELECTANY const int Z2 = (0x10 | Z1);
-	SELECTANY const int W2 = (0x10 | W1);
-};
-
 // Initialization Operations:
-Vector_Out VectorSet(float fVal);
 
-Vector_Out VectorSet(float fX, float fY, float fZ, float fW);
+Vector_Out VectorSet(const float& fVal);
 
-Vector_Out VectorSet(int iVal);
+Vector_Out VectorSet(const float& fX, const float& fY, const float& fZ, const float& fW);
 
-Vector_Out VectorSet(int iX, int iY, int iZ, int iW);
+Vector_Out VectorSet(const int& iVal);
+
+Vector_Out VectorSet(const int& iX, const int& iY, const int& iZ, const int& iW);
 
 // Used to load Aligned Data
 Vector_Out VectorLoad(const float* const alignedFloat4Ptr);
@@ -62,7 +46,17 @@ void VectorStore(Vector_In vec, float* alignedFloat4Ptr);
 void VectorStoreU(Vector_In vec, float* unalignedFloat4Ptr);
 
 template<int index>
-float VectorExtract(Vector_In vec);
+float VectorExtractFloat(Vector_In vec);
+
+template<int index>
+int VectorExtractInt(Vector_In vec);
+
+
+// Conversion Operations:
+
+Vector_Out VectorIntToFloat(Vector_In vec);
+
+Vector_Out VectorFloatToInt(Vector_In vec);
 
 
 // Arithmetic Operations: 
@@ -98,40 +92,51 @@ Vector_Out operator-(Vector_In vec);
 
 Vector_Out VectorAbs(Vector_In vec);
 
-Vector_Out Sqrt(Vector_In vec);
+Vector_Out VectorSqrt(Vector_In vec);
 
-Vector_Out RSqrt(Vector_In vec);
+Vector_Out VectorRSqrt(Vector_In vec);
 
-Vector_Out Recip(Vector_In vec);
+Vector_Out VectorRecip(Vector_In vec);
+
+Vector_Out VectorFloor(Vector_In vec);
+
+Vector_Out VectorCeil(Vector_In vec);
+
+Vector_Out VectorTrunc(Vector_In vec);
+
+Vector_Out VectorRound(Vector_In vec);
+
+Vector_Out VectorSign(Vector_In vec);
 
 
 // Logical Operations:
 
-Vector_Out And(Vector_In lhs, Vector_In rhs);
+Vector_Out VectorAnd(Vector_In lhs, Vector_In rhs);
 Vector_Out operator&(Vector_In lhs, Vector_In rhs);
 
 // rhs is Negated Before the And so: result = lhs & ~rhs;
-Vector_Out AndNot(Vector_In lhs, Vector_In rhs);
+Vector_Out VectorAndNot(Vector_In lhs, Vector_In rhs);
 
-Vector_Out Not(Vector_In vec);
+Vector_Out VectorNot(Vector_In vec);
 Vector_Out operator~(Vector_In vec);
 
-Vector_Out Or(Vector_In lhs, Vector_In rhs);
+Vector_Out VectorOr(Vector_In lhs, Vector_In rhs);
 Vector_Out operator|(Vector_In lhs, Vector_In rhs);
 
-Vector_Out XOr(Vector_In lhs, Vector_In rhs);
+Vector_Out VectorXOr(Vector_In lhs, Vector_In rhs);
 Vector_Out operator^(Vector_In lhs, Vector_In rhs);
 
-Vector_Out LeftShift(Vector_In vec, int nCount);
+Vector_Out VectorLeftShift(Vector_In vec, int nCount);
 Vector_Out operator<<(Vector_In vec, int nCount);
 
-Vector_Out RightShift(Vector_In vec, int nCount);
+Vector_Out VectorRightShift(Vector_In vec, int nCount);
 Vector_Out operator>>(Vector_In vec, int nCount);
 
 
 // Comparison Functions:
 
 // Floating Point Comparisons:
+
 #define VEC_CMP_DECL(name) bool name(Vector_In lhs, Vector_In rhs);
 
 #define VEC_CMP_DECLBASE(name)	int name(Vector_In lhs, Vector_In rhs);
@@ -156,6 +161,7 @@ VEC_CMP_DECL_ALL(IsLessThanOrEqual);
 
 
 // Integer Comparisons:
+
 VEC_CMP_DECL_ALL(IsEqualInt);
 VEC_CMP_DECL_ALL(IsGreaterThanInt);
 VEC_CMP_DECL_ALL(IsLessThanInt);
@@ -176,26 +182,33 @@ VEC_CMP_DECL_ALL(IsLessThanOrEqualInt);
 
 
 // Misc Operations:
-//template<int pX, int pY, int pZ, int pW>
-//Vector_Out Permute(Vector_In lhs, Vector_In rhs);
 
 template<int pX, int pY, int pZ, int pW>
-Vector_Out Permute(Vector_In vec);
+Vector_Out VectorPermute(Vector_In vec);
 
 template<int pX, int pY, int pZ, int pW>
-Vector_Out Permute(Vector_In lhs, Vector_In rhs);
+Vector_Out VectorPermute(Vector_In lhs, Vector_In rhs);
 
-Vector_Out Min(Vector_In lhs, Vector_In rhs);
-Vector_Out MinInt(Vector_In lhs, Vector_In rhs);
+Vector_Out VectorMin(Vector_In lhs, Vector_In rhs);
+Vector_Out VectorMinInt(Vector_In lhs, Vector_In rhs);
 
-Vector_Out Max(Vector_In lhs, Vector_In rhs);
-Vector_Out MaxInt(Vector_In lhs, Vector_In rhs);
+Vector_Out VectorMax(Vector_In lhs, Vector_In rhs);
+Vector_Out VectorMaxInt(Vector_In lhs, Vector_In rhs);
+
+
+// Vector Math Operations:
+
+Vector_Out VectorCrossProduct(Vector_In lhs, Vector_In rhs);
+
+float VectorDot2(Vector_In lhs, Vector_In rhs);
+float VectorDot3(Vector_In lhs, Vector_In rhs);
+float VectorDot4(Vector_In lhs, Vector_In rhs);
 
 #include "VectorWrapper.inl"
 
 #undef VEC_INT_TO_FLOAT
 #undef VEC_FLOAT_TO_INT
 
-//#endif // SSE_AVAILABLE
+#endif // SSE_AVAILABLE
 
 #endif // VECTORWRAPPER_H

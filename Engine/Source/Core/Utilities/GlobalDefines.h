@@ -22,8 +22,8 @@ typedef unsigned __int64 u64;
 #define ALIGN(byteAlign) __declspec(align(byteAlign))
 #endif
 
-#ifndef SELECTANY
-#define SELECTANY __declspec(selectany) extern
+#ifndef GLOBALCONST
+#define GLOBALCONST extern const __declspec(selectany)
 #endif
 
 #ifndef THREADLOCAL

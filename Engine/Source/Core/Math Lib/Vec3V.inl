@@ -1,170 +1,33 @@
-#if SSE_AVAILABLE
-#ifndef VEC3V_INL
-#define VEC3V_INL
 
-typedef Vec3V& Vec3V_Ref;
-typedef const Vec3V& Vec3V_ConstRef;
-
-#if _WIN64
-typedef Vec3V Vec3V_In;
-#else
-typedef Vec3V_ConstRef Vec3V_In;
-#endif
-
-typedef Vec3V Vec3V_Out;
-
-typedef Vec3V_Ref Vec3V_InOut;
-
-// Other Vec3V Aliases
-typedef Vec3V float3V;
-
-ALIGN(16) class Vec3V
+__forceinline Vec3V::Vec3V(const float& fVal)
 {
-#define DEFINE_VEC3V_ENUM_CONSTRUCTOR(enumeration, valueToInit)\
-	explicit __forceinline Vec3V(enumeration) { row = VectorSet(valueToInit); }
+	row = VectorSet(fVal);
+}
 
-#define VEC3V_ACCESSOR(retType, funcName, retVal) \
-	__forceinline retType funcName() { return retVal; }
-
-#define VEC3V_ACCESSOR_CONST(retType, funcName, retVal) \
-	__forceinline retType funcName() const { return retVal; }
-
-#define VEC3V_MUTATOR(funcName, inType, modifiedVal) \
-	__forceinline void funcName(inType rhs) { modifiedVal = rhs; }
-
-	friend class Vec4V;
-
-private:
-	union
-	{
-		Vector row;
-
-		union
-		{
-			struct
-			{
-				float x, y, z, w;
-			};
-		};
-	};
-
-public:
-	Vec3V(){}
-	explicit Vec3V(float fX, float fY, float fZ);
-	explicit Vec3V(float fX, float fY, float fZ, float fW);
-	//Vec3V(Vec3V_In vVector);
-#if !_WIN64
-	Vec3V(Vec3V&& vVector);
-#endif // !_WIN_64
-	explicit Vec3V(Vector_In vVector);
-#if !_WIN64
-	Vec3V(Vector&& vVector);
-#endif // !_WIN64
-
-#ifdef DEFINE_VEC3V_ENUM_CONSTRUCTOR
-	DEFINE_VEC3V_ENUM_CONSTRUCTOR(eZeroInitializer, 0.0f)
-	DEFINE_VEC3V_ENUM_CONSTRUCTOR(eOneInitializer, 1.0f)
-	DEFINE_VEC3V_ENUM_CONSTRUCTOR(eTwoInitializer, 2.0f)
-	DEFINE_VEC3V_ENUM_CONSTRUCTOR(eThreeInitializer, 3.0f)
-	DEFINE_VEC3V_ENUM_CONSTRUCTOR(eFourInitializer, 4.0f)
-	DEFINE_VEC3V_ENUM_CONSTRUCTOR(eFiveInitializer, 5.0f)
-	DEFINE_VEC3V_ENUM_CONSTRUCTOR(eSixInitializer, 6.0f)
-	DEFINE_VEC3V_ENUM_CONSTRUCTOR(eSevenInitializer, 7.0f)
-	DEFINE_VEC3V_ENUM_CONSTRUCTOR(eEightInitializer, 8.0f)
-	DEFINE_VEC3V_ENUM_CONSTRUCTOR(eNineInitializer, 9.0f)
-	DEFINE_VEC3V_ENUM_CONSTRUCTOR(eTenInitializer, 10.0f)
-	DEFINE_VEC3V_ENUM_CONSTRUCTOR(eQuarterInitializer, 0.25f)
-	DEFINE_VEC3V_ENUM_CONSTRUCTOR(eHalfInitializer, 0.5f)
-	DEFINE_VEC3V_ENUM_CONSTRUCTOR(ePIInitializer, PI)
-	DEFINE_VEC3V_ENUM_CONSTRUCTOR(eTwoPIInitializer, _2PI)
-#undef DEFINE_VEC3V_ENUM_CONSTRUCTOR
-#endif //DEFINE_VEC3_ENUM_CONSTRUCTOR
-
-#if defined(VEC3V_ACCESSOR) && defined(VEC3V_ACCESSOR_CONST)
-	VEC3V_ACCESSOR_CONST(float, GetX, x)
-	VEC3V_ACCESSOR_CONST(float, GetY, y)
-	VEC3V_ACCESSOR_CONST(float, GetZ, z)
-	VEC3V_ACCESSOR_CONST(float, GetW, w)
-
-	VEC3V_ACCESSOR(float&, GetXRef, x)
-	VEC3V_ACCESSOR(float&, GetYRef, y)
-	VEC3V_ACCESSOR(float&, GetZRef, z)
-	VEC3V_ACCESSOR(float&, GetWRef, w)
-#undef VEC3V_ACCESSOR
-#undef VEC3V_ACCESSOR_CONST
-#else
-#error VEC3V ACCESSORS NOT DEFINED
-#endif
-
-#if defined(VEC3V_MUTATOR)
-		VEC3V_MUTATOR(SetX, float, x)
-		VEC3V_MUTATOR(SetY, float, y)
-		VEC3V_MUTATOR(SetZ, float, z)
-		VEC3V_MUTATOR(SetW, float, w)
-#undef VEC3V_MUTATOR
-#else
-#error VEC3V MUTATORS NOT DEFINED
-#endif
-
-	Vec3V operator-() const;
-
-	Vec3V_Out operator=(Vec3V_In vVector);
-#if !_WIN64
-	Vec3V_Out operator=(Vec3V&& vVector);
-#endif // !_WIN64
-
-	Vec3V_Out operator*=(float fScalar);
-	Vec3V_Out operator*=(Vec3V_In rhs);
-
-	Vec3V operator/(float fScalar) const;
-	Vec3V operator/(Vec3V_In rhs) const;
-
-	Vec3V_Out operator/=(float fScalar);
-	Vec3V_Out operator/=(Vec3V_In rhs);
-
-	Vec3V operator*(float fScalar) const;
-	friend Vec3V operator*(const float fScalar, Vec3V_In vVector);
-	Vec3V operator*(Vec3V_In rhs) const;
-
-	Vec3V_Out operator+=(Vec3V_In vVector);
-	Vec3V operator+(Vec3V_In vVector) const;
-
-	Vec3V_Out operator-=(Vec3V_In vVector);
-	Vec3V operator-(Vec3V_In vVector) const;
-
-	bool operator==(Vec3V_In vVector) const;
-
-	bool operator!=(Vec3V_In vVector) const;
-
-	Vec3V_Out Normalize();
-
-
-	// Friend Functions For Easier Access To Data Members:
-	friend float DotProduct(Vec3V_In vVectorA, Vec3V_In vVectorB);
-
-	friend float Mag(Vec3V_In vVector);
-	friend float Length(Vec3V_In vVector);
-
-	friend float MagSq(Vec3V_In vVector);
-	friend float LengthSq(Vec3V_In vVector);
-};
-
-Vec3V CrossProduct(Vec3V_In vVectorA, Vec3V_In vVectorB);
-Vec3V Normalize(Vec3V_In vVector);
-
-extern const __declspec(selectany) Vec3V g_IdentityX3V = Vec3V(1.0f, 0.0f, 0.0f);
-extern const __declspec(selectany) Vec3V g_IdentityY3V = Vec3V(0.0f, 1.0f, 0.0f);
-extern const __declspec(selectany) Vec3V g_IdentityZ3V = Vec3V(0.0f, 0.0f, 1.0f);
-extern const __declspec(selectany) Vec3V g_WorldUp3V = g_IdentityY3V;
-
-__forceinline Vec3V::Vec3V(float fX, float fY, float fZ)
+__forceinline Vec3V::Vec3V(const float& fX, const float& fY, const float& fZ)
 {
 	row = VectorSet(fX, fY, fZ, VEC_FILL_VAL);
 }
 
-__forceinline Vec3V::Vec3V(float fX, float fY, float fZ, float fW)
+__forceinline Vec3V::Vec3V(ScalarV_In vVal)
 {
-	row = VectorSet(fX, fY, fZ, fW);
+	row = vVal.GetVector();
+}
+
+__forceinline Vec3V::Vec3V(ScalarV_In vX, ScalarV_In vY, ScalarV_In vZ)
+{
+	row = VectorPermute<VecElem::X1, VecElem::Y2, VecElem::Z1, VecElem::W1>(vX.GetVector(), vY.GetVector());
+	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z2, VecElem::W1>(row, vZ.GetVector());
+}
+
+__forceinline Vec3V::Vec3V(Vec2V_In vXY, ScalarV_In vZ)
+{
+	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z2, VecElem::W1>(vXY.GetVector(), vZ.GetVector());
+}
+
+__forceinline Vec3V::Vec3V(ScalarV_In vX, Vec2V_In vYZ)
+{
+	row = VectorPermute<VecElem::X2, VecElem::Y1, VecElem::Z1, VecElem::W2>(vYZ.GetVector(), vX.GetVector());
 }
 
 //__forceinline Vec3V::Vec3V(Vec3V_In vVector)
@@ -191,6 +54,26 @@ __forceinline Vec3V::Vec3V(Vector&& vVector)
 }
 #endif // !_WIN64
 
+__forceinline void Vec3V::SetX(ScalarV_In vX)
+{
+	row = VectorPermute<VecElem::X2, VecElem::Y1, VecElem::Z1, VecElem::W1>(row, vX.GetVector());
+}
+
+__forceinline void Vec3V::SetY(ScalarV_In vY)
+{
+	row = VectorPermute<VecElem::X1, VecElem::Y2, VecElem::Z1, VecElem::W1>(row, vY.GetVector());
+}
+
+__forceinline void Vec3V::SetZ(ScalarV_In vZ)
+{
+	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z2, VecElem::W1>(row, vZ.GetVector());
+}
+
+__forceinline void Vec3V::SetW(ScalarV_In vW)
+{
+	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z1, VecElem::W2>(row, vW.GetVector());
+}
+
 __forceinline Vec3V Vec3V::operator-() const
 {
 	return Vec3V(VectorNegate(row));
@@ -211,9 +94,9 @@ __forceinline Vec3V_Out Vec3V::operator=(Vec3V&& vVector)
 }
 #endif // !_WIN_64
 
-__forceinline Vec3V_Out Vec3V::operator*=(float fScalar)
+__forceinline Vec3V_Out Vec3V::operator*=(ScalarV_In vScalar)
 {
-	row = VectorDivide(row, VectorSet(fScalar));
+	row = VectorDivide(row, vScalar.GetVector());
 	return *this;
 }
 
@@ -223,9 +106,9 @@ __forceinline Vec3V_Out Vec3V::operator*=(Vec3V_In rhs)
 	return *this;
 }
 
-__forceinline Vec3V Vec3V::operator/(float fScalar) const
+__forceinline Vec3V Vec3V::operator/(ScalarV_In vScalar) const
 {
-	return Vec3V(VectorDivide(row, VectorSet(fScalar)));
+	return Vec3V(VectorDivide(row, vScalar.GetVector()));
 }
 
 __forceinline Vec3V Vec3V::operator/(Vec3V_In rhs) const
@@ -233,9 +116,9 @@ __forceinline Vec3V Vec3V::operator/(Vec3V_In rhs) const
 	return Vec3V(VectorDivide(row, rhs.row));
 }
 
-__forceinline Vec3V_Out Vec3V::operator/=(float fScalar)
+__forceinline Vec3V_Out Vec3V::operator/=(ScalarV_In vScalar)
 {
-	row = VectorDivide(row, VectorSet(fScalar));
+	row = VectorDivide(row, vScalar.GetVector());
 	return *this;
 }
 
@@ -245,9 +128,9 @@ __forceinline Vec3V_Out Vec3V::operator/=(Vec3V_In rhs)
 	return *this;
 }
 
-__forceinline Vec3V Vec3V::operator*(float fScalar) const
+__forceinline Vec3V Vec3V::operator*(ScalarV_In vScalar) const
 {
-	return Vec3V(VectorMultiply(row, VectorSet(fScalar)));
+	return Vec3V(VectorMultiply(row, vScalar.GetVector()));
 }
 
 __forceinline Vec3V Vec3V::operator*(Vec3V_In rhs) const
@@ -255,9 +138,9 @@ __forceinline Vec3V Vec3V::operator*(Vec3V_In rhs) const
 	return Vec3V(VectorMultiply(row, rhs.row));
 }
 
-__forceinline Vec3V operator*(const float fScalar, Vec3V_In vVector)
+__forceinline Vec3V operator*(ScalarV_Ref vScalar, Vec3V_In vVector)
 {
-	return Vec3V(vVector.x * fScalar, vVector.y * fScalar, vVector.z * fScalar);
+	return Vec3V(VectorMultiply(vScalar.GetVector(), vVector.row));
 }
 
 __forceinline Vec3V_Out Vec3V::operator+=(Vec3V_In vVector)
@@ -292,48 +175,79 @@ __forceinline bool Vec3V::operator!=(Vec3V_In vVector) const
 	return IsNotEqualXYZ(row, vVector.row);
 }
 
-__forceinline Vec3V_Out Vec3V::Normalize()
+__forceinline Vec3V_Out Vec3V::operator&(Vec3V_In vVector) const
 {
-	float mag = Mag(*this);
+	return Vec3V(row & vVector.row);
+}
 
-	// protection against divide by zero
-	if(mag)	{ row = VectorDivide(row, VectorSet(mag)); }
+__forceinline Vec3V_Out Vec3V::operator&=(Vec3V_In vVector)
+{
+	row = row & vVector.row;
 	return *this;
 }
 
-__forceinline float DotProduct(Vec3V_In vVectorA, Vec3V_In vVectorB)
+__forceinline Vec3V_Out Vec3V::operator|(Vec3V_In vVector) const
 {
-#if _WIN64
-	vVectorA.w = 0.0f;
-	Vec3V dp = vVectorA * vVectorB;
-#else
-	Vec3V tmp(vVectorA.x, vVectorA.y, vVectorA.z, 0.0f);
-	Vec3V dp = tmp * vVectorB;
-#endif
-
-	Vector result = VectorHAdd(dp.row, dp.row);
-	return VectorExtract<VecElem::X>(VectorHAdd(result, result));
+	return Vec3V(row | vVector.row);
 }
 
-__forceinline float Mag(Vec3V_In vVector)
+__forceinline Vec3V_Out Vec3V::operator|=(Vec3V_In vVector)
 {
-	return sqrtf(MagSq(vVector));
+	row = row | vVector.row;
+	return *this;
 }
 
-__forceinline float Length(Vec3V_In vVector)
+__forceinline Vec3V_Out Vec3V::operator^(Vec3V_In vVector) const
 {
-	return Mag(vVector);
+	return Vec3V(row ^ vVector.row);
 }
 
-__forceinline float MagSq(Vec3V_In vVector)
+__forceinline Vec3V_Out Vec3V::operator^=(Vec3V_In vVector)
 {
-	return DotProduct(vVector, vVector);
+	row = row ^ vVector.row;
+	return *this;
 }
 
-__forceinline float LengthSq(Vec3V_In vVector)
+__forceinline Vec3V_Out Vec3V::operator~() const
 {
-	return MagSq(vVector);
+	return Vec3V(~row);
 }
 
-#endif //VEC3V_INL
-#endif //SSE_AVAILABLE
+__forceinline const float& Vec3V::operator[](int index) const
+{
+	return floatArr[index];
+}
+
+__forceinline float& Vec3V::operator[](int index)
+{
+	return floatArr[index];
+}
+
+__forceinline Vec3V_Out Vec3V::Normalize()
+{
+	ScalarV mag = Mag(*this);
+
+	// protection against divide by zero
+	if(mag)	{ row = VectorDivide(row, mag.GetVector()); }
+	return *this;
+}
+
+__forceinline Vec3V_Out Vec3VInt(int intVal)
+{
+	return Vec3V(VectorSet(intVal));
+}
+
+__forceinline Vec3V_Out Vec3VInt(int intX, int intY, int intZ)
+{
+	return Vec3V(VectorSet(intX, intY, intZ, (int)VEC_FILL_VAL));
+}
+
+__forceinline Vec3V_Out Vec3VIntToFloat(Vec3V_In vec)
+{
+	return Vec3V(VectorIntToFloat(vec.GetVector()));
+}
+
+__forceinline Vec3V_Out Vec3VFloatToInt(Vec3V_In vec)
+{
+	return Vec3V(VectorFloatToInt(vec.GetVector()));
+}

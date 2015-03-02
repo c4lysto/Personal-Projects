@@ -1,173 +1,42 @@
-#ifndef Mat44_INL
-#define Mat44_INL
+//#ifndef Mat44fF_INL
+//#define Mat44fF_INL
 
-typedef Mat44& Mat44_Ref;
-typedef const Mat44& Mat44_ConstRef;
-
-typedef Mat44_ConstRef Mat44_In;
-typedef Mat44_Ref Mat44_InOut;
-
-typedef Mat44 Mat44_Out;
-
-// Other Vec3f Aliases
-typedef Mat44 float4x4;
-
-class Mat44
+__forceinline Mat44f::Mat44f(const float& fXx, const float& fXy, const float& fXz, const float& fXw,
+							 const float& fYx, const float& fYy, const float& fYz, const float& fYw,
+							 const float& fZx, const float& fZy, const float& fZz, const float& fZw,
+							 const float& fWx, const float& fWy, const float& fWz, const float& fWw) :
+	xAxis(fXx, fXy, fXz, fXw),
+	yAxis(fYx, fYy, fYz, fYw),
+	zAxis(fZx, fZy, fZz, fZw),
+	wAxis(fWx, fWy, fWz, fWw)
 {
-#define Mat44_ACCESSOR(retType, name, retVal) \
-	__forceinline retType name() { return retVal; }
-
-#define Mat44_ACCESSOR_CONST(retType, name, retVal) \
-	__forceinline retType name() const { return retVal; }
-
-#define Mat44_MUTATOR(name, inType, modifiedVal) \
-	__forceinline void name(inType rhs) { modifiedVal = rhs; }
-
-
-private:
-	union
-	{
-		float m[16];
-		float ma[4][4];
-
-		struct
-		{
-			Vec4f xAxis, yAxis, zAxis, wAxis;
-		};
-	};
-
-public:
-	Mat44(){}
-	explicit Mat44(float fXx, float fXy, float fXz, float fXw,
-				   float fYx, float fYy, float fYz, float fYw,
-				   float fZx, float fZy, float fZz, float fZw,
-				   float fWx, float fWy, float fWz, float fWw);
-	Mat44(Mat44_In mMatrix);
-	Mat44(Mat44&& mMatrix);
-	Mat44(XMMATRIX&& mMatrix);
-	explicit Mat44(Vec4f_In vXAxis,
-				   Vec4f_In vYAxis,
-				   Vec4f_In vZAxis,
-				   Vec4f_In vWAxis);
-
-	explicit Mat44(eIdentityInitializer eIdentity);
-	explicit Mat44(eXRotationInitializer eXRotation, float fRotationInRadians);
-	explicit Mat44(eYRotationInitializer eYRotation, float fRotationInRadians);
-	explicit Mat44(eZRotationInitializer eZRotation, float fRotationInRadians);
-
-#if defined(Mat44_ACCESSOR) && defined(Mat44_ACCESSOR_CONST)
-	Mat44_ACCESSOR_CONST(Vec4f, GetXAxis, xAxis)
-	Mat44_ACCESSOR_CONST(Vec4f, GetYAxis, yAxis)
-	Mat44_ACCESSOR_CONST(Vec4f, GetZAxis, zAxis)
-	Mat44_ACCESSOR_CONST(Vec4f, GetWAxis, wAxis)
-
-	Mat44_ACCESSOR(Vec4f_Ref, GetXAxisRef, xAxis)
-	Mat44_ACCESSOR(Vec4f_Ref, GetYAxisRef, yAxis)
-	Mat44_ACCESSOR(Vec4f_Ref, GetZAxisRef, zAxis)
-	Mat44_ACCESSOR(Vec4f_Ref, GetWAxisRef, wAxis)
-#undef Mat44_ACCESSOR
-#undef Mat44_ACCESSOR_CONST
-#else
-#error Mat44 ACCESSORS NOT DEFINED
-#endif
-
-#ifdef Mat44_MUTATOR
-	Mat44_MUTATOR(SetXAxis, Vec4f, xAxis)
-	Mat44_MUTATOR(SetYAxis, Vec4f, yAxis)
-	Mat44_MUTATOR(SetZAxis, Vec4f, zAxis)
-	Mat44_MUTATOR(SetWAxis, Vec4f, wAxis)
-#undef Mat44_MUTATOR
-#else
-#error Mat44 MUTATORS NOT DEFINED!
-#endif
-
-
-	void MakeIdentity3x3();
-
-	Mat44_ConstRef operator=(Mat44_In mMatrix);
-	Mat44_ConstRef operator=(Mat44&& mMatrix);
-
-	Mat44 operator*(Mat44_In mMatrix) const;
-	void operator*=(Mat44_In mMatrix);
-	friend Vec4f operator*(Vec4f_In vVector, Mat44_In mMatrix);
-	friend Vec4f_ConstRef operator*=(Vec4f_Ref vVector, Mat44_In mMatrix);
-
-	// actually faster than DirectX Version :)
-	void Rotate_GlobalX(float fRadians);
-	void Rotate_GlobalY(float fRadians);
-	void Rotate_GlobalZ(float fRadians);
-
-	void Rotate_LocalX(float fRadians);
-	void Rotate_LocalY(float fRadians);
-	void Rotate_LocalZ(float fRadians);
-
-	void Scale(const Vec3f& vScale);
-
-	void SetScale(const Vec3f& vScale);
-	Vec3f GetScale() const;
-
-	void Translate(Vec3f vTranslation);
-
-	void Transpose();
-	void Transpose3x3();
-
-	void NormalizeXYZ();
-
-	//friend float MatrixDeterminant(Mat44_In mMatrix);
-
-	void Invert();
-
-	void LookAt(const Vec3f& mPos, const Vec3f& vWorldUp = g_IdentityY3);
-
-	void TurnTo(Vec3f_In vPos, float fDeltaTime, float fTurnModifier = 1.0f);
-
-	void OrthoNormalInvert();
-};
-
-
-__forceinline Mat44::Mat44(float fXx, float fXy, float fXz, float fXw,
-						   float fYx, float fYy, float fYz, float fYw,
-						   float fZx, float fZy, float fZz, float fZw,
-						   float fWx, float fWy, float fWz, float fWw)
-{
-#if SSE_AVAILABLE
-	VectorStoreU(VectorSet(fXx, fXy, fXz, fXw), xAxis.vector);
-	VectorStoreU(VectorSet(fYx, fYy, fYz, fYw), yAxis.vector);
-	VectorStoreU(VectorSet(fZx, fZy, fZz, fZw), zAxis.vector);
-	VectorStoreU(VectorSet(fWx, fWy, fWz, fWw), wAxis.vector);
-#else
-	xAxis = Vec4f(fXx, fXy, fXz, fXw);
-	yAxis = Vec4f(fYx, fYy, fYz, fYw);
-	zAxis = Vec4f(fZx, fZy, fZz, fZw);
-	wAxis = Vec4f(fWx, fWy, fWz, fWw);
-#endif
 }
 
-__forceinline Mat44::Mat44(Mat44_In mMatrix)
+__forceinline Mat44f::Mat44f(Mat44f_In mMatrix) : 
+	xAxis(mMatrix.xAxis),
+	yAxis(mMatrix.yAxis),
+	zAxis(mMatrix.zAxis),
+	wAxis(mMatrix.wAxis)
 {
-	xAxis = mMatrix.xAxis;
-	yAxis = mMatrix.yAxis;
-	zAxis = mMatrix.zAxis;
-	wAxis = mMatrix.wAxis;
 }
 
-__forceinline Mat44::Mat44(Mat44&& mMatrix)
+__forceinline Mat44f::Mat44f(Mat44f&& mMatrix) :
+	xAxis(move(mMatrix.xAxis)),
+	yAxis(move(mMatrix.yAxis)),
+	zAxis(move(mMatrix.zAxis)),
+	wAxis(move(mMatrix.wAxis))
 {
-	xAxis = move(mMatrix.xAxis);
-	yAxis = move(mMatrix.yAxis);
-	zAxis = move(mMatrix.zAxis);
-	wAxis = move(mMatrix.wAxis);
 }
 
-__forceinline Mat44::Mat44(eIdentityInitializer eIdentity)
+__forceinline Mat44f::Mat44f(eIdentityInitializer eIdentity) :
+	xAxis(g_IdentityX4),
+	yAxis(g_IdentityY4),
+	zAxis(g_IdentityZ4),
+	wAxis(g_IdentityW4)
 {
-	xAxis = g_IdentityX4;
-	yAxis = g_IdentityY4;
-	zAxis = g_IdentityZ4;
-	wAxis = g_IdentityW4;
 }
 
-inline Mat44::Mat44(eXRotationInitializer eXRotation, float fRotationInRadians)
+inline Mat44f::Mat44f(eXRotationInitializer eXRotation, const float& fRotationInRadians)
 {
 	float fSinAngle = sin(fRotationInRadians);
 	float fCosAngle = cos(fRotationInRadians);
@@ -177,7 +46,7 @@ inline Mat44::Mat44(eXRotationInitializer eXRotation, float fRotationInRadians)
 	wAxis = g_IdentityW4;
 }
 
-inline Mat44::Mat44(eYRotationInitializer eYRotation, float fRotationInRadians)
+inline Mat44f::Mat44f(eYRotationInitializer eYRotation, const float& fRotationInRadians)
 {
 	float fSinAngle = sin(fRotationInRadians);
 	float fCosAngle = cos(fRotationInRadians);
@@ -187,7 +56,7 @@ inline Mat44::Mat44(eYRotationInitializer eYRotation, float fRotationInRadians)
 	wAxis = g_IdentityW4;
 }
 
-inline Mat44::Mat44(eZRotationInitializer eZRotation, float fRotationInRadians)
+inline Mat44f::Mat44f(eZRotationInitializer eZRotation, const float& fRotationInRadians)
 {
 	float fSinAngle = sin(fRotationInRadians);
 	float fCosAngle = cos(fRotationInRadians);
@@ -197,13 +66,13 @@ inline Mat44::Mat44(eZRotationInitializer eZRotation, float fRotationInRadians)
 	wAxis = g_IdentityW4;
 }
 
-inline Mat44::Mat44(XMMATRIX&& mMatrix)
+inline Mat44f::Mat44f(XMMATRIX&& mMatrix)
 {
 #if SSE_AVAILABLE
-	VectorStoreU(mMatrix.r[0], xAxis.vector);
-	VectorStoreU(mMatrix.r[1], yAxis.vector);
-	VectorStoreU(mMatrix.r[2], zAxis.vector);
-	VectorStoreU(mMatrix.r[3], wAxis.vector);
+	VectorStoreU(mMatrix.r[0], xAxis.GetVector());
+	VectorStoreU(mMatrix.r[1], yAxis.GetVector());
+	VectorStoreU(mMatrix.r[2], zAxis.GetVector());
+	VectorStoreU(mMatrix.r[3], wAxis.GetVector());
 #else
 	xAxis.x = mMatrix._11;
 	xAxis.y = mMatrix._12;
@@ -227,18 +96,18 @@ inline Mat44::Mat44(XMMATRIX&& mMatrix)
 #endif // SSE_AVAILABLE
 }
 
-__forceinline Mat44::Mat44(Vec4f_In vXAxis,
-						   Vec4f_In vYAxis,
-						   Vec4f_In vZAxis,
-						   Vec4f_In vWAxis)
+__forceinline Mat44f::Mat44f(Vec4f_In vXAxis,
+						     Vec4f_In vYAxis,
+						     Vec4f_In vZAxis,
+						     Vec4f_In vWAxis) :
+	xAxis(vXAxis),
+	yAxis(vYAxis),
+	zAxis(vZAxis),
+	wAxis(vWAxis)
 {
-	xAxis = vXAxis;
-	yAxis = vYAxis;
-	zAxis = vZAxis;
-	wAxis = vWAxis;
 }
 
-__forceinline Mat44_ConstRef Mat44::operator=(Mat44_In mMatrix)
+__forceinline Mat44f_Ref Mat44f::operator=(Mat44f_In mMatrix)
 {
 	if(this != &mMatrix)
 	{
@@ -250,24 +119,27 @@ __forceinline Mat44_ConstRef Mat44::operator=(Mat44_In mMatrix)
 	return *this;
 }
 
-__forceinline Mat44_ConstRef Mat44::operator=(Mat44&& mMatrix)
+__forceinline Mat44f_Ref Mat44f::operator=(Mat44f&& mMatrix)
 {
-	xAxis = move(mMatrix.xAxis);
-	yAxis = move(mMatrix.yAxis);
-	zAxis = move(mMatrix.zAxis);
-	wAxis = move(mMatrix.wAxis);
+	if(this != &mMatrix)
+	{
+		xAxis = move(mMatrix.xAxis);
+		yAxis = move(mMatrix.yAxis);
+		zAxis = move(mMatrix.zAxis);
+		wAxis = move(mMatrix.wAxis);
+	}
 	return *this;
 }
 
-inline Mat44 Mat44::operator*(Mat44_In mMatrix) const
+inline Mat44f_Out Mat44f::operator*(Mat44f_In mMatrix) const
 {
-	Mat44 result;
+	Mat44f result;
 
 #if SSE_AVAILABLE
-	const Vector otherX = VectorLoadU(xAxis.vector);
-	const Vector otherY = VectorLoadU(yAxis.vector);
-	const Vector otherZ = VectorLoadU(zAxis.vector);
-	const Vector otherW = VectorLoadU(wAxis.vector);
+	const Vector otherX = VectorLoadU(mMatrix.xAxis.GetVector());
+	const Vector otherY = VectorLoadU(mMatrix.yAxis.GetVector());
+	const Vector otherZ = VectorLoadU(mMatrix.zAxis.GetVector());
+	const Vector otherW = VectorLoadU(mMatrix.wAxis.GetVector());
 
 	Vector tmp1, tmp2;
 
@@ -281,7 +153,7 @@ inline Mat44 Mat44::operator*(Mat44_In mMatrix) const
 	tmp1 = VectorSet(xAxis.w);
 	tmp2 = VectorAdd(VectorMultiply(otherW, tmp1), tmp2);
 
-	VectorStoreU(tmp2, result.xAxis.vector);
+	VectorStoreU(tmp2, result.xAxis.GetVector());
 
 	// get 2nd row
 	tmp1 = VectorSet(yAxis.x);
@@ -293,7 +165,7 @@ inline Mat44 Mat44::operator*(Mat44_In mMatrix) const
 	tmp1 = VectorSet(yAxis.w);
 	tmp2 = VectorAdd(VectorMultiply(otherW, tmp1), tmp2);
 
-	VectorStoreU(tmp2, result.yAxis.vector);
+	VectorStoreU(tmp2, result.yAxis.GetVector());
 
 	// get 3rd row
 	tmp1 = VectorSet(zAxis.x);
@@ -305,7 +177,7 @@ inline Mat44 Mat44::operator*(Mat44_In mMatrix) const
 	tmp1 = VectorSet(zAxis.w);
 	tmp2 = VectorAdd(VectorMultiply(otherW, tmp1), tmp2);
 
-	VectorStoreU(tmp2, result.zAxis.vector);
+	VectorStoreU(tmp2, result.zAxis.GetVector());
 
 	// get bottom row
 	tmp1 = VectorSet(wAxis.x);
@@ -317,7 +189,7 @@ inline Mat44 Mat44::operator*(Mat44_In mMatrix) const
 	tmp1 = VectorSet(wAxis.w);
 	tmp2 = VectorAdd(VectorMultiply(otherW, tmp1), tmp2);
 
-	VectorStoreU(tmp2, result.wAxis.vector);
+	VectorStoreU(tmp2, result.wAxis.GetVector());
 #else
 	const Vec4f& otherX = mMatrix.xAxis;
 	const Vec4f& otherY = mMatrix.yAxis;
@@ -348,13 +220,13 @@ inline Mat44 Mat44::operator*(Mat44_In mMatrix) const
 	return result;
 }
 
-inline void Mat44::operator*=(Mat44_In mMatrix)
+inline void Mat44f::operator*=(Mat44f_In mMatrix)
 {
 #if SSE_AVAILABLE
-	const Vector otherX = VectorLoadU(xAxis.vector);
-	const Vector otherY = VectorLoadU(yAxis.vector);
-	const Vector otherZ = VectorLoadU(zAxis.vector);
-	const Vector otherW = VectorLoadU(wAxis.vector);
+	const Vector otherX = VectorLoadU(xAxis.GetVector());
+	const Vector otherY = VectorLoadU(yAxis.GetVector());
+	const Vector otherZ = VectorLoadU(zAxis.GetVector());
+	const Vector otherW = VectorLoadU(wAxis.GetVector());
 
 	Vector tmp1, tmp2;
 
@@ -368,7 +240,7 @@ inline void Mat44::operator*=(Mat44_In mMatrix)
 	tmp1 = VectorSet(xAxis.w);
 	tmp2 = VectorAdd(VectorMultiply(otherW, tmp1), tmp2);
 
-	VectorStoreU(tmp2, xAxis.vector);
+	VectorStoreU(tmp2, xAxis.GetVector());
 
 	// get 2nd row
 	tmp1 = VectorSet(yAxis.x);
@@ -380,7 +252,7 @@ inline void Mat44::operator*=(Mat44_In mMatrix)
 	tmp1 = VectorSet(yAxis.w);
 	tmp2 = VectorAdd(VectorMultiply(otherW, tmp1), tmp2);
 
-	VectorStoreU(tmp2, yAxis.vector);
+	VectorStoreU(tmp2, yAxis.GetVector());
 
 	// get 3rd row
 	tmp1 = VectorSet(zAxis.x);
@@ -392,7 +264,7 @@ inline void Mat44::operator*=(Mat44_In mMatrix)
 	tmp1 = VectorSet(zAxis.w);
 	tmp2 = VectorAdd(VectorMultiply(otherW, tmp1), tmp2);
 
-	VectorStoreU(tmp2, zAxis.vector);
+	VectorStoreU(tmp2, zAxis.GetVector());
 
 	// get bottom row
 	tmp1 = VectorSet(wAxis.x);
@@ -404,7 +276,7 @@ inline void Mat44::operator*=(Mat44_In mMatrix)
 	tmp1 = VectorSet(wAxis.w);
 	tmp2 = VectorAdd(VectorMultiply(otherW, tmp1), tmp2);
 
-	VectorStoreU(tmp2, wAxis.vector);
+	VectorStoreU(tmp2, wAxis.GetVector());
 #else
 	const Vec4f& otherX = mMatrix.xAxis;
 	const Vec4f& otherY = mMatrix.yAxis;
@@ -438,7 +310,7 @@ inline void Mat44::operator*=(Mat44_In mMatrix)
 #endif
 }
 
-inline Vec4f operator*(Vec4f_In vVector, Mat44_In mMatrix)
+inline Vec4f_Out operator*(Vec4f_In vVector, Mat44f_In mMatrix)
 {
 	float fX = vVector.GetX();
 	float fY = vVector.GetY();
@@ -467,97 +339,117 @@ inline Vec4f operator*(Vec4f_In vVector, Mat44_In mMatrix)
 #endif
 }
 
-__forceinline Vec4f_ConstRef operator*=(Vec4f_Ref vVector, Mat44_In mMatrix)
+__forceinline Vec4f_ConstRef operator*=(Vec4f_Ref vVector, Mat44f_In mMatrix)
 {
 	return vVector = vVector * mMatrix;
 }
 
-__forceinline void Mat44::MakeIdentity3x3()
+__forceinline Mat44f_Out Mat44f::operator+(Mat44f_In rhs) const
+{
+	return Mat44f(xAxis + rhs.GetXAxisRef(), yAxis + rhs.GetYAxisRef(),  zAxis + rhs.GetZAxisRef(), wAxis + rhs.GetWAxisRef());
+}
+
+__forceinline void Mat44f::operator+=(Mat44f_In rhs)
+{
+	xAxis += rhs.GetXAxisRef(); yAxis += rhs.GetYAxisRef(); zAxis += rhs.GetZAxisRef(); wAxis += rhs.GetWAxisRef();
+}
+
+__forceinline void Mat44f::MakeIdentity3x3()
 {
 	xAxis.SetXYZ(g_IdentityX3);
 	yAxis.SetXYZ(g_IdentityY3);
 	zAxis.SetXYZ(g_IdentityZ3);
 }
 
+__forceinline Mat44f_Out Mat44f::operator-(Mat44f_In rhs) const
+{
+	return Mat44f(xAxis - rhs.GetXAxisRef(), yAxis - rhs.GetYAxisRef(),  zAxis - rhs.GetZAxisRef(), wAxis - rhs.GetWAxisRef());
+}
+
+__forceinline void Mat44f::operator-=(Mat44f_In rhs)
+{
+	xAxis -= rhs.GetXAxisRef(); yAxis -= rhs.GetYAxisRef(); zAxis -= rhs.GetZAxisRef(); wAxis -= rhs.GetWAxisRef();
+}
+
 // actually faster than DirectX Version :)
-__forceinline void Mat44::Rotate_GlobalX(float fRadians)
+__forceinline void Mat44f::Rotate_GlobalX(const float& fRadians)
 {
-	Mat44 tmp(INIT_ROTATION_X, fRadians);
+	Mat44f tmp(INIT_ROTATION_X, fRadians);
 	*this *= tmp;
 }
 
-__forceinline void Mat44::Rotate_GlobalY(float fRadians)
+__forceinline void Mat44f::Rotate_GlobalY(const float& fRadians)
 {
-	Mat44 tmp(INIT_ROTATION_Y, fRadians);
+	Mat44f tmp(INIT_ROTATION_Y, fRadians);
 	*this *= tmp;
 }
 
-__forceinline void Mat44::Rotate_GlobalZ(float fRadians)
+__forceinline void Mat44f::Rotate_GlobalZ(const float& fRadians)
 {
-	Mat44 tmp(INIT_ROTATION_Z, fRadians);
+	Mat44f tmp(INIT_ROTATION_Z, fRadians);
 	*this *= tmp;
 }
 
-__forceinline void Mat44::Rotate_LocalX(float fRadians)
+__forceinline void Mat44f::Rotate_LocalX(const float& fRadians)
 {
-	Mat44 tmp(INIT_ROTATION_X, fRadians);
+	Mat44f tmp(INIT_ROTATION_X, fRadians);
 	*this = tmp * (*this);
 }
 
-__forceinline void Mat44::Rotate_LocalY(float fRadians)
+__forceinline void Mat44f::Rotate_LocalY(const float& fRadians)
 {
-	Mat44 tmp(INIT_ROTATION_Y, fRadians);
+	Mat44f tmp(INIT_ROTATION_Y, fRadians);
 	*this = tmp * (*this);
 }
 
-__forceinline void Mat44::Rotate_LocalZ(float fRadians)
+__forceinline void Mat44f::Rotate_LocalZ(const float& fRadians)
 {
-	Mat44 tmp(INIT_ROTATION_Z, fRadians);
+	Mat44f tmp(INIT_ROTATION_Z, fRadians);
 	*this = tmp * (*this);
 }
 
-__forceinline void Mat44::Scale(const Vec3f& vScale)
+__forceinline void Mat44f::Scale(const Vec3f& vScale)
 {
 	xAxis.SetXYZ(xAxis.GetXYZ() * vScale.GetX());
 	yAxis.SetXYZ(yAxis.GetXYZ() * vScale.GetY());
 	zAxis.SetXYZ(zAxis.GetXYZ() * vScale.GetZ());
 }
 
-__forceinline void Mat44::SetScale(const Vec3f& vScale)
+__forceinline void Mat44f::SetScale(const Vec3f& vScale)
 {
-	xAxis.SetXYZ(Normalize(xAxis.GetXYZ()) * vScale.GetX());
-	yAxis.SetXYZ(Normalize(yAxis.GetXYZ()) * vScale.GetY());
-	zAxis.SetXYZ(Normalize(zAxis.GetXYZ()) * vScale.GetZ());
+	xAxis.SetXYZ(::Normalize(xAxis.GetXYZ()) * vScale.GetX());
+	yAxis.SetXYZ(::Normalize(yAxis.GetXYZ()) * vScale.GetY());
+	zAxis.SetXYZ(::Normalize(zAxis.GetXYZ()) * vScale.GetZ());
 }
 
-__forceinline Vec3f Mat44::GetScale() const
+__forceinline Vec3f Mat44f::GetScale() const
 {
 	Vec3f retVal(Mag(xAxis.GetXYZ()), Mag(yAxis.GetXYZ()), Mag(zAxis.GetXYZ()));
 	return retVal;
 }
 
-__forceinline void Mat44::Translate(Vec3f vTranslation)
+__forceinline void Mat44f::Translate(Vec3f vTranslation)
 {
 	wAxis.SetXYZ(wAxis.GetXYZ() + vTranslation);
 }
 
-inline void Mat44::Transpose()
+inline void Mat44f::Transpose()
 {
 #if SSE_AVAILABLE
-	Vector row1 = VectorLoadU(xAxis.vector);
-	Vector row2 = VectorLoadU(yAxis.vector);
-	Vector row3 = VectorLoadU(zAxis.vector);
-	Vector row4 = VectorLoadU(wAxis.vector);
+	Vector row1 = VectorLoadU(xAxis.GetVector());
+	Vector row2 = VectorLoadU(yAxis.GetVector());
+	Vector row3 = VectorLoadU(zAxis.GetVector());
+	Vector row4 = VectorLoadU(wAxis.GetVector());
 
-	Vector tmp1 = _mm_shuffle_ps(row1, row2, _MM_SHUFFLE(1, 0, 1, 0));
-	Vector tmp2 = _mm_shuffle_ps(row3, row4, _MM_SHUFFLE(1, 0, 1, 0));
-	Vector tmp3 = _mm_shuffle_ps(row1, row2, _MM_SHUFFLE(3, 2, 3, 2));
-	Vector tmp4 = _mm_shuffle_ps(row3, row4, _MM_SHUFFLE(3, 2, 3, 2));
+	Vector tmp1 = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::X2, VecElem::Y2>(row1, row2);
+	Vector tmp2 = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::X2, VecElem::Y2>(row3, row4);
+	Vector tmp3 = VectorPermute<VecElem::Z1, VecElem::W1, VecElem::Z2, VecElem::W2>(row1, row2);
+	Vector tmp4 = VectorPermute<VecElem::Z1, VecElem::W1, VecElem::Z2, VecElem::W2>(row3, row4);
 
-	VectorStoreU(_mm_shuffle_ps(tmp1, tmp2, _MM_SHUFFLE(2, 0, 2, 0)), xAxis.vector);
-	VectorStoreU(_mm_shuffle_ps(tmp1, tmp2, _MM_SHUFFLE(3, 1, 3, 1)), yAxis.vector);
-	VectorStoreU(_mm_shuffle_ps(tmp3, tmp4, _MM_SHUFFLE(2, 0, 2, 0)), zAxis.vector);
-	VectorStoreU(_mm_shuffle_ps(tmp3, tmp4, _MM_SHUFFLE(3, 1, 3, 1)), wAxis.vector);
+	VectorStoreU(VectorPermute<VecElem::X1, VecElem::Z1, VecElem::X2, VecElem::Z2>(tmp1, tmp2), xAxis.GetVector());
+	VectorStoreU(VectorPermute<VecElem::Y1, VecElem::W1, VecElem::Y2, VecElem::W2>(tmp1, tmp2), yAxis.GetVector());
+	VectorStoreU(VectorPermute<VecElem::X1, VecElem::Z1, VecElem::X2, VecElem::Z2>(tmp3, tmp4), zAxis.GetVector());
+	VectorStoreU(VectorPermute<VecElem::Y1, VecElem::W1, VecElem::Y2, VecElem::W2>(tmp3, tmp4), wAxis.GetVector());
 #else
 	swap(xAxis.y, yAxis.x);
 	swap(xAxis.z, zAxis.x);
@@ -568,65 +460,28 @@ inline void Mat44::Transpose()
 #endif
 }
 
-__forceinline void Mat44::Transpose3x3()
+__forceinline void Mat44f::Transpose3x3()
 {
 	std::swap(xAxis.y, yAxis.x);
 	std::swap(xAxis.z, zAxis.x);
 	std::swap(yAxis.z, zAxis.y);
 }
 
-__forceinline void Mat44::NormalizeXYZ()
+__forceinline void Mat44f::Normalize()
 {
-	xAxis.SetXYZ(Normalize(xAxis.GetXYZ()));
-	yAxis.SetXYZ(Normalize(yAxis.GetXYZ()));
-	zAxis.SetXYZ(Normalize(zAxis.GetXYZ()));
+	xAxis.SetXYZ(::Normalize(xAxis.GetXYZ()));
+	yAxis.SetXYZ(::Normalize(yAxis.GetXYZ()));
+	zAxis.SetXYZ(::Normalize(zAxis.GetXYZ()));
 }
 
-//float MatrixDeterminant(Mat44_In mMatrix)
-//{
-//	const Vec4f& row1 = mMatrix.xAxis;
-//	const Vec4f& row2 = mMatrix.yAxis;
-//	const Vec4f& row3 = mMatrix.zAxis;
-//	const Vec4f& row4 = mMatrix.wAxis;
-//
-//	float det = row1.x*row2.y*row3.z*row4.w +
-//				row1.x*row2.z*row3.w*row4.y + 
-//				row1.x*row2.w*row3.y*row4.z + 
-//
-//				row1.y*row2.x*row3.w*row4.z + 
-//				row1.y*row2.z*row3.x*row4.w + 
-//				row1.y*row2.w*row3.z*row4.x + 
-//
-//				row1.z*row2.x*row3.y*row4.w + 
-//				row1.z*row2.y*row3.w*row4.x + 
-//				row1.z*row2.w*row3.x*row4.y + 
-//
-//				row1.w*row2.x*row3.z*row4.y + 
-//				row1.w*row2.y*row3.x*row4.z + 
-//				row1.w*row2.z*row3.y*row4.x 
-//
-//				-
-//
-//				row1.x*row2.y*row3.w*row4.z - 
-//				row1.x*row2.z*row3.y*row4.w - 
-//				row1.x*row2.w*row3.z*row4.y - 
-//
-//				row1.y*row2.x*row3.z*row4.w - 
-//				row1.y*row2.z*row3.w*row4.x - 
-//				row1.y*row2.w*row3.x*row4.z - 
-//
-//				row1.z*row2.x*row3.w*row4.y - 
-//				row1.z*row2.y*row3.x*row4.w - 
-//				row1.z*row2.w*row3.y*row4.x - 
-//
-//				row1.w*row2.x*row3.y*row4.z - 
-//				row1.w*row2.y*row3.z*row4.x - 
-//				row1.w*row2.z*row3.x*row4.y;
-//
-//	return det;
-//}
+float MatrixDeterminant(Mat44f_In mMatrix)
+{
+	const Vec4f& row1 = mMatrix.xAxis;
+	const Vec4f& row2 = mMatrix.yAxis;
+	const Vec4f& row3 = mMatrix.zAxis;
+	const Vec4f& row4 = mMatrix.wAxis;
 
-__forceinline void Mat44::Invert()
+__forceinline void Mat44f::Invert()
 {
 #if 1
 	*this = DirectX::XMMatrixInverse(NULL, DirectX::XMLoadFloat4x4((DirectX::XMFLOAT4X4*)this));
@@ -640,18 +495,18 @@ __forceinline void Mat44::Invert()
 #endif;
 }
 
-__forceinline void Mat44::LookAt(const Vec3f& mPos, const Vec3f& vWorldUp)
+__forceinline void Mat44f::LookAt(const Vec3f& mPos, const Vec3f& vWorldUp)
 {
-	zAxis.SetXYZ(Normalize(mPos - wAxis.GetXYZ()));
-	xAxis.SetXYZ(Normalize(CrossProduct(vWorldUp, zAxis.GetXYZ())));
-	yAxis.SetXYZ(Normalize(CrossProduct(zAxis.GetXYZ(), xAxis.GetXYZ())));
+	zAxis.SetXYZ(::Normalize(mPos - wAxis.GetXYZ()));
+	xAxis.SetXYZ(::Normalize(Cross(vWorldUp, zAxis.GetXYZ())));
+	yAxis.SetXYZ(::Normalize(Cross(zAxis.GetXYZ(), xAxis.GetXYZ())));
 }
 
-inline void Mat44::TurnTo(Vec3f_In vPos, float fDeltaTime, float fTurnModifier)
+inline void Mat44f::TurnTo(Vec3f_In vPos, const float& fDeltaTime, float fTurnModifier)
 {
-	Vec3f vecToPos = Normalize(vPos - wAxis.GetXYZ());
+	Vec3f vecToPos = ::Normalize(vPos - wAxis.GetXYZ());
 
-	float protection = DotProduct(vecToPos, zAxis.GetXYZ());
+	float protection = Dot(vecToPos, zAxis.GetXYZ());
 
 	if (protection != protection)
 	{
@@ -659,36 +514,36 @@ inline void Mat44::TurnTo(Vec3f_In vPos, float fDeltaTime, float fTurnModifier)
 		return;
 	}
 
-	float fRotation = DotProduct(vecToPos, xAxis.GetXYZ());
+	float fRotation = Dot(vecToPos, xAxis.GetXYZ());
 
 	if(fRotation > FLT_EPSILON || fRotation < -FLT_EPSILON)
 	{
 		// protection to keep the matrix from turning slowly
 		// if the position is behind the matrix
-		if(DotProduct(vecToPos, zAxis.GetXYZ()) < 0.0f)
+		if(Dot(vecToPos, zAxis.GetXYZ()) < 0.0f)
 			fRotation = (fRotation < 0.0f) ? -1.0f : 1.0f;
 
 		Rotate_LocalY(fRotation * fTurnModifier * fDeltaTime);
 	}
 
-	fRotation = DotProduct(vecToPos, yAxis.GetXYZ());
+	fRotation = Dot(vecToPos, yAxis.GetXYZ());
 
 	if(fRotation > FLT_EPSILON || fRotation < -FLT_EPSILON)
 		Rotate_LocalX(-fRotation * fTurnModifier * fDeltaTime);
 
-	xAxis.SetXYZ(Normalize(CrossProduct(g_WorldUp, zAxis.GetXYZ())));
-	yAxis.SetXYZ(Normalize(CrossProduct(zAxis.GetXYZ(), xAxis.GetXYZ())));
+	xAxis.SetXYZ(::Normalize(Cross(g_WorldUp, zAxis.GetXYZ())));
+	yAxis.SetXYZ(::Normalize(Cross(zAxis.GetXYZ(), xAxis.GetXYZ())));
 }
 
-__forceinline void Mat44::OrthoNormalInvert()
+__forceinline void Mat44f::OrthoNormalInvert()
 {
-	Mat44 tmp(*this);
+	Mat44f tmp(*this);
 
 	Transpose3x3();
 
-	wAxis.x = -DotProduct(tmp.wAxis.GetXYZ(), tmp.xAxis.GetXYZ());
-	wAxis.y = -DotProduct(tmp.wAxis.GetXYZ(), tmp.yAxis.GetXYZ());
-	wAxis.z = -DotProduct(tmp.wAxis.GetXYZ(), tmp.zAxis.GetXYZ());
+	wAxis.x = -Dot(tmp.wAxis.GetXYZ(), tmp.xAxis.GetXYZ());
+	wAxis.y = -Dot(tmp.wAxis.GetXYZ(), tmp.yAxis.GetXYZ());
+	wAxis.z = -Dot(tmp.wAxis.GetXYZ(), tmp.zAxis.GetXYZ());
 }
 
-#endif //MAT44_INL
+//#endif //Mat44fF_INL

@@ -7,19 +7,21 @@
 #include "VectorWrapper.h"
 #endif
 
-#include "Vec2.inl"
-#include "Vec3.inl"
-#include "Vec4.inl"
-#include "Matrix44.inl"
+#include "Vec2f.h"
+#include "Vec3f.h"
+#include "Vec4f.h"
+#include "Mat33f.h"
+#include "Mat44f.h"
 
 #if SSE_AVAILABLE
-
-#include "Vec2V.inl"
-#include "Vec3V.inl"
-#include "Vec4V.inl"
-#include "Mat44V.inl"
+#include "ScalarV.h"
+#include "Vec2V.h"
+#include "Vec3V.h"
+#include "Vec4V.h"
+#include "Mat33V.h"
+#include "Mat44V.h"
 #endif
 
-#include "GlobalMathFuncs.inl"
+#include "GlobalMathFuncs.h"
 
 #endif //MATHLIB_H

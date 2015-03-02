@@ -30,50 +30,84 @@ enum eNineInitializer { INIT_NINE };
 enum eTenInitializer { INIT_TEN };
 enum ePIInitializer { INIT_PI };
 enum eTwoPIInitializer { INIT_TWOPI };
-enum eQuarterInitializer {INIT_QUARTER};
-enum eHalfInitializer {INIT_HALF};
+enum eHalfPIInitializer { INIT_HALFPI };
+enum eQuarterInitializer { INIT_QUARTER };
+enum eHalfInitializer { INIT_HALF };
 enum eIdentityInitializer { INIT_IDENTITY };
+enum eFLTMINInitializer { INIT_FLT_MIN };
+enum eFLTMAXInitializer { INIT_FLT_MAX };
+
+enum eXAxisInitializer { INIT_X_AXIS };
+enum eYAxisInitializer { INIT_Y_AXIS };
+enum eZAxisInitializer { INIT_Z_AXIS };
+enum eWAxisInitializer { INIT_W_AXIS };
+
+enum eUpAxisInitializer { INIT_UP_AXIS };
 
 enum eXRotationInitializer { INIT_ROTATION_X };
 enum eYRotationInitializer { INIT_ROTATION_Y };
 enum eZRotationInitializer { INIT_ROTATION_Z };
 
-#define FLOAT_AS_INT_REP(valName, value) \
-	extern const __declspec(selectany) int FLT_##valName##_AS_INT = value;
+namespace VecElem
+{
+	// Used For Permutations And Indexing Into a Vector
+	GLOBALCONST int X = 0x0;
+	GLOBALCONST int Y = 0x1;
+	GLOBALCONST int Z = 0x2;
+	GLOBALCONST int W = 0x3;
 
-FLOAT_AS_INT_REP(ZERO, 0x0)
-FLOAT_AS_INT_REP(ONE, 0x3F800000)
-FLOAT_AS_INT_REP(NAN, 0xFFFFFFFF)
+	GLOBALCONST int X1 = X;
+	GLOBALCONST int Y1 = Y;
+	GLOBALCONST int Z1 = Z;
+	GLOBALCONST int W1 = W;
+	GLOBALCONST int X2 = (0x10 | X1);
+	GLOBALCONST int Y2 = (0x10 | Y1);
+	GLOBALCONST int Z2 = (0x10 | Z1);
+	GLOBALCONST int W2 = (0x10 | W1);
+};
 
-
-#undef FLOAT_AS_INT_REP
-
-template<typename Type> class Vec2;
+class Vec2f;
 class Vec3f;
 class Vec4f;
-class Mat44;
+class Mat33f;
+class Mat34f;
+class Mat44f;
 
 #if SSE_AVAILABLE
 class Vec2V;
 class Vec3V;
 class Vec4V;
+class Mat33V;
+class Mat34V;
 class Mat44V;
 
 // Conversion Macros - Start
 // Normal to Vectorized
-#define VEC2F_TO_VEC2V(x) (Vec2V(x.GetX(), x.GetY()))
-#define VEC3F_TO_VEC3V(x) (Vec3V(x.GetX(), x.GetY(), x.GetZ()))
-#define VEC4F_TO_VEC4V(x) (Vec4V(x.GetX(), x.GetY(), x.GetZ(), x.GetW()))
-#define MAT44_TO_MAT44V(x) (Mat44V(	VEC4F_TO_VEC4V(x.GetXAxis()), \
-									VEC4F_TO_VEC4V(x.GetYAxis()), \
-									VEC4F_TO_VEC4V(x.GetZAxis()), \
-									VEC4F_TO_VEC4V(x.GetWAxis())))
+#define VEC2F_TO_VEC2V(x) (Vec2V(x.GetXRef(), x.GetYRef()))
+#define VEC3F_TO_VEC3V(x) (Vec3V(x.GetXRef(), x.GetYRef(), x.GetZRef()))
+#define VEC4F_TO_VEC4V(x) (Vec4V(x.GetXRef(), x.GetYRef(), x.GetZRef(), x.GetWRef()))
+
+#define MAT33F_TO_MAT33V(x) (Mat33V(VEC3F_TO_VEC3V(x.GetXAxisRef()), \
+									VEC3F_TO_VEC3V(x.GetYAxisRef()), \
+									VEC3F_TO_VEC3V(x.GetZAxisRef()))))
+
+#define MAT34F_TO_MAT34V(x) (Mat34V(VEC3F_TO_VEC3V(x.GetXAxisRef()), \
+									VEC3F_TO_VEC3V(x.GetYAxisRef()), \
+									VEC3F_TO_VEC3V(x.GetZAxisRef()), \
+									VEC3F_TO_VEC3V(x.GetWAxisRef())))
+
+#define MAT44F_TO_MAT44V(x) (Mat44V(VEC4F_TO_VEC4V(x.GetXAxisRef()), \
+									VEC4F_TO_VEC4V(x.GetYAxisRef()), \
+									VEC4F_TO_VEC4V(x.GetZAxisRef()), \
+									VEC4F_TO_VEC4V(x.GetWAxisRef())))
 
 // Vectorized to Normal
 #define VEC2V_TO_VEC2F(x) (Vec2f(*(Vec2f*)&(x)))
 #define VEC3V_TO_VEC3F(x) (Vec3f(*(Vec3f*)&(x)))
 #define VEC4V_TO_VEC4F(x) (Vec4f(*(Vec4f*)&(x)))
-#define MAT44V_TO_MAT44(x) (Mat44(*(Mat44*)&(x)))
+#define MAT33V_TO_MAT33F(x) (Mat33f(*(Mat33f*)&(x)))
+#define MAT34V_TO_MAT34F(x) (Mat34f(*(Mat34f*)&(x)))
+#define MAT44V_TO_MAT44F(x) (Mat44f(*(Mat44f*)&(x)))
 
 // Conversion Macros - End
 
@@ -84,20 +118,26 @@ class Mat44V;
 #define Vec2V Vec2f
 #define Vec3V Vec3f
 #define Vec4V Vec4f
-#define Mat44V Mat44
+#define Mat33V Mat33f
+#define Mat34V Mat34f
+#define Mat44V Mat44f
 
 // Conversion Macros - Start
 // Normal to Vectorized
-#define VEC2F_TO_VEC2V(x) Vec2f(x)
-#define VEC3F_TO_VEC3V(x) Vec3f(x)
-#define VEC4F_TO_VEC4V(x) Vec4f(x)
-#define MAT44_TO_MAT44V(x) Mat44(x)
+#define VEC2F_TO_VEC2V(x) x
+#define VEC3F_TO_VEC3V(x) x
+#define VEC4F_TO_VEC4V(x) x
+#define MAT33F_TO_MAT33V(x) x
+#define MAT34F_TO_MAT34V(x) x
+#define MAT44F_TO_MAT44V(x) x
 
 // Vectorized to Normal
-#define VEC2V_TO_VEC2F(x) VEC2F_TO_VEC2V(x)
-#define VEC3V_TO_VEC3F(x) VEC3F_TO_VEC3V(x)
-#define VEC4V_TO_VEC4F(x) VEC4F_TO_VEC4V(x)
-#define MAT44V_TO_MAT44(x) MAT44_TO_MAT44V(x)
+#define VEC2V_TO_VEC2F(x) x
+#define VEC3V_TO_VEC3F(x) x
+#define VEC4V_TO_VEC4F(x) x
+#define MAT33V_TO_MAT33F(x) x
+#define MAT34V_TO_MAT34F(x) x
+#define MAT44V_TO_MAT44F(x) x
 #endif//SSE_AVAILABLE
 
 #if SSE_AVAILABLE
@@ -125,6 +165,14 @@ class Mat44V;
 #ifndef FLT_EPSILON
 #define FLT_EPSILON     (1.192092896e-07F)
 #endif
+
+#ifndef FLT_MAX
+#define FLT_MAX 3.402823466e+38F
+#endif // FLT_MAX
+
+#ifndef FLT_MIN
+#define FLT_MIN 1.175494351e-38F
+#endif // FLT_MIN
 
 #ifndef PI_OVER_180
 #define PI_OVER_180 (PI/180.0f)

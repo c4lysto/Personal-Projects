@@ -1,162 +1,6 @@
-#if SSE_AVAILABLE
-#ifndef VEC4V_INL
-#define VEC4V_INL
-
-typedef Vec4V& Vec4V_Ref;
-typedef const Vec4V& Vec4V_ConstRef;
-
-#if _WIN64
-typedef Vec4V Vec4V_In;
-#else
-typedef Vec4V_ConstRef Vec4V_In;
-#endif
-
-typedef Vec4V Vec4V_Out;
-
-typedef Vec4V_Ref Vec4V_InOut;
-
-// Other Vec4V Aliases
-typedef Vec4V float4V;
-
-ALIGN(16) class Vec4V
-{
-#define DEFINE_VEC4V_ENUM_CONSTRUCTOR(enumeration, valueToInit)\
-	explicit __forceinline Vec4V(enumeration) { row = VectorSet(valueToInit); }
-
-#define VEC4V_ACCESSOR(retType, funcName, retVal) \
-	__forceinline retType funcName() { return retVal; }
-
-#define VEC4V_ACCESSOR_CONST(retType, funcName, retVal) \
-	__forceinline retType funcName() const { return retVal; }
-
-#define VEC4V_MUTATOR(funcName, inType, modifiedVal) \
-	__forceinline void funcName(const inType & rhs) { modifiedVal = rhs; }
-
-
-	friend class Mat44V;
-
-private:
-	union
-	{
-		Vector row;
-
-		union
-		{
-			struct
-			{
-				float x, y, z, w;
-			};
-		};
-	};
-
-public:
-	Vec4V(){}
-	//Vec4V(Vec4V_In vVector);
-#if !_WIN64
-	Vec4V(Vec4V&& vVector);
-#endif // !_WIN64
-	explicit Vec4V(float fX, float fY, float fZ, float fW);
-	explicit Vec4V(Vec3V_In vVector, float fA);
-	explicit Vec4V(Vector_In vVector);
-#if !_WIN64
-	Vec4V(Vector&& vVector);
-#endif // !_WIN64
-
-#if defined(VEC4V_ACCESSOR) && defined(VEC4V_ACCESSOR_CONST)
-	VEC4V_ACCESSOR_CONST(float, GetX, x)
-	VEC4V_ACCESSOR_CONST(float, GetY, y)
-	VEC4V_ACCESSOR_CONST(float, GetZ, z)
-	VEC4V_ACCESSOR_CONST(float, GetW, w)
-	__forceinline Vec3V GetXYZ() const {return Vec3V(row);}
-
-	// Returns the Vector Intrinsic Data Type
-	__forceinline Vector_Out GetVector() const {return row;}
-
-	VEC4V_ACCESSOR(float&, GetXRef, x)
-	VEC4V_ACCESSOR(float&, GetYRef, y)
-	VEC4V_ACCESSOR(float&, GetZRef, z)
-	VEC4V_ACCESSOR(float&, GetWRef, w)
-#undef VEC4V_ACCESSOR
-#undef VEC4V_ACCESSOR_CONST
-#else
-#error VEC4V ACCESSORS NOT DEFINED
-#endif
-
-#if defined(VEC4V_MUTATOR)
-	VEC4V_MUTATOR(SetX, float, x)
-	VEC4V_MUTATOR(SetY, float, y)
-	VEC4V_MUTATOR(SetZ, float, z)
-	VEC4V_MUTATOR(SetW, float, w)
-
-	__forceinline void SetXYZ(Vec3V_In rhs) {row = VectorSet(rhs.x, rhs.y, rhs.z, w);}
-	//__forceinline void SetXYZ(Vec3V&& rhs) {row = VectorSet(rhs.x, rhs.y, rhs.z, w);}
-
-#undef VEC4V_MUTATOR
-#else
-#error VEC4V MUTATORS NOT DEFINED
-#endif
-
-#ifdef DEFINE_VEC4V_ENUM_CONSTRUCTOR
-	DEFINE_VEC4V_ENUM_CONSTRUCTOR(eZeroInitializer, 0.0f)
-	DEFINE_VEC4V_ENUM_CONSTRUCTOR(eOneInitializer, 1.0f)
-	DEFINE_VEC4V_ENUM_CONSTRUCTOR(eTwoInitializer, 2.0f)
-	DEFINE_VEC4V_ENUM_CONSTRUCTOR(eThreeInitializer, 3.0f)
-	DEFINE_VEC4V_ENUM_CONSTRUCTOR(eFourInitializer, 4.0f)
-	DEFINE_VEC4V_ENUM_CONSTRUCTOR(eFiveInitializer, 5.0f)
-	DEFINE_VEC4V_ENUM_CONSTRUCTOR(eSixInitializer, 6.0f)
-	DEFINE_VEC4V_ENUM_CONSTRUCTOR(eSevenInitializer, 7.0f)
-	DEFINE_VEC4V_ENUM_CONSTRUCTOR(eEightInitializer, 8.0f)
-	DEFINE_VEC4V_ENUM_CONSTRUCTOR(eNineInitializer, 9.0f)
-	DEFINE_VEC4V_ENUM_CONSTRUCTOR(eTenInitializer, 10.0f)
-	DEFINE_VEC4V_ENUM_CONSTRUCTOR(eQuarterInitializer, 0.25f)
-	DEFINE_VEC4V_ENUM_CONSTRUCTOR(eHalfInitializer, 0.5f)
-	DEFINE_VEC4V_ENUM_CONSTRUCTOR(ePIInitializer, PI)
-	DEFINE_VEC4V_ENUM_CONSTRUCTOR(eTwoPIInitializer, _2PI)
-#undef DEFINE_VEC4V_ENUM_CONSTRUCTOR
-#endif //DEFINE_VEC4_ENUM_CONSTRUCTOR
-
-	Vec4V operator-() const;
-
-	Vec4V_Out operator=(Vec4V_In vVector);
-#if !_WIN64
-	Vec4V_Out operator=(Vec4V&& vVector);
-#endif // !_WIN_64
-
-	Vec4V operator-(Vec4V_In vVector) const;
-	Vec4V_Out operator-=(Vec4V_In vVector);
-
-	Vec4V operator+(Vec4V_In vVector) const;
-	Vec4V_Out operator+=(Vec4V_In vVector);
-
-	Vec4V operator/(float fScalar) const;
-	Vec4V_Out operator/=(float fScalar);
-
-	Vec4V operator*(float fScalar) const;
-	Vec4V_Out operator*=(float fScalar);
-	friend Vec4V_Out operator*(const float fScalar, Vec4V_In vVector);
-	Vec4V operator*(Vec4V_In vVector) const;
-	Vec4V_Out operator*=(Vec4V_In vVector);
-
-	bool operator==(Vec4V_In vVector) const;
-	bool operator!=(Vec4V_In vVector) const;
-
-	
-	// Friend Functions For Easier Access To Data Members:
-	friend float DotProduct(Vec4V_In vVectorA, Vec4V_In vVectorB);
-
-	friend float Mag(Vec4V_In vVector);
-	friend float Length(Vec4V_In vVector);
-
-	friend float MagSq(Vec4V_In vVector);
-	friend float LengthSq(Vec4V_In vVector);
-
-	Vec4V_Out Normalize();
-};
-
-extern const __declspec(selectany) Vec4V g_IdentityX4V = Vec4V(1.0f, 0.0f, 0.0f, 0.0f);
-extern const __declspec(selectany) Vec4V g_IdentityY4V = Vec4V(0.0f, 1.0f, 0.0f, 0.0f);
-extern const __declspec(selectany) Vec4V g_IdentityZ4V = Vec4V(0.0f, 0.0f, 1.0f, 0.0f);
-extern const __declspec(selectany) Vec4V g_IdentityW4V = Vec4V(0.0f, 0.0f, 0.0f, 1.0f);
+//#if SSE_AVAILABLE
+//#ifndef VEC4V_INL
+//#define VEC4V_INL
 
 //__forceinline Vec4V::Vec4V(Vec4V_In vVector)
 //{
@@ -170,10 +14,10 @@ __forceinline Vec4V::Vec4V(Vec4V&& vVector)
 }
 #endif // !_WIN64
 
-//__forceinline Vec4V::Vec4V(Vector_In vVector)
-//{
-//	row = vVector;
-//}
+__forceinline Vec4V::Vec4V(Vector_In vVector)
+{
+	row = vVector;
+}
 
 #if !_WIN64
 __forceinline Vec4V::Vec4V(Vector&& vVector)
@@ -182,16 +26,75 @@ __forceinline Vec4V::Vec4V(Vector&& vVector)
 }
 #endif // !_WIN64
 
-__forceinline Vec4V::Vec4V(float fX, float fY, float fZ, float fW)
+__forceinline Vec4V::Vec4V(const float& fVal)
+{
+	row = VectorSet(fVal);
+}
+
+__forceinline Vec4V::Vec4V(const float& fX, const float& fY, const float& fZ, const float& fW)
 {
 	row = VectorSet(fX, fY, fZ, fW);
 }
 
-__forceinline Vec4V::Vec4V(Vec3V_In vVector, float fW)
+__forceinline Vec4V::Vec4V(ScalarV_In vVal)
 {
-	row = vVector.row;
-	w = fW;
+	row = vVal.GetVector();
 }
+
+__forceinline Vec4V::Vec4V(ScalarV_In vX, ScalarV_In vY, ScalarV_In vZ, ScalarV_In vW)
+{
+	row = VectorPermute<VecElem::X1, VecElem::Y2, VecElem::Z1, VecElem::W1>(vX.GetVector(), vY.GetVector());
+	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z2, VecElem::W1>(row, vZ.GetVector());
+	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z1, VecElem::W2>(row, vW.GetVector());
+}
+
+__forceinline Vec4V::Vec4V(Vec2V_In vXY, Vec2V_In vZW)
+{
+	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z2, VecElem::W2>(vXY.GetVector(), vZW.GetVector());
+}
+
+__forceinline Vec4V::Vec4V(ScalarV_In vX, ScalarV_In vY, Vec2V_In vZW)
+{
+	row = VectorPermute<VecElem::X1, VecElem::Y2, VecElem::Z1, VecElem::W1>(vX.GetVector(), vY.GetVector());
+	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z2, VecElem::W2>(row, vZW.GetVector());
+}
+
+__forceinline Vec4V::Vec4V(Vec2V_In vXY, ScalarV_In vZ, ScalarV_In vW)
+{
+	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z1, VecElem::W2>(vZ.GetVector(), vW.GetVector());
+	row = VectorPermute<VecElem::X2, VecElem::Y2, VecElem::Z1, VecElem::W1>(row, vXY.GetVector());
+}
+
+__forceinline Vec4V::Vec4V(Vec3V_In vXYZ, ScalarV_In vW)
+{
+	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z1, VecElem::W2>(vXYZ.GetVector(), vW.GetVector());
+}
+
+__forceinline Vec4V::Vec4V(ScalarV_In vX, Vec3V_In vYZW)
+{
+	row = VectorPermute<VecElem::X1, VecElem::Y2, VecElem::Z2, VecElem::W2>(vX.GetVector(), vYZW.GetVector());
+}
+
+__forceinline void Vec4V::SetX(ScalarV_In vX)
+{
+	row = VectorPermute<VecElem::X2, VecElem::Y1, VecElem::Z1, VecElem::W1>(row, vX.GetVector());
+}
+
+__forceinline void Vec4V::SetY(ScalarV_In vY)
+{
+	row = VectorPermute<VecElem::X1, VecElem::Y2, VecElem::Z1, VecElem::W1>(row, vY.GetVector());
+}
+
+__forceinline void Vec4V::SetZ(ScalarV_In vZ)
+{
+	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z2, VecElem::W1>(row, vZ.GetVector());
+}
+
+__forceinline void Vec4V::SetW(ScalarV_In vW)
+{
+	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z1, VecElem::W2>(row, vW.GetVector());
+}
+
 __forceinline Vec4V Vec4V::operator-() const
 {
 	return Vec4V(VectorNegate(row));
@@ -234,14 +137,14 @@ __forceinline Vec4V_Out Vec4V::operator+=(Vec4V_In vVector)
 	return *this;
 }
 
-__forceinline Vec4V Vec4V::operator/(float fScalar) const
+__forceinline Vec4V Vec4V::operator/(ScalarV_In vScalar) const
 {
-	return Vec4V(VectorDivide(row, VectorSet(fScalar)));
+	return Vec4V(VectorDivide(row, vScalar.GetVector()));
 }
 
-__forceinline Vec4V_Out Vec4V::operator/=(float fScalar)
+__forceinline Vec4V_Out Vec4V::operator/=(ScalarV_In vScalar)
 {
-	row = VectorDivide(row, VectorSet(fScalar));
+	row = VectorDivide(row, vScalar.GetVector());
 	return *this;
 }
 
@@ -256,20 +159,20 @@ __forceinline Vec4V_Out Vec4V::operator*=(Vec4V_In vVector)
 	return *this;
 }
 
-__forceinline Vec4V Vec4V::operator*(float fScalar) const
+__forceinline Vec4V Vec4V::operator*(ScalarV_In vScalar) const
 {
-	return Vec4V(VectorMultiply(row, VectorSet(fScalar)));
+	return Vec4V(VectorMultiply(row, vScalar.GetVector()));
 }
 
-__forceinline Vec4V_Out Vec4V::operator*=(float fScalar)
+__forceinline Vec4V_Out Vec4V::operator*=(ScalarV_In vScalar)
 {
-	row = VectorMultiply(row, VectorSet(fScalar));
+	row = VectorMultiply(row, vScalar.GetVector());
 	return *this;
 }
 
-__forceinline Vec4V operator*(float fScalar, Vec4V_In vVector)
+__forceinline Vec4V operator*(ScalarV_Ref vScalar, Vec4V_In vVector)
 {
-	return Vec4V(VectorMultiply(vVector.row, VectorSet(fScalar)));
+	return Vec4V(VectorMultiply(vVector.GetVector(), vScalar.GetVector()));
 }
 
 __forceinline bool Vec4V::operator==(Vec4V_In vVector) const
@@ -282,43 +185,80 @@ __forceinline bool Vec4V::operator!=(Vec4V_In vVector) const
 	return IsNotEqualXYZW(row, vVector.row);
 }
 
-__forceinline Vec4V_Out Vec4V::Normalize()
+__forceinline Vec4V_Out Vec4V::operator&(Vec4V_In vVector) const
 {
-	float mag = Mag(*this);
-	if(mag) { row = VectorDivide(row, VectorSet(mag)); }
+	return Vec4V(row & vVector.row);
+}
+
+__forceinline Vec4V_Out Vec4V::operator&=(Vec4V_In vVector)
+{
+	row = row & vVector.row;
 	return *this;
 }
 
-// Friend Functions For Easier Access To Data Members:
-__forceinline float DotProduct(Vec4V_In vVectorA, Vec4V_In vVectorB)
+__forceinline Vec4V_Out Vec4V::operator|(Vec4V_In vVector) const
 {
-	Vector dp = vVectorA.row * vVectorB.row;
-	dp = VectorHAdd(dp, dp);
-	return VectorExtract<VecElem::X>(VectorHAdd(dp, dp));
+	return Vec4V(row | vVector.row);
 }
 
-__forceinline float Mag(Vec4V_In vVector)
+__forceinline Vec4V_Out Vec4V::operator|=(Vec4V_In vVector)
 {
-	Vector magSq = vVector.row * vVector.row;
-	magSq = VectorHAdd(magSq, magSq);
-	magSq = VectorHAdd(magSq, magSq);
-	return VectorExtract<VecElem::X>(Sqrt(magSq));
+	row = row | vVector.row;
+	return *this;
 }
 
-__forceinline float Length(Vec4V_In vVector)
+__forceinline Vec4V_Out Vec4V::operator^(Vec4V_In vVector) const
 {
-	return Mag(vVector);
+	return Vec4V(row ^ vVector.row);
 }
 
-__forceinline float MagSq(Vec4V_In vVector)
+__forceinline Vec4V_Out Vec4V::operator^=(Vec4V_In vVector)
 {
-	return DotProduct(vVector, vVector);	
+	row = row ^ vVector.row;
+	return *this;
 }
 
-__forceinline float LengthSq(Vec4V_In vVector)
+__forceinline Vec4V_Out Vec4V::operator~() const
 {
-	return MagSq(vVector);
+	return Vec4V(~row);
 }
 
-#endif //VEC4V_INL
-#endif //SSE_AVAILABLE
+__forceinline const float& Vec4V::operator[](int index) const
+{
+	return floatArr[index];
+}
+
+__forceinline float& Vec4V::operator[](int index)
+{
+	return floatArr[index];
+}
+
+__forceinline Vec4V_Out Vec4V::Normalize()
+{
+	ScalarV mag = Mag(*this);
+	if(mag) { row = VectorDivide(row, mag.GetVector()); }
+	return *this;
+}
+
+__forceinline Vec4V_Out Vec4VInt(int intVal)
+{
+	return Vec4V(VectorSet(intVal));
+}
+
+__forceinline Vec4V_Out Vec4VInt(int intX, int intY, int intZ, int intW)
+{
+	return Vec4V(VectorSet(intX, intY, intZ, intW));
+}
+
+__forceinline Vec4V_Out Vec4VIntToFloat(Vec4V_In vec)
+{
+	return Vec4V(VectorIntToFloat(vec.GetVector()));
+}
+
+__forceinline Vec4V_Out Vec4VFloatToInt(Vec4V_In vec)
+{
+	return Vec4V(VectorFloatToInt(vec.GetVector())); 
+}
+
+//#endif //VEC4V_INL
+//#endif //SSE_AVAILABLE

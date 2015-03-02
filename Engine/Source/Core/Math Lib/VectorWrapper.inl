@@ -3,22 +3,22 @@
 
 // Initialization Operations:
 
-__forceinline Vector_Out VectorSet(float fVal)
+__forceinline Vector_Out VectorSet(const float& fVal)
 {
 	return _mm_set1_ps(fVal);
 }
 
-__forceinline Vector_Out VectorSet(float fX, float fY, float fZ, float fW)
+__forceinline Vector_Out VectorSet(const float& fX, const float& fY, const float& fZ, const float& fW)
 {
 	return _mm_setr_ps(fX, fY, fZ, fW);
 }
 
-__forceinline Vector_Out VectorSet(int iVal)
+__forceinline Vector_Out VectorSet(const int& iVal)
 {
 	return VEC_INT_TO_FLOAT(_mm_set1_epi32(iVal));
 }
 
-__forceinline Vector_Out VectorSet(int iX, int iY, int iZ, int iW)
+__forceinline Vector_Out VectorSet(const int& iX, const int& iY, const int& iZ, const int& iW)
 {
 	return VEC_INT_TO_FLOAT(_mm_setr_epi32(iX, iY, iZ, iW));
 }
@@ -48,13 +48,34 @@ __forceinline void VectorStoreU(Vector_In lhs, float* unalignedFloat4Ptr)
 }
 
 template<int index>
-__forceinline float VectorExtract(Vector_In vec)
+__forceinline float VectorExtractFloat(Vector_In vec)
 {
 	CompileTimeAssert(index >= VecElem::X && index <= VecElem::W, "Invalid Permute X-Index. Must be between X & W!");
-	return _mm_cvtss_f32(Permute<index, index, index, index>(vec));
+	return _mm_cvtss_f32(VectorPermute<index, index, index, index>(vec));
 }
 
-template<> __forceinline float VectorExtract<VecElem::X>(Vector_In vec) {return _mm_cvtss_f32(vec);}
+template<> __forceinline float VectorExtractFloat<VecElem::X>(Vector_In vec) {return _mm_cvtss_f32(vec);}
+
+template<int index>
+__forceinline int VectorExtractInt(Vector_In vec)
+{
+	CompileTimeAssert(index >= VecElem::X && index <= VecElem::W, "Invalid Permute X-Index. Must be between X & W!");
+	return _mm_extract_epi32(VEC_FLOAT_TO_INT(vec), index);
+}
+
+
+// Conversion Operations:
+
+__forceinline Vector_Out VectorIntToFloat(Vector_In vec)
+{
+	return _mm_cvtepi32_ps(VEC_FLOAT_TO_INT(vec));
+}
+
+__forceinline Vector_Out VectorFloatToInt(Vector_In vec)
+{
+	return VEC_INT_TO_FLOAT(_mm_cvtps_epi32(vec));
+}
+
 
 // Arithmetic Operations: 
 
@@ -143,67 +164,92 @@ __forceinline Vector_Out VectorAbs(Vector_In vec)
 	return _mm_and_ps(vec, VEC_INT_TO_FLOAT(_mm_set1_epi32(0x7FFFFFFF)));
 }
 
-__forceinline Vector_Out Sqrt(Vector_In vec)
+__forceinline Vector_Out VectorSqrt(Vector_In vec)
 {
 	return _mm_sqrt_ps(vec);
 }
 
-__forceinline Vector_Out RSqrt(Vector_In vec)
+__forceinline Vector_Out VectorRSqrt(Vector_In vec)
 {
 	return _mm_rsqrt_ps(vec);
 }
 
-__forceinline Vector_Out Recip(Vector_In vec)
+__forceinline Vector_Out VectorRecip(Vector_In vec)
 {
 	return _mm_rcp_ps(vec);
+}
+
+__forceinline Vector_Out VectorFloor(Vector_In vec)
+{
+	return _mm_round_ps(vec, _MM_FROUND_TO_NEG_INF);
+}
+
+__forceinline Vector_Out VectorCeil(Vector_In vec)
+{
+	return _mm_round_ps(vec, _MM_FROUND_TO_POS_INF);
+}
+
+__forceinline Vector_Out VectorTrunc(Vector_In vec)
+{
+	return _mm_round_ps(vec, _MM_FROUND_TO_ZERO);
+}
+
+__forceinline Vector_Out VectorRound(Vector_In vec)
+{
+	return _mm_round_ps(vec, _MM_FROUND_TO_NEAREST_INT);
+}
+
+__forceinline Vector_Out VectorSign(Vector_In vec)
+{
+	return VectorOr(VectorAnd(vec, VectorSet((int)0x80000000)), VectorSet(1.0f));
 }
 
 
 // Logical Operations:
 
-__forceinline Vector_Out And(Vector_In lhs, Vector_In rhs)
+__forceinline Vector_Out VectorAnd(Vector_In lhs, Vector_In rhs)
 {
 	return _mm_and_ps(lhs, rhs);
 }
 
 __forceinline Vector_Out operator&(Vector_In lhs, Vector_In rhs)
 {
-	return And(lhs, rhs);
+	return VectorAnd(lhs, rhs);
 }
 
-__forceinline Vector_Out AndNot(Vector_In lhs, Vector_In rhs)
+__forceinline Vector_Out VectorAndNot(Vector_In lhs, Vector_In rhs)
 {
 	return _mm_andnot_ps(rhs, lhs);
 }
 
-__forceinline Vector_Out Not(Vector_In vec)
+__forceinline Vector_Out VectorNot(Vector_In vec)
 {
 	return _mm_xor_ps(vec, VEC_INT_TO_FLOAT(_mm_set1_epi32(0xFFFFFFFF)));
 }
 
 __forceinline Vector_Out operator~(Vector_In vec)
 {
-	return Not(vec);
+	return VectorNot(vec);
 }
 
-__forceinline Vector_Out Or(Vector_In lhs, Vector_In rhs)
+__forceinline Vector_Out VectorOr(Vector_In lhs, Vector_In rhs)
 {
 	return _mm_or_ps(lhs, rhs);
 }
 
 __forceinline Vector_Out operator|(Vector_In lhs, Vector_In rhs)
 {
-	return Or(lhs, rhs);
+	return VectorOr(lhs, rhs);
 }
 
-__forceinline Vector_Out XOr(Vector_In lhs, Vector_In rhs)
+__forceinline Vector_Out VectorXOr(Vector_In lhs, Vector_In rhs)
 {
 	return _mm_xor_ps(lhs, rhs);
 }
 
 __forceinline Vector_Out operator^(Vector_In lhs, Vector_In rhs)
 {
-	return XOr(lhs, rhs);
+	return VectorXOr(lhs, rhs);
 }
 
 __forceinline Vector_Out LeftShift(Vector_In vec, int nCount)
@@ -356,7 +402,7 @@ VEC_CMP_OREQUAL_INT_DEF_ALL(IsLessThanOrEqualInt, IsLessThanInt);
 
 // Misc Operations
 template<int pX, int pY, int pZ, int pW>
-__forceinline Vector_Out Permute(Vector_In vec)
+__forceinline Vector_Out VectorPermute(Vector_In vec)
 {
 	CompileTimeAssert(pX >= VecElem::X && pX <= VecElem::W, "Invalid Permute X-Index. Must be between X & W!");
 	CompileTimeAssert(pY >= VecElem::X && pY <= VecElem::W, "Invalid Permute Y-Index. Must be between X & W!");
@@ -370,7 +416,7 @@ __forceinline Vector_Out Permute(Vector_In vec)
 #define BLEND_MASK(x, y, z, w) ((x) | ((y)<<1) | ((z)<<2) | ((w)<<3))
 
 template<int pX, int pY, int pZ, int pW>
-__forceinline Vector_Out Permute(Vector_In lhs, Vector_In rhs)
+__forceinline Vector_Out VectorPermute(Vector_In lhs, Vector_In rhs)
 {
 	CompileTimeAssert((pX >= VecElem::X1 && pX <= VecElem::W1) || (pX >= VecElem::X2 && pX <= VecElem::W2), "Invalid Permute X-Index. Must be between X1 & W2!");
 	CompileTimeAssert((pY >= VecElem::X1 && pY <= VecElem::W1) || (pY >= VecElem::X2 && pY <= VecElem::W2), "Invalid Permute Y-Index. Must be between X1 & W2!");
@@ -417,29 +463,29 @@ __forceinline Vector_Out Permute(Vector_In lhs, Vector_In rhs)
 	else if((pX < VecElem::X2 && pZ < VecElem::X2) &&		// Permute<Vec1, Vec2, Vec1, Vec2>
 			(pY > VecElem::W1 && pW > VecElem::W1))
 	{
-		Vector tmpLhs = Permute<SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pZ), SHUFFLE_MASKED(pZ)>(lhs);
-		Vector tmpRhs = Permute<SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pW), SHUFFLE_MASKED(pW)>(rhs);
+		Vector tmpLhs = VectorPermute<SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pZ), SHUFFLE_MASKED(pZ)>(lhs);
+		Vector tmpRhs = VectorPermute<SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pW), SHUFFLE_MASKED(pW)>(rhs);
 		return _mm_blend_ps(tmpLhs, tmpRhs, BLEND_MASK(0, 1, 0, 1));
 	}
 	else if((pX > VecElem::W1 && pZ > VecElem::W1) &&		// Permute<Vec2, Vec1, Vec2, Vec1>
 			(pY < VecElem::X2 && pW < VecElem::X2))
 	{
-		Vector tmpLhs = Permute<SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pZ), SHUFFLE_MASKED(pZ)>(rhs);
-		Vector tmpRhs = Permute<SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pW), SHUFFLE_MASKED(pW)>(lhs);
+		Vector tmpLhs = VectorPermute<SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pZ), SHUFFLE_MASKED(pZ)>(rhs);
+		Vector tmpRhs = VectorPermute<SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pW), SHUFFLE_MASKED(pW)>(lhs);
 		return _mm_blend_ps(tmpLhs, tmpRhs, BLEND_MASK(0, 1, 0, 1));
 	}
 	else if((pX < VecElem::X2 && pW < VecElem::X2) &&		// Permute<Vec1, Vec2, Vec2, Vec1>
 			(pY > VecElem::W1 && pZ > VecElem::W1))
 	{
-		Vector tmpLhs = Permute<SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pW), SHUFFLE_MASKED(pW)>(lhs);
-		Vector tmpRhs = Permute<SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pZ), SHUFFLE_MASKED(pZ)>(rhs);
+		Vector tmpLhs = VectorPermute<SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pW), SHUFFLE_MASKED(pW)>(lhs);
+		Vector tmpRhs = VectorPermute<SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pZ), SHUFFLE_MASKED(pZ)>(rhs);
 		return _mm_blend_ps(tmpLhs, tmpRhs, BLEND_MASK(0, 1, 1, 0));
 	}
 	else if((pX > VecElem::W1 && pW > VecElem::W1) &&		// Permute<Vec2, Vec1, Vec1, Vec2>
 			(pY < VecElem::X2 && pZ < VecElem::X2))
 	{
-		Vector tmpLhs = Permute<SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pW), SHUFFLE_MASKED(pW)>(rhs);
-		Vector tmpRhs = Permute<SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pZ), SHUFFLE_MASKED(pZ)>(lhs);
+		Vector tmpLhs = VectorPermute<SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pW), SHUFFLE_MASKED(pW)>(rhs);
+		Vector tmpRhs = VectorPermute<SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pZ), SHUFFLE_MASKED(pZ)>(lhs);
 		return _mm_blend_ps(tmpLhs, tmpRhs, BLEND_MASK(0, 1, 1, 0));
 	}
 	else if((pX < VecElem::X2 && pY > VecElem::W1) &&		// Permute<Vec1, Vec2, Vec1, Vec1>
@@ -476,49 +522,85 @@ __forceinline Vector_Out Permute(Vector_In lhs, Vector_In rhs)
 #undef PERM_SHUFFLE
 #undef SHUFFLE_MASKED
 
-template<> __forceinline Vector_Out Permute<VecElem::X2, VecElem::Y1, VecElem::Z1, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(1, 0, 0, 0));}
-template<> __forceinline Vector_Out Permute<VecElem::X2, VecElem::Y2, VecElem::Z1, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(1, 1, 0, 0));}
-template<> __forceinline Vector_Out Permute<VecElem::X2, VecElem::Y2, VecElem::Z2, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(1, 1, 1, 0));}
-template<> __forceinline Vector_Out Permute<VecElem::X2, VecElem::Y2, VecElem::Z1, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(1, 1, 0, 1));}
-template<> __forceinline Vector_Out Permute<VecElem::X2, VecElem::Y1, VecElem::Z2, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(1, 0, 1, 0));}
-template<> __forceinline Vector_Out Permute<VecElem::X2, VecElem::Y1, VecElem::Z2, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(1, 0, 1, 1));}
-template<> __forceinline Vector_Out Permute<VecElem::X2, VecElem::Y1, VecElem::Z1, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(1, 0, 0, 1));}
-template<> __forceinline Vector_Out Permute<VecElem::X1, VecElem::Y2, VecElem::Z1, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(0, 1, 0, 0));}
-template<> __forceinline Vector_Out Permute<VecElem::X1, VecElem::Y2, VecElem::Z2, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(0, 1, 1, 0));}
-template<> __forceinline Vector_Out Permute<VecElem::X1, VecElem::Y2, VecElem::Z2, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(0, 1, 1, 1));}
-template<> __forceinline Vector_Out Permute<VecElem::X1, VecElem::Y2, VecElem::Z1, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(0, 1, 0, 1));}
-template<> __forceinline Vector_Out Permute<VecElem::X1, VecElem::Y1, VecElem::Z2, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(0, 0, 1, 0));}
-template<> __forceinline Vector_Out Permute<VecElem::X1, VecElem::Y1, VecElem::Z2, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(0, 0, 1, 1));}
-template<> __forceinline Vector_Out Permute<VecElem::X1, VecElem::Y1, VecElem::Z1, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(0, 0, 0, 1));}
-template<> __forceinline Vector_Out Permute<VecElem::X1, VecElem::X2, VecElem::Y1, VecElem::Y2>(Vector_In lhs, Vector_In rhs) {return _mm_unpacklo_ps(lhs, rhs);}
-template<> __forceinline Vector_Out Permute<VecElem::X2, VecElem::X1, VecElem::Y2, VecElem::Y1>(Vector_In lhs, Vector_In rhs) {return _mm_unpacklo_ps(rhs, lhs);}
-template<> __forceinline Vector_Out Permute<VecElem::Z1, VecElem::Z2, VecElem::W1, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_unpackhi_ps(lhs, rhs);}
-template<> __forceinline Vector_Out Permute<VecElem::Z2, VecElem::Z1, VecElem::W2, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_unpackhi_ps(rhs, lhs);}
-template<> __forceinline Vector_Out Permute<VecElem::Z2, VecElem::W2, VecElem::Z1, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_movehl_ps(lhs, rhs);}
-template<> __forceinline Vector_Out Permute<VecElem::Z1, VecElem::W1, VecElem::Z2, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_movehl_ps(rhs, lhs);}
-template<> __forceinline Vector_Out Permute<VecElem::X1, VecElem::Y1, VecElem::X2, VecElem::Y2>(Vector_In lhs, Vector_In rhs) {return _mm_movelh_ps(lhs, rhs);}
-template<> __forceinline Vector_Out Permute<VecElem::X2, VecElem::Y2, VecElem::X1, VecElem::Y1>(Vector_In lhs, Vector_In rhs) {return _mm_movelh_ps(rhs, lhs);}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X2, VecElem::Y1, VecElem::Z1, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(1, 0, 0, 0));}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X2, VecElem::Y2, VecElem::Z1, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(1, 1, 0, 0));}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X2, VecElem::Y2, VecElem::Z2, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(1, 1, 1, 0));}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X2, VecElem::Y2, VecElem::Z1, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(1, 1, 0, 1));}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X2, VecElem::Y1, VecElem::Z2, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(1, 0, 1, 0));}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X2, VecElem::Y1, VecElem::Z2, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(1, 0, 1, 1));}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X2, VecElem::Y1, VecElem::Z1, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(1, 0, 0, 1));}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X1, VecElem::Y2, VecElem::Z1, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(0, 1, 0, 0));}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X1, VecElem::Y2, VecElem::Z2, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(0, 1, 1, 0));}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X1, VecElem::Y2, VecElem::Z2, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(0, 1, 1, 1));}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X1, VecElem::Y2, VecElem::Z1, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(0, 1, 0, 1));}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z2, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(0, 0, 1, 0));}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z2, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(0, 0, 1, 1));}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z1, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_blend_ps(lhs, rhs, BLEND_MASK(0, 0, 0, 1));}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X1, VecElem::X2, VecElem::Y1, VecElem::Y2>(Vector_In lhs, Vector_In rhs) {return _mm_unpacklo_ps(lhs, rhs);}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X2, VecElem::X1, VecElem::Y2, VecElem::Y1>(Vector_In lhs, Vector_In rhs) {return _mm_unpacklo_ps(rhs, lhs);}
+template<> __forceinline Vector_Out VectorPermute<VecElem::Z1, VecElem::Z2, VecElem::W1, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_unpackhi_ps(lhs, rhs);}
+template<> __forceinline Vector_Out VectorPermute<VecElem::Z2, VecElem::Z1, VecElem::W2, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_unpackhi_ps(rhs, lhs);}
+template<> __forceinline Vector_Out VectorPermute<VecElem::Z2, VecElem::W2, VecElem::Z1, VecElem::W1>(Vector_In lhs, Vector_In rhs) {return _mm_movehl_ps(lhs, rhs);}
+template<> __forceinline Vector_Out VectorPermute<VecElem::Z1, VecElem::W1, VecElem::Z2, VecElem::W2>(Vector_In lhs, Vector_In rhs) {return _mm_movehl_ps(rhs, lhs);}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X1, VecElem::Y1, VecElem::X2, VecElem::Y2>(Vector_In lhs, Vector_In rhs) {return _mm_movelh_ps(lhs, rhs);}
+template<> __forceinline Vector_Out VectorPermute<VecElem::X2, VecElem::Y2, VecElem::X1, VecElem::Y1>(Vector_In lhs, Vector_In rhs) {return _mm_movelh_ps(rhs, lhs);}
 
 #undef BLEND_MASK
 
-__forceinline Vector_Out Min(Vector_In lhs, Vector_In rhs)
+__forceinline Vector_Out VectorMin(Vector_In lhs, Vector_In rhs)
 {
 	return _mm_min_ps(lhs, rhs);
 }
 
-__forceinline Vector_Out MinInt(Vector_In lhs, Vector_In rhs)
+__forceinline Vector_Out VectorMinInt(Vector_In lhs, Vector_In rhs)
 {
 	return VEC_INT_TO_FLOAT(_mm_min_epi32(VEC_FLOAT_TO_INT(lhs), VEC_FLOAT_TO_INT(rhs)));
 }
 
-__forceinline Vector_Out Max(Vector_In lhs, Vector_In rhs)
+__forceinline Vector_Out VectorMax(Vector_In lhs, Vector_In rhs)
 {
 	return _mm_max_ps(lhs, rhs);
 }
 
-__forceinline Vector_Out MaxInt(Vector_In lhs, Vector_In rhs)
+__forceinline Vector_Out VectorMaxInt(Vector_In lhs, Vector_In rhs)
 {
 	return VEC_INT_TO_FLOAT(_mm_max_epi32(VEC_FLOAT_TO_INT(lhs), VEC_FLOAT_TO_INT(rhs)));
+}
+
+
+// Vector Math Operations:
+
+__forceinline Vector_Out VectorCrossProduct(Vector_In lhs, Vector_In rhs)
+{
+	Vector vec1 = VectorPermute<VecElem::Y, VecElem::Z, VecElem::X, VecElem::X>(lhs);
+	Vector vec2 = VectorPermute<VecElem::Z, VecElem::X, VecElem::Y, VecElem::X>(rhs);
+	Vector vec3 = VectorMultiply(vec1, vec2);
+
+	vec1 = VectorPermute<VecElem::Z, VecElem::X, VecElem::Y, VecElem::X>(lhs);
+	vec2 = VectorPermute<VecElem::Y, VecElem::Z, VecElem::X, VecElem::X>(rhs);
+
+	return VectorSubtract(vec3, VectorMultiply(vec1, vec2));
+}
+
+__forceinline float VectorDot2(Vector_In lhs, Vector_In rhs)
+{
+	Vector dp = VectorMultiply(lhs, rhs);
+	return VectorExtractFloat<VecElem::X>(VectorHAdd(dp, dp));
+}
+
+__forceinline float VectorDot3(Vector_In lhs, Vector_In rhs)
+{
+	Vector rhsWZero = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z1, VecElem::X2>(rhs, VectorSet(0.0f));
+	Vector dp = VectorMultiply(lhs, rhsWZero);
+	Vector result = VectorHAdd(dp, dp);
+	return VectorExtractFloat<VecElem::X>(VectorHAdd(result, result));
+}
+
+__forceinline float VectorDot4(Vector_In lhs, Vector_In rhs)
+{
+	Vector dp = VectorMultiply(lhs, rhs);
+	Vector result = VectorHAdd(dp, dp);
+	return VectorExtractFloat<VecElem::X>(VectorHAdd(result, result));
 }
 
 //#endif // SSE_AVAILABLE
