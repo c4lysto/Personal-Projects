@@ -27,7 +27,7 @@ __forceinline Vec3V::Vec3V(Vec2V_In vXY, ScalarV_In vZ)
 
 __forceinline Vec3V::Vec3V(ScalarV_In vX, Vec2V_In vYZ)
 {
-	row = VectorPermute<VecElem::X2, VecElem::Y1, VecElem::Z1, VecElem::W2>(vYZ.GetVector(), vX.GetVector());
+	row = VectorPermute<VecElem::X2, VecElem::X1, VecElem::Y1, VecElem::W2>(vYZ.GetVector(), vX.GetVector());
 }
 
 //__forceinline Vec3V::Vec3V(Vec3V_In vVector)

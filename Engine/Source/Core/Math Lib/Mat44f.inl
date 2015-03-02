@@ -474,13 +474,6 @@ __forceinline void Mat44f::Normalize()
 	zAxis.SetXYZ(::Normalize(zAxis.GetXYZ()));
 }
 
-float MatrixDeterminant(Mat44f_In mMatrix)
-{
-	const Vec4f& row1 = mMatrix.xAxis;
-	const Vec4f& row2 = mMatrix.yAxis;
-	const Vec4f& row3 = mMatrix.zAxis;
-	const Vec4f& row4 = mMatrix.wAxis;
-
 __forceinline void Mat44f::Invert()
 {
 #if 1

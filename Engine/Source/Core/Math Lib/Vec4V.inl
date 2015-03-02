@@ -50,13 +50,13 @@ __forceinline Vec4V::Vec4V(ScalarV_In vX, ScalarV_In vY, ScalarV_In vZ, ScalarV_
 
 __forceinline Vec4V::Vec4V(Vec2V_In vXY, Vec2V_In vZW)
 {
-	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z2, VecElem::W2>(vXY.GetVector(), vZW.GetVector());
+	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::X2, VecElem::Y2>(vXY.GetVector(), vZW.GetVector());
 }
 
 __forceinline Vec4V::Vec4V(ScalarV_In vX, ScalarV_In vY, Vec2V_In vZW)
 {
 	row = VectorPermute<VecElem::X1, VecElem::Y2, VecElem::Z1, VecElem::W1>(vX.GetVector(), vY.GetVector());
-	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z2, VecElem::W2>(row, vZW.GetVector());
+	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::X2, VecElem::Y2>(row, vZW.GetVector());
 }
 
 __forceinline Vec4V::Vec4V(Vec2V_In vXY, ScalarV_In vZ, ScalarV_In vW)
@@ -72,7 +72,7 @@ __forceinline Vec4V::Vec4V(Vec3V_In vXYZ, ScalarV_In vW)
 
 __forceinline Vec4V::Vec4V(ScalarV_In vX, Vec3V_In vYZW)
 {
-	row = VectorPermute<VecElem::X1, VecElem::Y2, VecElem::Z2, VecElem::W2>(vX.GetVector(), vYZW.GetVector());
+	row = VectorPermute<VecElem::X1, VecElem::X2, VecElem::Y2, VecElem::Z2>(vX.GetVector(), vYZW.GetVector());
 }
 
 __forceinline void Vec4V::SetX(ScalarV_In vX)

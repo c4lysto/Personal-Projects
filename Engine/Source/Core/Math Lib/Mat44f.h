@@ -127,8 +127,6 @@ public:
 
 	void Normalize();
 
-	friend float MatrixDeterminant(Mat44f_In mMatrix);
-
 	void Invert();
 
 	void LookAt(const Vec3f& mPos, const Vec3f& vWorldUp = g_IdentityY3);
