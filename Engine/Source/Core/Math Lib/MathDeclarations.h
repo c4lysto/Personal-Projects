@@ -17,53 +17,52 @@ using DirectX::XMMATRIX;
 #endif // SSE_AVAILABLE
 
 // Initializer Enums
-enum eZeroInitializer { INIT_ZERO };
-enum eOneInitializer { INIT_ONE };
-enum eTwoInitializer { INIT_TWO };
-enum eThreeInitializer { INIT_THREE };
-enum eFourInitializer { INIT_FOUR };
-enum eFiveInitializer { INIT_FIVE };
-enum eSixInitializer { INIT_SIX };
-enum eSevenInitializer { INIT_SEVEN };
-enum eEightInitializer { INIT_EIGHT };
-enum eNineInitializer { INIT_NINE };
-enum eTenInitializer { INIT_TEN };
-enum ePIInitializer { INIT_PI };
-enum eTwoPIInitializer { INIT_TWOPI };
-enum eHalfPIInitializer { INIT_HALFPI };
-enum eQuarterInitializer { INIT_QUARTER };
-enum eHalfInitializer { INIT_HALF };
-enum eIdentityInitializer { INIT_IDENTITY };
-enum eFLTMINInitializer { INIT_FLT_MIN };
-enum eFLTMAXInitializer { INIT_FLT_MAX };
+enum eZeroInitializer		{ I_ZERO };
+enum eOneInitializer		{ I_ONE };
+enum eTwoInitializer		{ I_TWO };
+enum eThreeInitializer		{ I_THREE };
+enum eFourInitializer		{ I_FOUR };
+enum eFiveInitializer		{ I_FIVE };
+enum eSixInitializer		{ I_SIX };
+enum eSevenInitializer		{ I_SEVEN };
+enum eEightInitializer		{ I_EIGHT };
+enum eNineInitializer		{ I_NINE };
+enum eTenInitializer		{ I_TEN };
+enum ePIInitializer			{ I_PI };
+enum eTwoPIInitializer		{ I_TWOPI };
+enum eHalfPIInitializer		{ I_HALFPI };
+enum eQuarterInitializer	{ I_QUARTER };
+enum eHalfInitializer		{ I_HALF };
+enum eIdentityInitializer	{ I_IDENTITY };
+enum eFLTMINInitializer		{ I_FLT_MIN };
+enum eFLTMAXInitializer		{ I_FLT_MAX };
 
-enum eXAxisInitializer { INIT_X_AXIS };
-enum eYAxisInitializer { INIT_Y_AXIS };
-enum eZAxisInitializer { INIT_Z_AXIS };
-enum eWAxisInitializer { INIT_W_AXIS };
+enum eXAxisInitializer		{ I_X_AXIS };
+enum eYAxisInitializer		{ I_Y_AXIS };
+enum eZAxisInitializer		{ I_Z_AXIS };
+enum eWAxisInitializer		{ I_W_AXIS };
 
-enum eUpAxisInitializer { INIT_UP_AXIS };
+enum eUpAxisInitializer		{ I_UP_AXIS };
 
-enum eXRotationInitializer { INIT_ROTATION_X };
-enum eYRotationInitializer { INIT_ROTATION_Y };
-enum eZRotationInitializer { INIT_ROTATION_Z };
+enum eXRotationInitializer	{ I_ROTATION_X };
+enum eYRotationInitializer	{ I_ROTATION_Y };
+enum eZRotationInitializer	{ I_ROTATION_Z };
 
-namespace VecElem
+enum class VecElem
 {
-	// Used For Permutations And Indexing Into a Vector
-	GLOBALCONST int X = 0x0;
-	GLOBALCONST int Y = 0x1;
-	GLOBALCONST int Z = 0x2;
-	GLOBALCONST int W = 0x3;
+	X = 0x0,
+	Y = 0x1,
+	Z = 0x2,
+	W = 0x3,
 
-	GLOBALCONST int X1 = X;
-	GLOBALCONST int Y1 = Y;
-	GLOBALCONST int Z1 = Z;
-	GLOBALCONST int W1 = W;
-	GLOBALCONST int X2 = (0x10 | X1);
-	GLOBALCONST int Y2 = (0x10 | Y1);
-	GLOBALCONST int Z2 = (0x10 | Z1);
-	GLOBALCONST int W2 = (0x10 | W1);
+	X1 = X,
+	Y1 = Y,
+	Z1 = Z,
+	W1 = W,
+	X2 = (0x10 | X1),
+	Y2 = (0x10 | Y1),
+	Z2 = (0x10 | Z1),
+	W2 = (0x10 | W1)
 };
 
 class Vec2f;
@@ -74,6 +73,7 @@ class Mat34f;
 class Mat44f;
 
 #if SSE_AVAILABLE
+class ScalarV;
 class Vec2V;
 class Vec3V;
 class Vec4V;
@@ -115,6 +115,7 @@ class Mat44V;
 #define VEC_FILL_VAL (0.0f)
 #endif //VEC_FILL_VAL
 #else
+#define ScalarV float
 #define Vec2V Vec2f
 #define Vec3V Vec3f
 #define Vec4V Vec4f
@@ -143,15 +144,15 @@ class Mat44V;
 #if SSE_AVAILABLE
 // Flipped the value around because __m128 stores the float in the opposite order that you think it does, TRUST ME!
 // _MM_FSHUFFLE makes using the _mm_shuffle_ps() function more intuitive by flipping the values that it passes to _MM_SHUFFLE()
-#define _MM_FSHUFFLE(fp0,fp1,fp2,fp3) _MM_SHUFFLE(fp3,fp2,fp1,fp0)
+#define _MM_FSHUFFLE(fp0,fp1,fp2,fp3) _MM_SHUFFLE((int)(fp3),(int)(fp2),(int)(fp1),(int)(fp0))
 #endif
 
 #ifndef PI
 #define PI (3.1415926535897932384626433832795f)
 #endif
 
-#ifndef _2PI
-#define _2PI (2.0f*PI)
+#ifndef TWO_PI
+#define TWO_PI (2.0f*PI)
 #endif
 
 #ifndef PI_OVER_2

@@ -43,6 +43,11 @@ private:
 		{
 			float x, y;
 		};
+
+		struct
+		{
+			s32 iX, iY;
+		};
 	};
 
 public:
@@ -65,7 +70,7 @@ public:
 	DEFINE_VEC2_ENUM_CONSTRUCTOR(eHalfInitializer, 0.5f)
 	DEFINE_VEC2_ENUM_CONSTRUCTOR(ePIInitializer, PI)
 	DEFINE_VEC2_ENUM_CONSTRUCTOR(eHalfPIInitializer, PI_OVER_2)
-	DEFINE_VEC2_ENUM_CONSTRUCTOR(eTwoPIInitializer, _2PI)
+	DEFINE_VEC2_ENUM_CONSTRUCTOR(eTwoPIInitializer, TWO_PI)
 	DEFINE_VEC2_ENUM_CONSTRUCTOR(eFLTMINInitializer, FLT_MIN)
 	DEFINE_VEC2_ENUM_CONSTRUCTOR(eFLTMAXInitializer, FLT_MAX)
 	DEFINE_VEC2_ENUM_VAL_CONSTRUCTOR(eXAxisInitializer, 1.0f, 0.0f)
@@ -79,7 +84,7 @@ public:
 	Vec2f(Vec2f_In vVector);
 	Vec2f(Vec2f&& vVector);
 	explicit Vec2f(const float& fVal);
-	explicit Vec2f(const float& fX, const float& fY);
+	Vec2f(const float& fX, const float& fY);
 
 #if SSE_AVAILABLE
 	explicit Vec2f(Vector_In vVector);
@@ -96,9 +101,17 @@ public:
 	VEC2_ACCESSOR_CONST(const float&, GetYRef, y)
 	VEC2_ACCESSOR_CONST(const float*, GetVector, vector)
 
+	VEC2_ACCESSOR_CONST(s32, GetXi, iX)
+	VEC2_ACCESSOR_CONST(s32, GetYi, iY)
+	VEC2_ACCESSOR_CONST(const s32&, GetXiRef, iX)
+	VEC2_ACCESSOR_CONST(const s32&, GetYiRef, iY)
+
 	VEC2_ACCESSOR(float&, GetXRef, x)
 	VEC2_ACCESSOR(float&, GetYRef, y)
 	VEC2_ACCESSOR(float*, GetVector, vector)
+
+	VEC2_ACCESSOR(s32&, GetXiRef, iX)
+	VEC2_ACCESSOR(s32&, GetYiRef, iY)
 #undef VEC2_ACCESSOR
 #undef VEC2_ACCESSOR_CONST
 #else
@@ -108,6 +121,9 @@ public:
 #if defined(VEC2_MUTATOR)
 	VEC2_MUTATOR(SetX, const float&, x)
 	VEC2_MUTATOR(SetY, const float&, y)
+
+	VEC2_MUTATOR(SetXi, const s32&, iX)
+	VEC2_MUTATOR(SetYi, const s32&, iY)
 #undef VEC2_MUTATOR
 #else
 #error VEC2 MUTATORS NOT DEFINED
@@ -131,9 +147,26 @@ public:
 	Vec2f operator/(const float& fScalar) const;
 	Vec2f_Ref operator/=(const float& fScalar);
 
+	bool operator==(Vec2f_In vVector);
+	bool operator!=(Vec2f_In vVector);
+
+	Vec2f_Out operator&(Vec2f_In vVector) const;
+	Vec2f_Ref operator&=(Vec2f_In vVector);
+
+	Vec2f_Out operator|(Vec2f_In vVector) const;
+	Vec2f_Ref operator|=(Vec2f_In vVector);
+
+	Vec2f_Out operator^(Vec2f_In vVector) const;
+	Vec2f_Ref operator^=(Vec2f_In vVector);
+
+	Vec2f_Out operator~() const;
+
 	const float& operator[](int index) const;
 	float& operator[](int index);
 };
+
+Vec2f_Out Vec2fInt(const s32& intVal);
+Vec2f_Out Vec2fInt(const s32& intX, const s32& intY);
 
 float Dot(Vec2f_In lhs, Vec2f_In rhs);
 

@@ -22,14 +22,14 @@ __forceinline Mat33f::Mat33f(Mat33f&& mMatrix) :
 {
 }
 
-__forceinline Mat33f::Mat33f(eIdentityInitializer eIdentity) :
+__forceinline Mat33f::Mat33f(eIdentityInitializer UNUSED_PARAM(eIdentity)) :
 	xAxis(g_IdentityX3),
 	yAxis(g_IdentityY3),
 	zAxis(g_IdentityZ3)
 {
 }
 
-inline Mat33f::Mat33f(eXRotationInitializer eXRotation, const float& fRotationInRadians)
+inline Mat33f::Mat33f(eXRotationInitializer UNUSED_PARAM(eXRotation), const float& fRotationInRadians)
 {
 	float fSinAngle = sin(fRotationInRadians);
 	float fCosAngle = cos(fRotationInRadians);
@@ -38,7 +38,7 @@ inline Mat33f::Mat33f(eXRotationInitializer eXRotation, const float& fRotationIn
 	zAxis = Vec3f(0.0f, -fSinAngle, fCosAngle);
 }
 
-inline Mat33f::Mat33f(eYRotationInitializer eYRotation, const float& fRotationInRadians)
+inline Mat33f::Mat33f(eYRotationInitializer UNUSED_PARAM(eYRotation), const float& fRotationInRadians)
 {
 	float fSinAngle = sin(fRotationInRadians);
 	float fCosAngle = cos(fRotationInRadians);
@@ -47,7 +47,7 @@ inline Mat33f::Mat33f(eYRotationInitializer eYRotation, const float& fRotationIn
 	zAxis = Vec3f(fSinAngle, 0.0f, fCosAngle);
 }
 
-inline Mat33f::Mat33f(eZRotationInitializer eZRotation, const float& fRotationInRadians)
+inline Mat33f::Mat33f(eZRotationInitializer UNUSED_PARAM(eZRotation), const float& fRotationInRadians)
 {
 	float fSinAngle = sin(fRotationInRadians);
 	float fCosAngle = cos(fRotationInRadians);
@@ -196,19 +196,19 @@ __forceinline void Mat33f::operator-=(Mat33f_In rhs)
 
 inline void Mat33f::Rotate_LocalX(const float& fRadians)
 {
-	Mat33f tmp(INIT_ROTATION_X, fRadians);
+	Mat33f tmp(I_ROTATION_X, fRadians);
 	*this = tmp * (*this);
 }
 
 inline void Mat33f::Rotate_LocalY(const float& fRadians)
 {
-	Mat33f tmp(INIT_ROTATION_Y, fRadians);
+	Mat33f tmp(I_ROTATION_Y, fRadians);
 	*this = tmp * (*this);
 }
 
 inline void Mat33f::Rotate_LocalZ(const float& fRadians)
 {
-	Mat33f tmp(INIT_ROTATION_Z, fRadians);
+	Mat33f tmp(I_ROTATION_Z, fRadians);
 	*this = tmp * (*this);
 }
 

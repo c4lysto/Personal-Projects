@@ -53,7 +53,7 @@ __forceinline Vec3f::Vec3f(Vector&& vVector)
 
 __forceinline Vec3f Vec3f::operator-() const
 {
-	return Vec3f(-x, -y, -z);
+	return Vec3fInt(iX ^ 0x80000000, iY ^ 0x80000000, iZ ^ 0x80000000);
 }
 
 __forceinline Vec3f_Ref Vec3f::operator=(Vec3f_In vVector)
@@ -82,31 +82,20 @@ __forceinline Vec3f_Ref Vec3f::operator=(Vec3f&& vVector)
 
 __forceinline Vec3f_Ref Vec3f::operator*=(const float& fScalar)
 {
-	x *= fScalar;
-	y *= fScalar;
-	z *= fScalar;
-
+	x *= fScalar; y *= fScalar; z *= fScalar;
 	return *this;
 }
 
 __forceinline Vec3f_Ref Vec3f::operator*=(Vec3f_In vScale)
 {
-	x *= vScale.x;
-	y *= vScale.y;
-	z *= vScale.z;
-
+	x *= vScale.x; y *= vScale.y; z *= vScale.z;
 	return *this;
 }
 
 __forceinline Vec3f Vec3f::operator/(const float& fScalar) const
 {
-#if SSE_AVAILABLE
-	Vector result = VectorDivide(VectorSet(x, y, z, 0.0f), VectorSet(fScalar));
-	return Vec3f(VectorExtractFloat<VecElem::X>(result), VectorExtractFloat<VecElem::Y>(result), VectorExtractFloat<VecElem::Z>(result));
-#else
-	fScalar = 1 / fScalar;
-	return Vec3f(x * fScalar, y * fScalar, z * fScalar);
-#endif
+	float fInvScalar = 1 / fScalar;
+	return Vec3f(x * fInvScalar, y * fInvScalar, z * fInvScalar);
 }
 
 __forceinline Vec3f Vec3f::operator/(Vec3f_In vScale) const
@@ -117,20 +106,13 @@ __forceinline Vec3f Vec3f::operator/(Vec3f_In vScale) const
 __forceinline Vec3f_Ref Vec3f::operator/=(const float& fScalar)
 {
 	float fInvScalar = 1 / fScalar;
-
-	x *= fInvScalar;
-	y *= fInvScalar;
-	z *= fInvScalar;
-
+	x *= fInvScalar; y *= fInvScalar; z *= fInvScalar;
 	return *this;
 }
 
 __forceinline Vec3f_Ref Vec3f::operator/=(Vec3f_In vScale)
 {
-	x /= vScale.x;
-	y /= vScale.y;
-	z /= vScale.z;
-
+	x /= vScale.x; y /= vScale.y; z /= vScale.z;
 	return *this;
 }
 
@@ -151,10 +133,7 @@ __forceinline Vec3f operator*(const float& fScalar, Vec3f_In vVector)
 
 __forceinline Vec3f_Ref Vec3f::operator+=(Vec3f_In vVector)
 {
-	x += vVector.x;
-	y += vVector.y;
-	z += vVector.z;
-
+	x += vVector.x;	y += vVector.y;	z += vVector.z;
 	return *this;
 }
 
@@ -165,10 +144,7 @@ __forceinline Vec3f Vec3f::operator+(Vec3f_In vVector) const
 
 __forceinline Vec3f_Ref Vec3f::operator-=(Vec3f_In vVector)
 {
-	x -= vVector.x;
-	y -= vVector.y;
-	z -= vVector.z;
-
+	x -= vVector.x;	y -= vVector.y;	z -= vVector.z;
 	return *this;
 }
 
@@ -179,90 +155,62 @@ __forceinline Vec3f Vec3f::operator-(Vec3f_In vVector) const
 
 __forceinline bool Vec3f::operator==(Vec3f_In vVector) const
 {
-	if(x != vVector.x)
+	if(iX != vVector.iX)
 		return false;
-
-	if(y != vVector.y)
+	if(iY != vVector.iY)
 		return false;
-
-	if(z != vVector.z)
+	if(iZ != vVector.iZ)
 		return false;
-
 	return true;
 }
 
 __forceinline bool Vec3f::operator!=(Vec3f_In vVector) const
 {
-	if(x != vVector.x)
+	if(iX != vVector.iX)
 		return true;
-
-	if(y != vVector.y)
+	if(iY != vVector.iY)
 		return true;
-
-	if(z != vVector.z)
+	if(iZ != vVector.iZ)
 		return true;
-
 	return false;
 }
 
 __forceinline Vec3f_Out Vec3f::operator&(Vec3f_In vVector) const
 {
-	Vec3f retVal;
-	*reinterpret_cast<s32*>(&retVal.x) = *reinterpret_cast<const s32*>(&x) & *reinterpret_cast<const s32*>(&vVector.x);
-	*reinterpret_cast<s32*>(&retVal.y) = *reinterpret_cast<const s32*>(&y) & *reinterpret_cast<const s32*>(&vVector.y);
-	*reinterpret_cast<s32*>(&retVal.z) = *reinterpret_cast<const s32*>(&z) & *reinterpret_cast<const s32*>(&vVector.z);
-	return retVal;
+	return Vec3fInt(iX & vVector.iX, iY & vVector.iY, iZ & vVector.iZ);
 }
 
 __forceinline Vec3f_Ref Vec3f::operator&=(Vec3f_In vVector)
 {
-	*reinterpret_cast<s32*>(&x) &= *reinterpret_cast<const s32*>(&vVector.x);
-	*reinterpret_cast<s32*>(&y) &= *reinterpret_cast<const s32*>(&vVector.y);
-	*reinterpret_cast<s32*>(&z) &= *reinterpret_cast<const s32*>(&vVector.z);
+	iX &= vVector.iX;	iY &= vVector.iY;	iZ &= vVector.iZ;
 	return *this;
 }
 
 __forceinline Vec3f_Out Vec3f::operator|(Vec3f_In vVector) const
 {
-	Vec3f retVal;
-	*reinterpret_cast<s32*>(&retVal.x) = *reinterpret_cast<const s32*>(&x) | *reinterpret_cast<const s32*>(&vVector.x);
-	*reinterpret_cast<s32*>(&retVal.y) = *reinterpret_cast<const s32*>(&y) | *reinterpret_cast<const s32*>(&vVector.y);
-	*reinterpret_cast<s32*>(&retVal.z) = *reinterpret_cast<const s32*>(&z) | *reinterpret_cast<const s32*>(&vVector.z);
-	return retVal;
+	return Vec3fInt(iX | vVector.iX, iY | vVector.iY, iZ | vVector.iZ);
 }
 
 __forceinline Vec3f_Ref Vec3f::operator|=(Vec3f_In vVector)
 {
-	*reinterpret_cast<s32*>(&x) |= *reinterpret_cast<const s32*>(&vVector.x);
-	*reinterpret_cast<s32*>(&y) |= *reinterpret_cast<const s32*>(&vVector.y);
-	*reinterpret_cast<s32*>(&z) |= *reinterpret_cast<const s32*>(&vVector.z);
+	iX |= vVector.iX; iY |= vVector.iY; iZ |= vVector.iZ;
 	return *this;
 }
 
 __forceinline Vec3f_Out Vec3f::operator^(Vec3f_In vVector) const
 {
-	Vec3f retVal;
-	*reinterpret_cast<s32*>(&retVal.x) = *reinterpret_cast<const s32*>(&x) ^ *reinterpret_cast<const s32*>(&vVector.x);
-	*reinterpret_cast<s32*>(&retVal.y) = *reinterpret_cast<const s32*>(&y) ^ *reinterpret_cast<const s32*>(&vVector.y);
-	*reinterpret_cast<s32*>(&retVal.z) = *reinterpret_cast<const s32*>(&z) ^ *reinterpret_cast<const s32*>(&vVector.z);
-	return retVal;
+	return Vec3fInt(iX ^ vVector.iX, iY ^ vVector.iY, iZ ^ vVector.iZ);
 }
 
 __forceinline Vec3f_Ref Vec3f::operator^=(Vec3f_In vVector)
 {
-	*reinterpret_cast<s32*>(&x) ^= *reinterpret_cast<const s32*>(&vVector.x);
-	*reinterpret_cast<s32*>(&y) ^= *reinterpret_cast<const s32*>(&vVector.y);
-	*reinterpret_cast<s32*>(&z) ^= *reinterpret_cast<const s32*>(&vVector.z);
+	iX ^= vVector.iX; iY ^= vVector.iY; iZ ^= vVector.iZ;
 	return *this;
 }
 
 __forceinline Vec3f_Out Vec3f::operator~() const
 {
-	Vec3f retVal;
-	*reinterpret_cast<s32*>(&retVal.x) = ~*reinterpret_cast<const s32*>(&x);
-	*reinterpret_cast<s32*>(&retVal.y) = ~*reinterpret_cast<const s32*>(&y);
-	*reinterpret_cast<s32*>(&retVal.z) = ~*reinterpret_cast<const s32*>(&z);
-	return retVal;
+	return Vec3fInt(~iX, ~iY, ~iZ);
 }
 
 __forceinline const float& Vec3f::operator[](int index) const
@@ -273,6 +221,16 @@ __forceinline const float& Vec3f::operator[](int index) const
 __forceinline float& Vec3f::operator[](int index)
 {
 	return vector[index];
+}
+
+__forceinline Vec3f_Out Vec3fInt(const s32& intVal)
+{
+	return Vec3f(*reinterpret_cast<const float*>(&intVal));
+}
+
+__forceinline Vec3f_Out Vec3fInt(const s32& intX, const s32& intY, const s32& intZ)
+{
+	return Vec3f(*reinterpret_cast<const float*>(&intX), *reinterpret_cast<const float*>(&intY), *reinterpret_cast<const float*>(&intZ));
 }
 
 //#endif VEC3F_INL

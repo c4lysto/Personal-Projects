@@ -53,6 +53,10 @@ private:
 		{
 			struct
 			{
+				s32 iX, iY, iZ, iW;
+			};
+			struct
+			{
 				float x, y, z, w;
 			};
 			struct
@@ -88,12 +92,21 @@ public:
 	VEC4_ACCESSOR_CONST(float, GetW, w)
 	VEC4_ACCESSOR_CONST(Vec3f_Out, GetXYZ, position)
 
+	VEC4_ACCESSOR_CONST(s32, GetXi, iX)
+	VEC4_ACCESSOR_CONST(s32, GetYi, iY)
+	VEC4_ACCESSOR_CONST(s32, GetZi, iZ)
+	VEC4_ACCESSOR_CONST(s32, GetWi, iW)
+
 	VEC4_ACCESSOR_CONST(const float&, GetXRef, x)
 	VEC4_ACCESSOR_CONST(const float&, GetYRef, y)
 	VEC4_ACCESSOR_CONST(const float&, GetZRef, z)
 	VEC4_ACCESSOR_CONST(const float&, GetWRef, w)
-
 	VEC4_ACCESSOR_CONST(const float*, GetVector, vector);
+
+	VEC4_ACCESSOR_CONST(const s32&, GetXiRef, iX)
+	VEC4_ACCESSOR_CONST(const s32&, GetYiRef, iY)
+	VEC4_ACCESSOR_CONST(const s32&, GetZiRef, iZ)
+	VEC4_ACCESSOR_CONST(const s32&, GetWiRef, iW)
 
 
 	VEC4_ACCESSOR(float&, GetXRef, x)
@@ -101,6 +114,11 @@ public:
 	VEC4_ACCESSOR(float&, GetZRef, z)
 	VEC4_ACCESSOR(float&, GetWRef, w)
 	VEC4_ACCESSOR(float*, GetVector, vector)
+
+	VEC4_ACCESSOR(s32&, GetXiRef, iX)
+	VEC4_ACCESSOR(s32&, GetYiRef, iY)
+	VEC4_ACCESSOR(s32&, GetZiRef, iZ)
+	VEC4_ACCESSOR(s32&, GetWiRef, iW)
 #undef VEC4_ACCESSOR
 #undef VEC4_ACCESSOR_CONST
 #else
@@ -114,6 +132,11 @@ public:
 	VEC4_MUTATOR(SetW, const float&, w)
 	VEC4_MUTATOR(SetXYZ, Vec3f_In, position)
 	VEC4_MUTATOR_MOVE(SetXYZ, Vec3f, position)
+
+	VEC4_MUTATOR(SetXi, const s32&, iX)
+	VEC4_MUTATOR(SetYi, const s32&, iY)
+	VEC4_MUTATOR(SetZi, const s32&, iZ)
+	VEC4_MUTATOR(SetWi, const s32&, iW)
 #undef VEC4_MUTATOR
 #undef VEC4_MUTATOR_MOVE
 #else
@@ -136,7 +159,7 @@ public:
 	DEFINE_VEC4_ENUM_CONSTRUCTOR(eHalfInitializer, 0.5f)
 	DEFINE_VEC4_ENUM_CONSTRUCTOR(ePIInitializer, PI)
 	DEFINE_VEC4_ENUM_CONSTRUCTOR(eHalfPIInitializer, PI_OVER_2)
-	DEFINE_VEC4_ENUM_CONSTRUCTOR(eTwoPIInitializer, _2PI)
+	DEFINE_VEC4_ENUM_CONSTRUCTOR(eTwoPIInitializer, TWO_PI)
 	DEFINE_VEC4_ENUM_CONSTRUCTOR(eFLTMINInitializer, FLT_MIN)
 	DEFINE_VEC4_ENUM_CONSTRUCTOR(eFLTMAXInitializer, FLT_MAX)
 	DEFINE_VEC4_ENUM_VAL_CONSTRUCTOR(eXAxisInitializer, 1.0f, 0.0f, 0.0f, 0.0f)
@@ -170,6 +193,9 @@ public:
 	Vec4f operator*(Vec4f_In vVector) const;
 	Vec4f_Ref operator*=(Vec4f_In vVector);
 
+	bool operator==(Vec4f_In vVector);
+	bool operator!=(Vec4f_In vVector);
+
 	Vec4f_Out operator&(Vec4f_In vVector) const;
 	Vec4f_Ref operator&=(Vec4f_In vVector);
 
@@ -185,12 +211,15 @@ public:
 	float& operator[](int index);
 };
 
+Vec4f_Out Vec4fInt(const s32& intVal);
+Vec4f_Out Vec4fInt(const s32& intX, const s32& intY, const s32& intZ, const s32& intW);
 
-GLOBALCONST Vec4f g_IdentityX4 = Vec4f(INIT_X_AXIS);
-GLOBALCONST Vec4f g_IdentityY4 = Vec4f(INIT_Y_AXIS);
-GLOBALCONST Vec4f g_IdentityZ4 = Vec4f(INIT_Z_AXIS);
-GLOBALCONST Vec4f g_IdentityW4 = Vec4f(INIT_W_AXIS);
-GLOBALCONST Vec4f g_WorldUp4   = Vec4f(INIT_UP_AXIS);
+
+GLOBALCONST Vec4f g_IdentityX4 = Vec4f(I_X_AXIS);
+GLOBALCONST Vec4f g_IdentityY4 = Vec4f(I_Y_AXIS);
+GLOBALCONST Vec4f g_IdentityZ4 = Vec4f(I_Z_AXIS);
+GLOBALCONST Vec4f g_IdentityW4 = Vec4f(I_W_AXIS);
+GLOBALCONST Vec4f g_WorldUp4   = Vec4f(I_UP_AXIS);
 
 float Dot(Vec4f_In lhs, Vec4f_In rhs);
 

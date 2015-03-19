@@ -42,6 +42,11 @@ private:
 		{
 			float x, y, z;
 		};
+
+		struct
+		{
+			s32 iX, iY, iZ;
+		};
 	};
 
 public:
@@ -77,7 +82,7 @@ public:
 	DEFINE_VEC3_ENUM_CONSTRUCTOR(eHalfInitializer, 0.5f)
 	DEFINE_VEC3_ENUM_CONSTRUCTOR(ePIInitializer, PI)
 	DEFINE_VEC3_ENUM_CONSTRUCTOR(eHalfPIInitializer, PI_OVER_2)
-	DEFINE_VEC3_ENUM_CONSTRUCTOR(eTwoPIInitializer, _2PI)
+	DEFINE_VEC3_ENUM_CONSTRUCTOR(eTwoPIInitializer, TWO_PI)
 	DEFINE_VEC3_ENUM_CONSTRUCTOR(eFLTMINInitializer, FLT_MIN)
 	DEFINE_VEC3_ENUM_CONSTRUCTOR(eFLTMAXInitializer, FLT_MAX)
 	DEFINE_VEC3_ENUM_VAL_CONSTRUCTOR(eXAxisInitializer, 1.0f, 0.0f, 0.0f)
@@ -93,17 +98,26 @@ public:
 	VEC3_ACCESSOR_CONST(float, GetX, x)
 	VEC3_ACCESSOR_CONST(float, GetY, y)
 	VEC3_ACCESSOR_CONST(float, GetZ, z)
-
 	VEC3_ACCESSOR_CONST(const float&, GetXRef, x)
 	VEC3_ACCESSOR_CONST(const float&, GetYRef, y)
 	VEC3_ACCESSOR_CONST(const float&, GetZRef, z)
-
 	VEC3_ACCESSOR_CONST(const float*, GetVector, vector)
+
+	VEC3_ACCESSOR_CONST(s32, GetXi, iX)
+	VEC3_ACCESSOR_CONST(s32, GetYi, iY)
+	VEC3_ACCESSOR_CONST(s32, GetZi, iZ)
+	VEC3_ACCESSOR_CONST(const s32&, GetXiRef, iX)
+	VEC3_ACCESSOR_CONST(const s32&, GetYiRef, iY)
+	VEC3_ACCESSOR_CONST(const s32&, GetZiRef, iZ)
 
 	VEC3_ACCESSOR(float&, GetXRef, x)
 	VEC3_ACCESSOR(float&, GetYRef, y)
 	VEC3_ACCESSOR(float&, GetZRef, z)
 	VEC3_ACCESSOR(float*, GetVector, vector)
+
+	VEC3_ACCESSOR(s32&, GetXiRef, iX)
+	VEC3_ACCESSOR(s32&, GetYiRef, iY)
+	VEC3_ACCESSOR(s32&, GetZiRef, iZ)
 #undef VEC3_ACCESSOR
 #undef VEC3_ACCESSOR_CONST
 #else
@@ -114,6 +128,10 @@ public:
 	VEC3_MUTATOR(SetX, const float&, x)
 	VEC3_MUTATOR(SetY, const float&, y)
 	VEC3_MUTATOR(SetZ, const float&, z)
+
+	VEC3_MUTATOR(SetXi, const s32&, iX)
+	VEC3_MUTATOR(SetYi, const s32&, iY)
+	VEC3_MUTATOR(SetZi, const s32&, iZ)
 #undef VEC3_MUTATOR
 #else
 #error VEC3 MUTATORS NOT DEFINED
@@ -162,6 +180,9 @@ public:
 	float& operator[](int index);
 };
 
+Vec3f_Out Vec3fInt(const s32& intVal);
+Vec3f_Out Vec3fInt(const s32& intX, const s32& intY, const s32& intZ);
+
 float Dot(Vec3f_In lhs, Vec3f_In rhs);
 
 float Mag(Vec3f_In vVector);
@@ -172,11 +193,11 @@ float LengthSq(Vec3f_In vVector);
 Vec3f_Out Normalize(Vec3f_In vVector);
 Vec3f_Out Cross(Vec3f_In vVectorA, Vec3f_In vVectorB);
 
-GLOBALCONST Vec3f g_IdentityX3 = Vec3f(INIT_X_AXIS);
-GLOBALCONST Vec3f g_IdentityY3 = Vec3f(INIT_Y_AXIS);
-GLOBALCONST Vec3f g_IdentityZ3 = Vec3f(INIT_Z_AXIS);
-GLOBALCONST Vec3f g_IdentityW3 = Vec3f(INIT_W_AXIS);
-GLOBALCONST Vec3f g_WorldUp	   = Vec3f(INIT_UP_AXIS);
+GLOBALCONST Vec3f g_IdentityX3 = Vec3f(I_X_AXIS);
+GLOBALCONST Vec3f g_IdentityY3 = Vec3f(I_Y_AXIS);
+GLOBALCONST Vec3f g_IdentityZ3 = Vec3f(I_Z_AXIS);
+GLOBALCONST Vec3f g_IdentityW3 = Vec3f(I_W_AXIS);
+GLOBALCONST Vec3f g_WorldUp	   = Vec3f(I_UP_AXIS);
 
 #include "Vec3f.inl"
 

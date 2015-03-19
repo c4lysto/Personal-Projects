@@ -42,6 +42,10 @@ typedef unsigned __int64 u64;
 #define NUMELEM(arr) (sizeof(arr)/(*(arr)))
 #endif
 
+#ifndef UNUSED_PARAM
+#define UNUSED_PARAM(x)
+#endif // UNUSED_PARAM
+
 #ifndef TO_STRING
 #define TO_STRING(str) #str
 #endif
@@ -195,5 +199,22 @@ typedef unsigned __int64 u64;
 #define BIT29 BIT(29)
 #define BIT30 BIT(30)
 #define BIT31 BIT(31)
+
+__forceinline void Prefetch_Impl(void* pMem)
+{
+#if SSE_AVAILABLE
+	_mm_prefetch((const s8*)pMem, _MM_HINT_NTA);
+#else // if !SSE_AVAILABLE
+	CompileTimeAssert(false, "Do NOT use Prefetch_Impl Directly, Use Prefetch Instead!");
+#endif // !SSE_AVAILABLE
+}
+
+#ifndef Prefetch
+#if SSE_AVAILABLE
+#define Prefetch(p) Prefetch_Impl(p) 
+#else // if !SSE_AVAILABLE
+#define Prefetch(p) __noop
+#endif // !SSE_AVAILABLE
+#endif // Prefetch
 
 #endif

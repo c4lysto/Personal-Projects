@@ -45,7 +45,7 @@ __forceinline Mat44V::Mat44V(Vec4V_In vXAxis,
 {
 }
 
-inline Mat44V::Mat44V(eIdentityInitializer eIdentity) :
+inline Mat44V::Mat44V(eIdentityInitializer UNUSED_PARAM(eIdentity)) :
 	xAxis(g_IdentityX4V),
 	yAxis(g_IdentityY4V),
 	zAxis(g_IdentityZ4V),
@@ -53,7 +53,7 @@ inline Mat44V::Mat44V(eIdentityInitializer eIdentity) :
 {
 }
 
-inline Mat44V::Mat44V(eXRotationInitializer eXRotation, const float& fRotationInRadians)
+inline Mat44V::Mat44V(eXRotationInitializer UNUSED_PARAM(eXRotation), const float& fRotationInRadians)
 {
 	float fSinAngle = sin(fRotationInRadians);
 	float fCosAngle = cos(fRotationInRadians);
@@ -63,7 +63,7 @@ inline Mat44V::Mat44V(eXRotationInitializer eXRotation, const float& fRotationIn
 	wAxis = g_IdentityW4V;
 }
 
-inline Mat44V::Mat44V(eYRotationInitializer eYRotation, const float& fRotationInRadians)
+inline Mat44V::Mat44V(eYRotationInitializer UNUSED_PARAM(eYRotation), const float& fRotationInRadians)
 {
 	float fSinAngle = sin(fRotationInRadians);
 	float fCosAngle = cos(fRotationInRadians);
@@ -73,7 +73,7 @@ inline Mat44V::Mat44V(eYRotationInitializer eYRotation, const float& fRotationIn
 	wAxis = g_IdentityW4V;
 }
 
-inline Mat44V::Mat44V(eZRotationInitializer eZRotation, const float& fRotationInRadians)
+inline Mat44V::Mat44V(eZRotationInitializer UNUSED_PARAM(eZRotation), const float& fRotationInRadians)
 {
 	float fSinAngle = sin(fRotationInRadians);
 	float fCosAngle = cos(fRotationInRadians);
@@ -260,37 +260,37 @@ __forceinline void Mat44V::operator-=(Mat44V_In rhs)
 // actually faster than DirectX Version :)
 __forceinline void Mat44V::Rotate_GlobalX(const float& fRadians)
 {
-	Mat44V tmp(INIT_ROTATION_X, fRadians);
+	Mat44V tmp(I_ROTATION_X, fRadians);
 	*this *= tmp;
 }
 
 __forceinline void Mat44V::Rotate_GlobalY(const float& fRadians)
 {
-	Mat44V tmp(INIT_ROTATION_Y, fRadians);
+	Mat44V tmp(I_ROTATION_Y, fRadians);
 	*this *= tmp;
 }
 
 __forceinline void Mat44V::Rotate_GlobalZ(const float& fRadians)
 {
-	Mat44V tmp(INIT_ROTATION_Z, fRadians);
+	Mat44V tmp(I_ROTATION_Z, fRadians);
 	*this *= tmp;
 }
 
 __forceinline void Mat44V::Rotate_LocalX(const float& fRadians)
 {
-	Mat44V tmp(INIT_ROTATION_X, fRadians);
+	Mat44V tmp(I_ROTATION_X, fRadians);
 	*this = tmp * (*this);
 }
 
 __forceinline void Mat44V::Rotate_LocalY(const float& fRadians)
 {
-	Mat44V tmp(INIT_ROTATION_Y, fRadians);
+	Mat44V tmp(I_ROTATION_Y, fRadians);
 	*this = tmp * (*this);
 }
 
 __forceinline void Mat44V::Rotate_LocalZ(const float& fRadians)
 {
-	Mat44V tmp(INIT_ROTATION_Z, fRadians);
+	Mat44V tmp(I_ROTATION_Z, fRadians);
 	*this = tmp * (*this);
 }
 
@@ -386,7 +386,7 @@ inline void Mat44V::TurnTo(Vec3V_In vPos, const float& fDeltaTime, float fTurnMo
 	{
 		// protection to keep the matrix from turning slowly
 		// if the position is behind the matrix
-		if(Dot(vecToPos, zAxis.GetXYZ()) < ScalarV(INIT_ZERO))
+		if(Dot(vecToPos, zAxis.GetXYZ()) < ScalarV(I_ZERO))
 			fRotation = (fRotation < 0.0f) ? -1.0f : 1.0f;
 
 		Rotate_LocalY(fRotation * fTurnModifier * fDeltaTime);

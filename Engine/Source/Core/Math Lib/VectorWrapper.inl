@@ -47,7 +47,7 @@ __forceinline void VectorStoreU(Vector_In lhs, float* unalignedFloat4Ptr)
 	_mm_storeu_ps(unalignedFloat4Ptr, lhs);
 }
 
-template<int index>
+template<VecElem index>
 __forceinline float VectorExtractFloat(Vector_In vec)
 {
 	CompileTimeAssert(index >= VecElem::X && index <= VecElem::W, "Invalid Permute X-Index. Must be between X & W!");
@@ -56,11 +56,11 @@ __forceinline float VectorExtractFloat(Vector_In vec)
 
 template<> __forceinline float VectorExtractFloat<VecElem::X>(Vector_In vec) {return _mm_cvtss_f32(vec);}
 
-template<int index>
+template<VecElem index>
 __forceinline int VectorExtractInt(Vector_In vec)
 {
 	CompileTimeAssert(index >= VecElem::X && index <= VecElem::W, "Invalid Permute X-Index. Must be between X & W!");
-	return _mm_extract_epi32(VEC_FLOAT_TO_INT(vec), index);
+	return _mm_extract_epi32(VEC_FLOAT_TO_INT(vec), (int)index);
 }
 
 
@@ -282,15 +282,15 @@ __forceinline Vector_Out operator>>(Vector_In vec, int nCount)
 #define CMP_MASK_XYZW (0xF)
 
 #define VEC_CMP_DEFBASE_IMPL(name, intrinsic) \
-	__forceinline int name (Vector_In lhs, Vector_In rhs) \
+	__forceinline Vector_Out Vector##name (Vector_In lhs, Vector_In rhs) \
 	{ \
-		return _mm_movemask_ps( intrinsic (lhs, rhs) ); \
+		return intrinsic (lhs, rhs); \
 	}
 
 #define VEC_CMP_DEF(name, nameExt) \
-	__forceinline bool name##nameExt (Vector_In lhs, Vector_In rhs) \
+	__forceinline bool Vector##name##nameExt (Vector_In lhs, Vector_In rhs) \
 	{ \
-		return ( name (lhs, rhs) == CMP_MASK_##nameExt ); \
+		return ( _mm_movemask_ps( Vector##name (lhs, rhs) ) == CMP_MASK_##nameExt ); \
 	}
 
 #define VEC_CMP_DEFBASE(name, intrinsic)  VEC_CMP_DEFBASE_IMPL(name, intrinsic)
@@ -318,57 +318,57 @@ VEC_CMP_DEF_ALL(IsLessThanOrEqual, _mm_cmple_ps);
 // Redefine VEC_CMP_DEF & VEC_CMP_DEFBASE for integer operations
 #undef VEC_CMP_DEFBASE_IMPL
 #define VEC_CMP_DEFBASE_IMPL(name, intrinsic) \
-	__forceinline int name (Vector_In lhs, Vector_In rhs) \
+	__forceinline Vector_Out Vector##name (Vector_In lhs, Vector_In rhs) \
 { \
-	return _mm_movemask_ps(VEC_INT_TO_FLOAT(intrinsic(VEC_FLOAT_TO_INT(lhs), VEC_FLOAT_TO_INT(rhs)))); \
+	return VEC_INT_TO_FLOAT(intrinsic(VEC_FLOAT_TO_INT(lhs), VEC_FLOAT_TO_INT(rhs))); \
 }
 
 #undef VEC_CMP_DEF
 #define VEC_CMP_DEF(name, nameExt) \
-	__forceinline bool name##nameExt (Vector_In lhs, Vector_In rhs) \
+	__forceinline bool Vector##name##nameExt (Vector_In lhs, Vector_In rhs) \
 	{ \
-		return (name (lhs, rhs) == CMP_MASK_##nameExt ); \
+	return ( _mm_movemask_ps( Vector##name (lhs, rhs) ) == CMP_MASK_##nameExt ); \
 	}
 
 VEC_CMP_DEF_ALL(IsEqualInt, _mm_cmpeq_epi32);
 VEC_CMP_DEF_ALL(IsGreaterThanInt, _mm_cmpgt_epi32);
 VEC_CMP_DEF_ALL(IsLessThanInt, _mm_cmplt_epi32);
 
-__forceinline int IsNotEqualInt(Vector_In lhs, Vector_In rhs)
+__forceinline Vector_Out VectorIsNotEqualInt(Vector_In lhs, Vector_In rhs)
 {
-	return (~IsEqualInt(lhs, rhs) & 0xF);
+	return VectorNegate(VectorIsEqualInt(lhs, rhs));
 }
 
-__forceinline bool IsNotEqualIntX(Vector_In lhs, Vector_In rhs)
+__forceinline bool VectorIsNotEqualIntX(Vector_In lhs, Vector_In rhs)
 {
-	return IsNotEqualInt(lhs, rhs) == CMP_MASK_X;
+	return _mm_movemask_ps(VectorIsNotEqualInt(lhs, rhs)) == CMP_MASK_X;
 }
 
-__forceinline bool IsNotEqualIntXY(Vector_In lhs, Vector_In rhs)
+__forceinline bool VectorIsNotEqualIntXY(Vector_In lhs, Vector_In rhs)
 {
-	return IsNotEqualInt(lhs, rhs) == CMP_MASK_XY;
+	return _mm_movemask_ps(VectorIsNotEqualInt(lhs, rhs)) == CMP_MASK_XY;
 }
 
-__forceinline bool IsNotEqualIntXYZ(Vector_In lhs, Vector_In rhs)
+__forceinline bool VectorIsNotEqualIntXYZ(Vector_In lhs, Vector_In rhs)
 {
-	return IsNotEqualInt(lhs, rhs) == CMP_MASK_XYZ;
+	return _mm_movemask_ps(VectorIsNotEqualInt(lhs, rhs)) == CMP_MASK_XYZ;
 }
 
-__forceinline bool IsNotEqualIntXYZW(Vector_In lhs, Vector_In rhs)
+__forceinline bool VectorIsNotEqualIntXYZW(Vector_In lhs, Vector_In rhs)
 {
-	return IsNotEqualInt(lhs, rhs) == CMP_MASK_XYZW;
+	return _mm_movemask_ps(VectorIsNotEqualInt(lhs, rhs)) == CMP_MASK_XYZW;
 }
 
 #define VEC_CMP_OREQUAL_INT_DEFBASE(name, cmp) \
-	__forceinline int name (Vector_In lhs, Vector_In rhs) \
+	__forceinline Vector_Out Vector##name (Vector_In lhs, Vector_In rhs) \
 	{ \
-		return name (lhs, rhs) | IsEqualInt(lhs, rhs); \
+		return VectorOr( Vector##name (lhs, rhs), VectorIsEqualInt(lhs, rhs)); \
 	}
 
 #define VEC_CMP_OREQUAL_INT_DEF(name, nameExt, cmp) \
-	__forceinline bool name##nameExt (Vector_In lhs, Vector_In rhs) \
+	__forceinline bool Vector##name##nameExt (Vector_In lhs, Vector_In rhs) \
 	{ \
-		return cmp##nameExt (lhs, rhs) || IsEqualInt##nameExt (lhs, rhs); \
+		return Vector##cmp##nameExt (lhs, rhs) || VectorIsEqualInt##nameExt (lhs, rhs); \
 	}
 
 #define VEC_CMP_OREQUAL_INT_DEF_ALL(name, cmp1) \
@@ -401,7 +401,7 @@ VEC_CMP_OREQUAL_INT_DEF_ALL(IsLessThanOrEqualInt, IsLessThanInt);
 
 
 // Misc Operations
-template<int pX, int pY, int pZ, int pW>
+template<VecElem pX, VecElem pY, VecElem pZ, VecElem pW>
 __forceinline Vector_Out VectorPermute(Vector_In vec)
 {
 	CompileTimeAssert(pX >= VecElem::X && pX <= VecElem::W, "Invalid Permute X-Index. Must be between X & W!");
@@ -411,11 +411,11 @@ __forceinline Vector_Out VectorPermute(Vector_In vec)
 	return _mm_shuffle_ps(vec, vec, _MM_FSHUFFLE(pX, pY, pZ, pW));
 }	
 
-#define SHUFFLE_MASKED(index) (index & 0x3)
+#define SHUFFLE_MASKED(index) ((int)(index) & 0x3)
 #define PERM_SHUFFLE(x, y, z, w) (_MM_FSHUFFLE(SHUFFLE_MASKED(x), SHUFFLE_MASKED(y), SHUFFLE_MASKED(z), SHUFFLE_MASKED(w)))
 #define BLEND_MASK(x, y, z, w) ((x) | ((y)<<1) | ((z)<<2) | ((w)<<3))
 
-template<int pX, int pY, int pZ, int pW>
+template<VecElem pX, VecElem pY, VecElem pZ, VecElem pW>
 __forceinline Vector_Out VectorPermute(Vector_In lhs, Vector_In rhs)
 {
 	CompileTimeAssert((pX >= VecElem::X1 && pX <= VecElem::W1) || (pX >= VecElem::X2 && pX <= VecElem::W2), "Invalid Permute X-Index. Must be between X1 & W2!");
@@ -463,29 +463,29 @@ __forceinline Vector_Out VectorPermute(Vector_In lhs, Vector_In rhs)
 	else if((pX < VecElem::X2 && pZ < VecElem::X2) &&		// Permute<Vec1, Vec2, Vec1, Vec2>
 			(pY > VecElem::W1 && pW > VecElem::W1))
 	{
-		Vector tmpLhs = VectorPermute<SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pZ), SHUFFLE_MASKED(pZ)>(lhs);
-		Vector tmpRhs = VectorPermute<SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pW), SHUFFLE_MASKED(pW)>(rhs);
+		Vector tmpLhs = VectorPermute<(VecElem)SHUFFLE_MASKED(pX), (VecElem)SHUFFLE_MASKED(pX), (VecElem)SHUFFLE_MASKED(pZ), (VecElem)SHUFFLE_MASKED(pZ)>(lhs);
+		Vector tmpRhs = VectorPermute<(VecElem)SHUFFLE_MASKED(pY), (VecElem)SHUFFLE_MASKED(pY), (VecElem)SHUFFLE_MASKED(pW), (VecElem)SHUFFLE_MASKED(pW)>(rhs);
 		return _mm_blend_ps(tmpLhs, tmpRhs, BLEND_MASK(0, 1, 0, 1));
 	}
 	else if((pX > VecElem::W1 && pZ > VecElem::W1) &&		// Permute<Vec2, Vec1, Vec2, Vec1>
 			(pY < VecElem::X2 && pW < VecElem::X2))
 	{
-		Vector tmpLhs = VectorPermute<SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pZ), SHUFFLE_MASKED(pZ)>(rhs);
-		Vector tmpRhs = VectorPermute<SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pW), SHUFFLE_MASKED(pW)>(lhs);
+		Vector tmpLhs = VectorPermute<(VecElem)SHUFFLE_MASKED(pX), (VecElem)SHUFFLE_MASKED(pX), (VecElem)SHUFFLE_MASKED(pZ), (VecElem)SHUFFLE_MASKED(pZ)>(rhs);
+		Vector tmpRhs = VectorPermute<(VecElem)SHUFFLE_MASKED(pY), (VecElem)SHUFFLE_MASKED(pY), (VecElem)SHUFFLE_MASKED(pW), (VecElem)SHUFFLE_MASKED(pW)>(lhs);
 		return _mm_blend_ps(tmpLhs, tmpRhs, BLEND_MASK(0, 1, 0, 1));
 	}
 	else if((pX < VecElem::X2 && pW < VecElem::X2) &&		// Permute<Vec1, Vec2, Vec2, Vec1>
 			(pY > VecElem::W1 && pZ > VecElem::W1))
 	{
-		Vector tmpLhs = VectorPermute<SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pW), SHUFFLE_MASKED(pW)>(lhs);
-		Vector tmpRhs = VectorPermute<SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pZ), SHUFFLE_MASKED(pZ)>(rhs);
+		Vector tmpLhs = VectorPermute<(VecElem)SHUFFLE_MASKED(pX), (VecElem)SHUFFLE_MASKED(pX), (VecElem)SHUFFLE_MASKED(pW), (VecElem)SHUFFLE_MASKED(pW)>(lhs);
+		Vector tmpRhs = VectorPermute<(VecElem)SHUFFLE_MASKED(pY), (VecElem)SHUFFLE_MASKED(pY), (VecElem)SHUFFLE_MASKED(pZ), (VecElem)SHUFFLE_MASKED(pZ)>(rhs);
 		return _mm_blend_ps(tmpLhs, tmpRhs, BLEND_MASK(0, 1, 1, 0));
 	}
 	else if((pX > VecElem::W1 && pW > VecElem::W1) &&		// Permute<Vec2, Vec1, Vec1, Vec2>
 			(pY < VecElem::X2 && pZ < VecElem::X2))
 	{
-		Vector tmpLhs = VectorPermute<SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pX), SHUFFLE_MASKED(pW), SHUFFLE_MASKED(pW)>(rhs);
-		Vector tmpRhs = VectorPermute<SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pY), SHUFFLE_MASKED(pZ), SHUFFLE_MASKED(pZ)>(lhs);
+		Vector tmpLhs = VectorPermute<(VecElem)SHUFFLE_MASKED(pX), (VecElem)SHUFFLE_MASKED(pX), (VecElem)SHUFFLE_MASKED(pW), (VecElem)SHUFFLE_MASKED(pW)>(rhs);
+		Vector tmpRhs = VectorPermute<(VecElem)SHUFFLE_MASKED(pY), (VecElem)SHUFFLE_MASKED(pY), (VecElem)SHUFFLE_MASKED(pZ), (VecElem)SHUFFLE_MASKED(pZ)>(lhs);
 		return _mm_blend_ps(tmpLhs, tmpRhs, BLEND_MASK(0, 1, 1, 0));
 	}
 	else if((pX < VecElem::X2 && pY > VecElem::W1) &&		// Permute<Vec1, Vec2, Vec1, Vec1>

@@ -12,7 +12,8 @@ private:
 
 		struct  
 		{
-			u8 a, b, g, r;
+			// Low Bits -> High Bits
+			u8 r, g, b, a;
 		};
 	};
 
@@ -45,16 +46,16 @@ public:
 	float GetAf() const {return a*ONE_OVER_255;}
 
 
-	inline void SetR(s32 R) {r = Clamp(R,0,255);}
+	inline void SetR(s32 R) {r = (u8)Clamp(R,0,255);}
 	inline void SetR(float R) {SetR(s32(Saturate(R)*255.0f));}
 
-	inline void SetG(s32 G) {g = Clamp(G,0,255);}
+	inline void SetG(s32 G) {g = (u8)Clamp(G,0,255);}
 	inline void SetG(float G) {SetR(s32(Saturate(G)*255.0f));}
 
-	inline void SetB(s32 B) {b = Clamp(B,0,255);}
+	inline void SetB(s32 B) {b = (u8)Clamp(B,0,255);}
 	inline void SetB(float B) {SetR(s32(Saturate(B)*255.0f));}
 
-	inline void SetA(s32 A) {a = Clamp(A,0,255);}
+	inline void SetA(s32 A) {a = (u8)Clamp(A,0,255);}
 	inline void SetA(float A) {SetR(s32(Saturate(A)*255.0f));}
 
 	__forceinline void Set(u32 color) {m_Color = color;}

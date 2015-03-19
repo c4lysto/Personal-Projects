@@ -25,32 +25,42 @@ __forceinline Type Saturate(Type val)
 	return Clamp(val, Type(0.0f), Type(1.0f));
 }
 
-float Lerp(const float& lhs, const float& rhs, const float& fLambda)
+__forceinline float Lerp(const float& lhs, const float& rhs, const float& fLambda)
 {
 	return lhs + (rhs - lhs) * fLambda;
 }
 
-double Lerp(const double& lhs, const double& rhs, const double& fLambda)
+__forceinline double Lerp(const double& lhs, const double& rhs, const double& fLambda)
 {
 	return lhs + (rhs - lhs) * fLambda;
 }
 
-Vec2f_Out Lerp(Vec2f_In lhs, Vec2f_In rhs, const float& fLambda)
+__forceinline Vec2f_Out Lerp(Vec2f_In lhs, Vec2f_In rhs, const float& fLambda)
 {
 	return lhs + (rhs - lhs) * fLambda;
 }
 
-Vec3f_Out Lerp(Vec3f_In lhs, Vec3f_In rhs, const float& fLambda)
+__forceinline Vec3f_Out Lerp(Vec3f_In lhs, Vec3f_In rhs, const float& fLambda)
 {
 	return lhs + (rhs - lhs) * fLambda;
 }
 
-Vec4f_Out Lerp(Vec4f_In lhs, Vec4f_In rhs, const float& fLambda)
+__forceinline Vec4f_Out Lerp(Vec4f_In lhs, Vec4f_In rhs, const float& fLambda)
 {
 	return lhs + (rhs - lhs) * fLambda;
 }
 
-template<int pX, int pY>
+__forceinline float Abs(const float& fScalar)
+{
+	return abs(fScalar);
+}
+
+__forceinline double Abs(const double& fScalar)
+{
+	return abs(fScalar);
+}
+
+template<VecElem pX, VecElem pY>
 __forceinline Vec2f_Out Permute(Vec2f_In lhs)
 {
 	CompileTimeAssert(	(pX >= VecElem::X && pX <= VecElem::Y) &&
@@ -59,7 +69,7 @@ __forceinline Vec2f_Out Permute(Vec2f_In lhs)
 	return Vec2f_Out(lhs[pX], lhs[pY]);
 }
 
-template<int pX, int pY, int pZ>
+template<VecElem pX, VecElem pY, VecElem pZ>
 __forceinline Vec3f_Out Permute(Vec3f_In lhs)
 {
 	CompileTimeAssert(	(pX >= VecElem::X && pX <= VecElem::Z) &&
@@ -69,7 +79,7 @@ __forceinline Vec3f_Out Permute(Vec3f_In lhs)
 	return Vec3f_Out(lhs[pX], lhs[pY], lhs[pZ]);
 }
 
-template<int pX, int pY, int pZ, int pW> 
+template<VecElem pX, VecElem pY, VecElem pZ, VecElem pW> 
 __forceinline Vec4f_Out Permute(Vec4f_In lhs)
 {
 	CompileTimeAssert(	(pX >= VecElem::X && pX <= VecElem::W) &&
@@ -80,7 +90,7 @@ __forceinline Vec4f_Out Permute(Vec4f_In lhs)
 	return Vec4f_Out(lhs[pX], lhs[pY], lhs[pZ], lhs[pW]);
 }
 
-template<int pX, int pY>
+template<VecElem pX, VecElem pY>
 __forceinline Vec2f_Out Permute(Vec2f_In lhs, Vec2f_In rhs)
 {
 	CompileTimeAssert(	(pX >= VecElem::X1 && pX <= VecElem::Y1 && pX >= VecElem::X2 && pX <= VecElem::Y2) &&
@@ -91,7 +101,7 @@ __forceinline Vec2f_Out Permute(Vec2f_In lhs, Vec2f_In rhs)
 	return Vec2f(vectors[pX>>4][pX&0x3], vectors[pY>>4][pY&0x3]);
 }
 
-template<int pX, int pY, int pZ>
+template<VecElem pX, VecElem pY, VecElem pZ>
 __forceinline Vec3f_Out Permute(Vec3f_In lhs, Vec3f_In rhs)
 {
 	CompileTimeAssert(	(pX >= VecElem::X1 && pX <= VecElem::Z1 && pX >= VecElem::X2 && pX <= VecElem::Z2) &&
@@ -103,7 +113,7 @@ __forceinline Vec3f_Out Permute(Vec3f_In lhs, Vec3f_In rhs)
 	return Vec3f(vectors[pX>>4][pX&0x3], vectors[pY>>4][pY&0x3], vectors[pZ>>4][pZ&0x3]);
 }
 
-template<int pX, int pY, int pZ, int pW> 
+template<VecElem pX, VecElem pY, VecElem pZ, VecElem pW> 
 __forceinline Vec4f_Out Permute(Vec4f_In lhs, Vec4f_In rhs)
 {
 	CompileTimeAssert(	(pX >= VecElem::X1 && pX <= VecElem::W1 && pX >= VecElem::X2 && pX <= VecElem::W2) &&
@@ -115,6 +125,150 @@ __forceinline Vec4f_Out Permute(Vec4f_In lhs, Vec4f_In rhs)
 	const float** vectors[] = {lhs.GetVector(), rhs.GetVector()};
 	return Vec4f(vectors[pX>>4][pX&0x3], vectors[pY>>4][pY&0x3], vectors[pZ>>4][pZ&0x3], vectors[pW>>4][pW&0x3]);
 }
+
+
+// Comparison Funcs
+
+#define VEC_CMP_MAKE_MASK_1  ((vecResult.GetXRef() != 0.0f) << 0)
+
+#define VEC_CMP_MAKE_MASK_2 VEC_CMP_MAKE_MASK_1 | ((vecResult.GetYRef() != 0) << 1)
+
+#define VEC_CMP_MAKE_MASK_3 VEC_CMP_MAKE_MASK_2 | ((vecResult.GetZRef() != 0) << 2)
+
+#define VEC_CMP_MAKE_MASK_4 VEC_CMP_MAKE_MASK_3 | ((vecResult.GetWRef() != 0) << 3)
+
+#define VEC_CMP_2(cmp) \
+		lhs.GetXRef() cmp rhs.GetXRef() ? 0xFFFFFFFF : 0, \
+		lhs.GetYRef() cmp rhs.GetYRef() ? 0xFFFFFFFF : 0
+
+#define VEC_CMP_3(cmp) \
+		VEC_CMP_2(cmp) \
+		, lhs.GetZRef() cmp rhs.GetZRef() ? 0xFFFFFFFF : 0
+
+#define VEC_CMP_4(cmp) \
+		VEC_CMP_3(cmp) \
+		, lhs.GetWRef() cmp rhs.GetWRef() ? 0xFFFFFFFF : 0
+
+#define VEC_CMP_DEFBASE(name, varType, cmpDef)	\
+	__forceinline varType##_Out name ( varType##_In lhs, varType##_In rhs) \
+	{ \
+		return varType##Int ( cmpDef ); \
+	}
+
+#define VEC_CMP_DEF(name, amt, nameExt, varType) \
+	__forceinline bool name##nameExt ( varType##_In lhs, varType##_In rhs) \
+	{ \
+		varType vecResult = name(lhs, rhs); \
+		return ( VEC_CMP_MAKE_MASK_##amt ) == CMP_MASK_##nameExt ; \
+	}
+
+#define VEC_CMP_DEF1(name, varType) VEC_CMP_DEF( name, 1, X, varType)
+#define VEC_CMP_DEF2(name, varType) VEC_CMP_DEF( name, 2, XY, varType)
+#define VEC_CMP_DEF3(name, varType) VEC_CMP_DEF( name, 3, XYZ, varType)
+#define VEC_CMP_DEF4(name, varType) VEC_CMP_DEF( name, 4, XYZW, varType)
+
+#define VEC_CMP_DEF_VEC2(name, cmp, varType)  \
+		VEC_CMP_DEFBASE(name, varType, VEC_CMP_2(cmp)) \
+		VEC_CMP_DEF1(name, varType) \
+		VEC_CMP_DEF2(name, varType) 
+
+#define VEC_CMP_DEF_VEC3(name, cmp, varType)  \
+		VEC_CMP_DEFBASE(name, varType, VEC_CMP_3(cmp)) \
+		VEC_CMP_DEF1(name, varType) \
+		VEC_CMP_DEF2(name, varType) \
+		VEC_CMP_DEF3(name, varType)
+
+#define VEC_CMP_DEF_VEC4(name, cmp, varType)  \
+		VEC_CMP_DEFBASE(name, varType, VEC_CMP_4(cmp)) \
+		VEC_CMP_DEF1(name, varType) \
+		VEC_CMP_DEF2(name, varType) \
+		VEC_CMP_DEF3(name, varType) \
+		VEC_CMP_DEF4(name, varType)
+
+VEC_CMP_DEF_VEC2(IsEqual, ==, Vec2f)
+VEC_CMP_DEF_VEC3(IsEqual, ==, Vec3f)
+VEC_CMP_DEF_VEC4(IsEqual, ==, Vec4f)
+
+VEC_CMP_DEF_VEC2(IsNotEqual, !=, Vec2f)
+VEC_CMP_DEF_VEC3(IsNotEqual, !=, Vec3f)
+VEC_CMP_DEF_VEC4(IsNotEqual, !=, Vec4f)
+
+VEC_CMP_DEF_VEC2(IsGreaterThan, >, Vec2f)
+VEC_CMP_DEF_VEC3(IsGreaterThan, >, Vec3f)
+VEC_CMP_DEF_VEC4(IsGreaterThan, >, Vec4f)
+
+VEC_CMP_DEF_VEC2(IsGreaterThanOrEqual, >=, Vec2f)
+VEC_CMP_DEF_VEC3(IsGreaterThanOrEqual, >=, Vec3f)
+VEC_CMP_DEF_VEC4(IsGreaterThanOrEqual, >=, Vec4f)
+
+VEC_CMP_DEF_VEC2(IsLessThan, <, Vec2f)
+VEC_CMP_DEF_VEC3(IsLessThan, <, Vec3f)
+VEC_CMP_DEF_VEC4(IsLessThan, <, Vec4f)
+
+VEC_CMP_DEF_VEC2(IsLessThanOrEqual, <=, Vec2f)
+VEC_CMP_DEF_VEC3(IsLessThanOrEqual, <=, Vec3f)
+VEC_CMP_DEF_VEC4(IsLessThanOrEqual, <=, Vec4f)
+
+#undef VEC_CMP_2
+#undef VEC_CMP_3
+#undef VEC_CMP_4
+
+#define VEC_CMP_2(cmp) \
+	lhs.GetXiRef() cmp rhs.GetXiRef() ? 0xFFFFFFFF : 0, \
+	lhs.GetYiRef() cmp rhs.GetYiRef() ? 0xFFFFFFFF : 0
+
+#define VEC_CMP_3(cmp) \
+	VEC_CMP_2(cmp) \
+	, lhs.GetZiRef() cmp rhs.GetZiRef() ? 0xFFFFFFFF : 0
+
+#define VEC_CMP_4(cmp) \
+	VEC_CMP_3(cmp) \
+	, lhs.GetWiRef() cmp rhs.GetWiRef() ? 0xFFFFFFFF : 0
+
+VEC_CMP_DEF_VEC2(IsEqualInt, ==, Vec2f)
+VEC_CMP_DEF_VEC3(IsEqualInt, ==, Vec3f)
+VEC_CMP_DEF_VEC4(IsEqualInt, ==, Vec4f)
+
+VEC_CMP_DEF_VEC2(IsNotEqualInt, !=, Vec2f)
+VEC_CMP_DEF_VEC3(IsNotEqualInt, !=, Vec3f)
+VEC_CMP_DEF_VEC4(IsNotEqualInt, !=, Vec4f)
+
+VEC_CMP_DEF_VEC2(IsGreaterThanInt, >, Vec2f)
+VEC_CMP_DEF_VEC3(IsGreaterThanInt, >, Vec3f)
+VEC_CMP_DEF_VEC4(IsGreaterThanInt, >, Vec4f)
+
+VEC_CMP_DEF_VEC2(IsGreaterThanOrEqualInt, >=, Vec2f)
+VEC_CMP_DEF_VEC3(IsGreaterThanOrEqualInt, >=, Vec3f)
+VEC_CMP_DEF_VEC4(IsGreaterThanOrEqualInt, >=, Vec4f)
+
+VEC_CMP_DEF_VEC2(IsLessThanInt, <, Vec2f)
+VEC_CMP_DEF_VEC3(IsLessThanInt, <, Vec3f)
+VEC_CMP_DEF_VEC4(IsLessThanInt, <, Vec4f)
+
+VEC_CMP_DEF_VEC2(IsLessThanOrEqualInt, <=, Vec2f)
+VEC_CMP_DEF_VEC3(IsLessThanOrEqualInt, <=, Vec3f)
+VEC_CMP_DEF_VEC4(IsLessThanOrEqualInt, <=, Vec4f)
+
+#undef VEC_CMP_DEF_VEC4
+#undef VEC_CMP_DEF_VEC3
+#undef VEC_CMP_DEF_VEC2
+
+#undef VEC_CMP_DEF4
+#undef VEC_CMP_DEF3
+#undef VEC_CMP_DEF2
+#undef VEC_CMP_DEF1
+
+#undef VEC_CMP_DEF
+#undef VEC_CMP_DEFBASE
+
+#undef VEC_CMP_4
+#undef VEC_CMP_3
+#undef VEC_CMP_2
+
+#undef VEC_CMP_MAKE_MASK_4
+#undef VEC_CMP_MAKE_MASK_3
+#undef VEC_CMP_MAKE_MASK_2
+#undef VEC_CMP_MAKE_MASK_1
 
 __forceinline float Dot(Vec2f_In vVectorA, Vec2f_In vVectorB)
 {
@@ -291,47 +445,17 @@ __forceinline Vec4f_Out IntToFloat(Vec4f_In vVector)
 
 __forceinline Vec2f_Out FloatToInt(Vec2f_In vVector)
 {
-	union
-	{
-		float asFloat;
-		int asInt;
-	} tempX, tempY;
-
-	tempX.asInt = (int)vVector.GetXRef();
-	tempY.asInt = (int)vVector.GetYRef();
-
-	return Vec2f(tempX.asFloat, tempY.asFloat);
+	return Vec2fInt((s32)vVector.GetXRef(), (s32)vVector.GetYRef());
 }
 
 __forceinline Vec3f_Out FloatToInt(Vec3f_In vVector)
 {
-	union
-	{
-		float asFloat;
-		int asInt;
-	} tempX, tempY, tempZ;
-
-	tempX.asInt = (int)vVector.GetXRef();
-	tempY.asInt = (int)vVector.GetYRef();
-	tempZ.asInt = (int)vVector.GetZRef();
-
-	return Vec3f(tempX.asFloat, tempY.asFloat, tempZ.asFloat);
+	return Vec3fInt((s32)vVector.GetXRef(), (s32)vVector.GetYRef(), (s32)vVector.GetZRef());
 }
 
 __forceinline Vec4f_Out FloatToInt(Vec4f_In vVector)
 {
-	union
-	{
-		float asFloat;
-		int asInt;
-	} tempX, tempY, tempZ, tempW;
-
-	tempX.asInt = (int)vVector.GetXRef();
-	tempY.asInt = (int)vVector.GetYRef();
-	tempZ.asInt = (int)vVector.GetZRef();
-	tempW.asInt = (int)vVector.GetWRef();
-
-	return Vec4f(tempX.asFloat, tempY.asFloat, tempZ.asFloat, tempW.asFloat);
+	return Vec4fInt((s32)vVector.GetXRef(), (s32)vVector.GetYRef(), (s32)vVector.GetZRef(), (s32)vVector.GetWRef());
 }
 
 __forceinline Vec2f_Out Floor(Vec2f_In vVector)
@@ -393,22 +517,6 @@ __forceinline Vec4f_Out Round(Vec4f_In vVector)
 {
 	return Vec4f(floorf(vVector.GetXRef()+0.5f), floorf(vVector.GetYRef()+0.5f), floorf(vVector.GetZRef()+0.5f), floorf(vVector.GetWRef()+0.5f));
 }
-
-//template<typename Type>
-//__forceinline Vec2f Lerp(Vec2f_In vVectorA, Vec2f_In vVectorB, const float fLambda)
-//{
-//	return vVectorA + (vVectorB - vVectorA) * fLambda;
-//}
-
-//__forceinline Vec3f Lerp(Vec3f_In vVectorA, Vec3f_In vVectorB, const float fLambda)
-//{
-//	return vVectorA + (vVectorB - vVectorA) * fLambda;
-//}
-//
-//__forceinline Vec4f Lerp(Vec4f_In vVectorA, Vec4f_In vVectorB, const float fLambda)
-//{
-//	return vVectorA + (vVectorB - vVectorA) * fLambda;
-//}
 
 __forceinline Mat44f_Out Lerp(Mat44f_In MatrixA, Mat44f_In MatrixB, const float fLambda)
 {
@@ -483,7 +591,7 @@ __forceinline Mat44f_Out MakeOrthographicMatrix(float fWidth, float fHeight, flo
 					0.0f,				0.0f,					-fNear / (fFar - fNear),	1.0f);
 }
 
-__forceinline Mat44f_Out MakeTextureMatrixOffset(unsigned int unWidth, unsigned int unHeight)
+__forceinline Mat44f_Out MakeTextureMatrixOffset(u32 unWidth, u32 unHeight)
 {
 	return Mat44f(0.5f,						0.0f,						0.0f,	0.0f,
 				  0.0f,						-0.5f,						0.0f,	0.0f,
@@ -491,15 +599,15 @@ __forceinline Mat44f_Out MakeTextureMatrixOffset(unsigned int unWidth, unsigned 
 				  0.5f + (0.5f / unWidth),	0.5f + (0.5f / unHeight),	0.0f,	1.0f);
 }
 
-float CalculateGaussianWeight(int nOffset, float fSigma)
+float CalculateGaussianWeight(s32 nOffset, float fSigma)
 {
-	return (1 / sqrt(_2PI * (fSigma * fSigma))) * exp(-(nOffset * nOffset) / (2 * (fSigma * fSigma)));
+	return (1 / sqrt(TWO_PI * (fSigma * fSigma))) * exp(-(nOffset * nOffset) / (2 * (fSigma * fSigma)));
 }
 
 // unRadius - Number of Pixels to Blur In a Single Direction Including the Center Pixel
-inline void CalculateGaussianWeights(_Out_writes_all_(unRadius) float* pGaussianWeights, unsigned int unRadius, float fLimit)
+inline void CalculateGaussianWeights(_Out_writes_all_(unRadius) float* pGaussianWeights, u32 unRadius, float fLimit)
 {
-	unsigned int i;
+	u32 i;
 	float fCurrWeight;
 	float fTotalWeight = 0;
 	for(i = 0; i < unRadius; ++i)
@@ -520,27 +628,32 @@ inline void CalculateGaussianWeights(_Out_writes_all_(unRadius) float* pGaussian
 }
 
 #if SSE_AVAILABLE
-ScalarV_Out Lerp(ScalarV_In lhs, ScalarV_In rhs, ScalarV_In vLambda)
+__forceinline ScalarV_Out Lerp(ScalarV_In lhs, ScalarV_In rhs, ScalarV_In vLambda)
 {
 	return lhs + (rhs - lhs) * vLambda;
 }
 
-Vec2V_Out Lerp(Vec2V_In lhs, Vec2V_In rhs, ScalarV_In vLambda)
+__forceinline Vec2V_Out Lerp(Vec2V_In lhs, Vec2V_In rhs, ScalarV_In vLambda)
 {
 	return lhs + (rhs - lhs) * vLambda;
 }
 
-Vec3V_Out Lerp(Vec3V_In lhs, Vec3V_In rhs, ScalarV_In vLambda)
+__forceinline Vec3V_Out Lerp(Vec3V_In lhs, Vec3V_In rhs, ScalarV_In vLambda)
 {
 	return lhs + (rhs - lhs) * vLambda;
 }
 
-Vec4V_Out Lerp(Vec4V_In lhs, Vec4V_In rhs, ScalarV_In vLambda)
+__forceinline Vec4V_Out Lerp(Vec4V_In lhs, Vec4V_In rhs, ScalarV_In vLambda)
 {
 	return lhs + (rhs - lhs) * vLambda;
 }
 
-template<int pX, int pY>
+__forceinline ScalarV_Out Abs(ScalarV_In vScalar)
+{
+	return ScalarV(VectorAbs(vScalar.GetVector()));
+}
+
+template<VecElem pX, VecElem pY>
 __forceinline Vec2V_Out Permute(Vec2V_In lhs)
 {
 	CompileTimeAssert(	(pX >= VecElem::X && pX <= VecElem::Y) &&
@@ -549,7 +662,7 @@ __forceinline Vec2V_Out Permute(Vec2V_In lhs)
 	return Vec2V(VectorPermute<pX, pY, VecElem::Z, VecElem::W>(lhs.GetVector()));
 }
 
-template<int pX, int pY, int pZ>
+template<VecElem pX, VecElem pY, VecElem pZ>
 __forceinline Vec3V_Out Permute(Vec3V_In lhs)
 {
 	CompileTimeAssert(	(pX >= VecElem::X && pX <= VecElem::Z) &&
@@ -558,7 +671,7 @@ __forceinline Vec3V_Out Permute(Vec3V_In lhs)
 	CompileTimeAssert(	pX == VecElem::X && pY == VecElem::Y && pZ == VecElem::Z, "Invalid Permute Indices! Vector Will Not Change, So Don't Bother Calling Permute!");
 	return Vec3V(VectorPermute<pX, pY, pZ, VecElem::W>(lhs.GetVector()));
 }
-template<int pX, int pY, int pZ, int pW>
+template<VecElem pX, VecElem pY, VecElem pZ, VecElem pW>
 __forceinline Vec4V_Out Permute(Vec4V_In lhs)
 {
 	CompileTimeAssert(	(pX >= VecElem::X && pX <= VecElem::W) &&
@@ -569,7 +682,7 @@ __forceinline Vec4V_Out Permute(Vec4V_In lhs)
 	return Vec4V(VectorPermute<pX, pY, pZ, pW>(lhs.GetVector()));
 }
 
-template<int pX, int pY>
+template<VecElem pX, VecElem pY>
 __forceinline Vec2V_Out Permute(Vec2V_In lhs, Vec2V_In rhs)
 {
 	CompileTimeAssert(	(pX >= VecElem::X1 && pX <= VecElem::Y1 && pX >= VecElem::X2 && pX <= VecElem::Y2) &&
@@ -579,7 +692,7 @@ __forceinline Vec2V_Out Permute(Vec2V_In lhs, Vec2V_In rhs)
 	return Vec2V(VectorPermute<pX, pY, VecElem::Z1, VecElem::W1>(lhs, rhs));
 }
 
-template<int pX, int pY, int pZ>
+template<VecElem pX, VecElem pY, VecElem pZ>
 __forceinline Vec3V_Out Permute(Vec3V_In lhs, Vec3V_In rhs)
 {
 	CompileTimeAssert(	(pX >= VecElem::X1 && pX <= VecElem::Z1 && pX >= VecElem::X2 && pX <= VecElem::Z2) &&
@@ -590,7 +703,7 @@ __forceinline Vec3V_Out Permute(Vec3V_In lhs, Vec3V_In rhs)
 	return Vec2V(VectorPermute<pX, pY, pZ, VecElem::W1>(lhs, rhs));
 }
 
-template<int pX, int pY, int pZ, int pW>
+template<VecElem pX, VecElem pY, VecElem pZ, VecElem pW>
 __forceinline Vec4V_Out Permute(Vec4V_In lhs, Vec4V_In rhs)
 {
 	CompileTimeAssert(	(pX >= VecElem::X1 && pX <= VecElem::W1 && pX >= VecElem::X2 && pX <= VecElem::W2) &&
@@ -602,30 +715,196 @@ __forceinline Vec4V_Out Permute(Vec4V_In lhs, Vec4V_In rhs)
 	return Vec2V(VectorPermute<pX, pY, pZ, pW>(lhs, rhs));
 }
 
-template<int elem> 
+template<VecElem elem> 
 __forceinline ScalarV_Out ScalarVFromElement(Vector_In vVector)
 {
 	CompileTimeAssert(elem >= VecElem::X && elem <= VecElem::W, "Invalid Permute Indices! Indices must be between VecElem::X <-> VecElem::W!");
 	return ScalarV(VectorPermute<elem, elem, elem, elem>(vVector));
 }
 
-template<int elem> 
+template<VecElem elem> 
 __forceinline ScalarV_Out ScalarVFromElement(Vec2V_In vVector)
 {
 	return ScalarVFromElement<elem>(vVector.GetVector());
 }
 
-template<int elem> 
+template<VecElem elem> 
 __forceinline ScalarV_Out ScalarVFromElement(Vec3V_In vVector)
 {
 	return ScalarVFromElement<elem>(vVector.GetVector());
 }
 
-template<int elem> 
+template<VecElem elem> 
 __forceinline ScalarV_Out ScalarVFromElement(Vec4V_In vVector)
 {
 	return ScalarVFromElement<elem>(vVector.GetVector());
 }
+
+
+// Comparison Functions
+
+#define VEC_CMP_DEFBASE(name, varType)	\
+	__forceinline varType##_Out name ( varType##_In lhs, varType##_In rhs) \
+	{ \
+		return varType( Vector##name (lhs.GetVector(), rhs.GetVector()) ); \
+	}
+
+#define VEC_CMP_DEF(name, nameExt, varType) \
+	__forceinline bool name##nameExt ( varType##_In lhs, varType##_In rhs ) \
+	{ \
+		return Vector##name##nameExt (lhs.GetVector(), rhs.GetVector()); \
+	}
+
+#define VEC_CMP_DEF1(name, varType) VEC_CMP_DEF(name, X, varType)
+#define VEC_CMP_DEF2(name, varType) VEC_CMP_DEF(name, XY, varType)
+#define VEC_CMP_DEF3(name, varType) VEC_CMP_DEF(name, XYZ, varType)
+#define VEC_CMP_DEF4(name, varType) VEC_CMP_DEF(name, XYZW, varType)
+
+#define VEC_CMP_DEF_VEC2(name, varType) \
+		VEC_CMP_DEFBASE(name, varType) \
+		VEC_CMP_DEF1(name, varType) \
+		VEC_CMP_DEF2(name, varType)
+
+#define VEC_CMP_DEF_VEC3(name, varType) \
+		VEC_CMP_DEF_VEC2(name, varType) \
+		VEC_CMP_DEF3(name, varType)
+
+#define VEC_CMP_DEF_VEC4(name, varType) \
+		VEC_CMP_DEF_VEC3(name, varType) \
+		VEC_CMP_DEF4(name, varType)
+		
+VEC_CMP_DEF_VEC2(IsEqual, Vec2V)
+VEC_CMP_DEF_VEC3(IsEqual, Vec3V)
+VEC_CMP_DEF_VEC4(IsEqual, Vec4V)
+
+VEC_CMP_DEF_VEC2(IsNotEqual, Vec2V)
+VEC_CMP_DEF_VEC3(IsNotEqual, Vec3V)
+VEC_CMP_DEF_VEC4(IsNotEqual, Vec4V)
+
+VEC_CMP_DEF_VEC2(IsGreaterThan, Vec2V)
+VEC_CMP_DEF_VEC3(IsGreaterThan, Vec3V)
+VEC_CMP_DEF_VEC4(IsGreaterThan, Vec4V)
+
+VEC_CMP_DEF_VEC2(IsGreaterThanOrEqual, Vec2V)
+VEC_CMP_DEF_VEC3(IsGreaterThanOrEqual, Vec3V)
+VEC_CMP_DEF_VEC4(IsGreaterThanOrEqual, Vec4V)
+
+VEC_CMP_DEF_VEC2(IsLessThan, Vec2V)
+VEC_CMP_DEF_VEC3(IsLessThan, Vec3V)
+VEC_CMP_DEF_VEC4(IsLessThan, Vec4V)
+
+VEC_CMP_DEF_VEC2(IsLessThanOrEqual, Vec2V)
+VEC_CMP_DEF_VEC3(IsLessThanOrEqual, Vec3V)
+VEC_CMP_DEF_VEC4(IsLessThanOrEqual, Vec4V)
+
+VEC_CMP_DEF_VEC2(IsEqualInt, Vec2V)
+VEC_CMP_DEF_VEC3(IsEqualInt, Vec3V)
+VEC_CMP_DEF_VEC4(IsEqualInt, Vec4V)
+
+VEC_CMP_DEF_VEC2(IsNotEqualInt, Vec2V)
+VEC_CMP_DEF_VEC3(IsNotEqualInt, Vec3V)
+VEC_CMP_DEF_VEC4(IsNotEqualInt, Vec4V)
+
+VEC_CMP_DEF_VEC2(IsGreaterThanInt, Vec2V)
+VEC_CMP_DEF_VEC3(IsGreaterThanInt, Vec3V)
+VEC_CMP_DEF_VEC4(IsGreaterThanInt, Vec4V)
+
+VEC_CMP_DEF_VEC2(IsGreaterThanOrEqualInt, Vec2V)
+VEC_CMP_DEF_VEC3(IsGreaterThanOrEqualInt, Vec3V)
+VEC_CMP_DEF_VEC4(IsGreaterThanOrEqualInt, Vec4V)
+
+VEC_CMP_DEF_VEC2(IsLessThanInt, Vec2V)
+VEC_CMP_DEF_VEC3(IsLessThanInt, Vec3V)
+VEC_CMP_DEF_VEC4(IsLessThanInt, Vec4V)
+
+VEC_CMP_DEF_VEC2(IsLessThanOrEqualInt, Vec2V)
+VEC_CMP_DEF_VEC3(IsLessThanOrEqualInt, Vec3V)
+VEC_CMP_DEF_VEC4(IsLessThanOrEqualInt, Vec4V)
+
+#undef VEC_CMP_DEF_VEC4
+#undef VEC_CMP_DEF_VEC3
+#undef VEC_CMP_DEF_VEC2
+
+#undef VEC_CMP_DEF4
+#undef VEC_CMP_DEF3
+#undef VEC_CMP_DEF2
+#undef VEC_CMP_DEF1
+
+#undef VEC_CMP_DEF
+#undef VEC_CMP_DEFBASE
+
+
+// Arithmetic Operation:
+
+#define VEC_ARITH_OP2(componentType, cmp) \
+		lhs.GetX##componentType##Ref() cmp rhs.GetX##componentType##Ref(), \
+		lhs.GetY##componentType##Ref() cmp rhs.GetY##componentType##Ref()
+
+#define VEC_ARITH_OP3(componentType, cmp) \
+		VEC_ARITH_OP2(componentType, cmp) \
+		, lhs.GetZ##componentType##Ref() cmp rhs.GetZ##componentType##Ref()
+
+#define VEC_ARITH_OP4(componentType, cmp) \
+		VEC_ARITH_OP3(componentType, cmp) \
+		, lhs.GetW##componentType##Ref() cmp rhs.GetW##componentType##Ref()
+
+
+#define VEC_ARITH_DEF(name, varType, operations) \
+	__forceinline varType##_Out name (varType##_In lhs, varType##_In rhs) \
+	{ \
+		return varType( operations ); \
+	}
+
+#define VEC_ARITH_DEF_SIZE(name, cmp, num) \
+		VEC_ARITH_DEF(name, Vec##num##f , VEC_ARITH_OP##num (, cmp))
+
+// Floating Point Operations
+VEC_ARITH_DEF_SIZE(Add, +, 2)
+VEC_ARITH_DEF_SIZE(Add, +, 3)
+VEC_ARITH_DEF_SIZE(Add, +, 4)
+
+VEC_ARITH_DEF_SIZE(Subtract, -, 2)
+VEC_ARITH_DEF_SIZE(Subtract, -, 3)
+VEC_ARITH_DEF_SIZE(Subtract, -, 4)
+
+VEC_ARITH_DEF_SIZE(Multiply, *, 2)
+VEC_ARITH_DEF_SIZE(Multiply, *, 3)
+VEC_ARITH_DEF_SIZE(Multiply, *, 4)
+
+VEC_ARITH_DEF_SIZE(Divide, /, 2)
+VEC_ARITH_DEF_SIZE(Divide, /, 3)
+VEC_ARITH_DEF_SIZE(Divide, /, 4)
+
+
+#undef	VEC_ARITH_DEF
+#define VEC_ARITH_DEF(name, varType, operations) \
+	__forceinline varType##_Out name (varType##_In lhs, varType##_In rhs) \
+	{ \
+		return varType##Int ( operations ); \
+	}
+
+#undef	VEC_ARITH_DEF_SIZE
+#define	VEC_ARITH_DEF_SIZE(name, cmp, num) \
+		VEC_ARITH_DEF(name, Vec##num##f , VEC_ARITH_OP##num (i, cmp))
+
+
+// Integer Operations
+VEC_ARITH_DEF_SIZE(AddInt, +, 2)
+VEC_ARITH_DEF_SIZE(AddInt, +, 3)
+VEC_ARITH_DEF_SIZE(AddInt, +, 4)
+
+VEC_ARITH_DEF_SIZE(SubtractInt, -, 2)
+VEC_ARITH_DEF_SIZE(SubtractInt, -, 3)
+VEC_ARITH_DEF_SIZE(SubtractInt, -, 4)
+
+VEC_ARITH_DEF_SIZE(MultiplyInt, *, 2)
+VEC_ARITH_DEF_SIZE(MultiplyInt, *, 3)
+VEC_ARITH_DEF_SIZE(MultiplyInt, *, 4)
+
+VEC_ARITH_DEF_SIZE(DivideInt, /, 2)
+VEC_ARITH_DEF_SIZE(DivideInt, /, 3)
+VEC_ARITH_DEF_SIZE(DivideInt, /, 4)
+
 
 // Vector Math Functions
 
@@ -875,21 +1154,6 @@ __forceinline Vec4V_Out Round(Vec4V_In vVector)
 {
 	return Vec4V(VectorRound(vVector.GetVector()));
 }
-
-//__forceinline Vec2V Lerp(Vec2V_In vVectorA, Vec2V_In vVectorB, const float fLambda)
-//{
-//	return vVectorA + (vVectorB - vVectorA) * fLambda;
-//}
-//
-//__forceinline Vec3f Lerp(Vec3V_In vVectorA, Vec3V_In vVectorB, const float fLambda)
-//{
-//	return vVectorA + (vVectorB - vVectorA) * fLambda;
-//}
-//
-//__forceinline Vec4f Lerp(Vec4V_In vVectorA, Vec4V_In vVectorB, const float fLambda)
-//{
-//	return vVectorA + (vVectorB - vVectorA) * fLambda;
-//}
 
 inline Mat44V_Out Lerp(Mat44V_In MatrixA, Mat44V_In MatrixB, ScalarV_In vLambda)
 {

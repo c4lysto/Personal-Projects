@@ -177,12 +177,12 @@ __forceinline Vec4V operator*(ScalarV_Ref vScalar, Vec4V_In vVector)
 
 __forceinline bool Vec4V::operator==(Vec4V_In vVector) const
 {
-	return IsEqualXYZW(row, vVector.row);
+	return VectorIsEqualXYZW(row, vVector.row);
 }
 
 __forceinline bool Vec4V::operator!=(Vec4V_In vVector) const
 {
-	return IsNotEqualXYZW(row, vVector.row);
+	return VectorIsNotEqualXYZW(row, vVector.row);
 }
 
 __forceinline Vec4V_Out Vec4V::operator&(Vec4V_In vVector) const

@@ -45,10 +45,10 @@ void VectorStore(Vector_In vec, float* alignedFloat4Ptr);
 // Used to store in Unaligned Data
 void VectorStoreU(Vector_In vec, float* unalignedFloat4Ptr);
 
-template<int index>
+template<VecElem index>
 float VectorExtractFloat(Vector_In vec);
 
-template<int index>
+template<VecElem index>
 int VectorExtractInt(Vector_In vec);
 
 
@@ -137,9 +137,9 @@ Vector_Out operator>>(Vector_In vec, int nCount);
 
 // Floating Point Comparisons:
 
-#define VEC_CMP_DECL(name) bool name(Vector_In lhs, Vector_In rhs);
+#define VEC_CMP_DECLBASE(name)	Vector_Out Vector##name (Vector_In lhs, Vector_In rhs);
 
-#define VEC_CMP_DECLBASE(name)	int name(Vector_In lhs, Vector_In rhs);
+#define VEC_CMP_DECL(name) bool Vector##name (Vector_In lhs, Vector_In rhs);
 #define VEC_CMP_DECL1(name) VEC_CMP_DECL( name##X )
 #define VEC_CMP_DECL2(name) VEC_CMP_DECL( name##XY )
 #define VEC_CMP_DECL3(name) VEC_CMP_DECL( name##XYZ )
@@ -178,15 +178,15 @@ VEC_CMP_DECL_ALL(IsLessThanOrEqualInt);
 #undef VEC_CMP_DECL2
 #undef VEC_CMP_DECL1
 #undef VEC_CMP_DECL
-#undef VEC_CMP_DECL
+#undef VEC_CMP_DECLBASE
 
 
 // Misc Operations:
 
-template<int pX, int pY, int pZ, int pW>
+template<VecElem pX, VecElem pY, VecElem pZ, VecElem pW>
 Vector_Out VectorPermute(Vector_In vec);
 
-template<int pX, int pY, int pZ, int pW>
+template<VecElem pX, VecElem pY, VecElem pZ, VecElem pW>
 Vector_Out VectorPermute(Vector_In lhs, Vector_In rhs);
 
 Vector_Out VectorMin(Vector_In lhs, Vector_In rhs);

@@ -22,14 +22,14 @@ __forceinline Mat33V::Mat33V(Mat33V&& mMatrix) :
 {
 }
 
-__forceinline Mat33V::Mat33V(eIdentityInitializer eIdentity) :
+__forceinline Mat33V::Mat33V(eIdentityInitializer UNUSED_PARAM(eIdentity)) :
 	xAxis(g_IdentityX3V),
 	yAxis(g_IdentityY3V),
 	zAxis(g_IdentityZ3V)
 {
 }
 
-inline Mat33V::Mat33V(eXRotationInitializer eXRotation, ScalarV_In vRotationInRadians)
+inline Mat33V::Mat33V(eXRotationInitializer UNUSED_PARAM(eXRotation), ScalarV_In vRotationInRadians)
 {
 	float fRotInRads = vRotationInRadians.AsFloat();
 	float fSinAngle = sin(fRotInRads);
@@ -39,7 +39,7 @@ inline Mat33V::Mat33V(eXRotationInitializer eXRotation, ScalarV_In vRotationInRa
 	zAxis = Vec3V(0.0f, -fSinAngle, fCosAngle);
 }
 
-inline Mat33V::Mat33V(eYRotationInitializer eYRotation, ScalarV_In vRotationInRadians)
+inline Mat33V::Mat33V(eYRotationInitializer UNUSED_PARAM(eYRotation), ScalarV_In vRotationInRadians)
 {
 	float fRotInRads = vRotationInRadians.AsFloat();
 	float fSinAngle = sin(fRotInRads);
@@ -49,7 +49,7 @@ inline Mat33V::Mat33V(eYRotationInitializer eYRotation, ScalarV_In vRotationInRa
 	zAxis = Vec3V(fSinAngle, 0.0f, fCosAngle);
 }
 
-inline Mat33V::Mat33V(eZRotationInitializer eZRotation, ScalarV_In vRotationInRadians)
+inline Mat33V::Mat33V(eZRotationInitializer UNUSED_PARAM(eZRotation), ScalarV_In vRotationInRadians)
 {
 	float fRotInRads = vRotationInRadians.AsFloat();
 	float fSinAngle = sin(fRotInRads);
@@ -174,7 +174,8 @@ inline Vec3V_Out operator*(Vec3V_ConstRef vVector, Mat33V_In mMatrix)
 
 Vec3V_Ref operator*=(Vec3V_Ref vVector, Mat33V_In mMatrix)
 {
-	return vVector = vVector * mMatrix;
+	vVector = vVector * mMatrix;
+	return vVector;
 }
 
 __forceinline Mat33V_Out Mat33V::operator+(Mat33V_In rhs) const
@@ -199,19 +200,19 @@ __forceinline void Mat33V::operator-=(Mat33V_In rhs)
 
 inline void Mat33V::Rotate_LocalX(ScalarV_In vRadians)
 {
-	Mat33V tmp(INIT_ROTATION_X, vRadians);
+	Mat33V tmp(I_ROTATION_X, vRadians);
 	*this = tmp * (*this);
 }
 
 inline void Mat33V::Rotate_LocalY(ScalarV_In vRadians)
 {
-	Mat33V tmp(INIT_ROTATION_Y, vRadians);
+	Mat33V tmp(I_ROTATION_Y, vRadians);
 	*this = tmp * (*this);
 }
 
 inline void Mat33V::Rotate_LocalZ(ScalarV_In vRadians)
 {
-	Mat33V tmp(INIT_ROTATION_Z, vRadians);
+	Mat33V tmp(I_ROTATION_Z, vRadians);
 	*this = tmp * (*this);
 }
 

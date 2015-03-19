@@ -157,35 +157,35 @@ __forceinline ScalarV_Out ScalarV::operator~() const
 
 __forceinline bool ScalarV::operator==(ScalarV_In rhs) const
 {
-	return IsEqualIntX(row, rhs.row);
+	return VectorIsEqualIntX(row, rhs.row);
 }
 
 __forceinline bool ScalarV::operator!=(ScalarV_In rhs) const
 {
-	return IsNotEqualIntX(row, rhs.row);
+	return VectorIsNotEqualIntX(row, rhs.row);
 }
 
 __forceinline bool ScalarV::operator<(ScalarV_In rhs) const
 {
-	return IsLessThanX(row, rhs.row);
+	return VectorIsLessThanX(row, rhs.row);
 }
 
 __forceinline bool ScalarV::operator<=(ScalarV_In rhs) const
 {
-	return IsLessThanOrEqualX(row, rhs.row);
+	return VectorIsLessThanOrEqualX(row, rhs.row);
 }
 
 __forceinline bool ScalarV::operator>(ScalarV_In rhs) const
 {
-	return IsGreaterThanX(row, rhs.row);
+	return VectorIsGreaterThanX(row, rhs.row);
 }
 
 __forceinline bool ScalarV::operator>=(ScalarV_In rhs) const
 {
-	return IsGreaterThanOrEqualX(row, rhs.row);
+	return VectorIsGreaterThanOrEqualX(row, rhs.row);
 }
 
 __forceinline ScalarV::operator bool() const
 {
-	return *this != ScalarV(INIT_ZERO);
+	return *this != ScalarV(I_ZERO);
 }

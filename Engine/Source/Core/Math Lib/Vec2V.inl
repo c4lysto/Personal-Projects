@@ -66,7 +66,7 @@ __forceinline void Vec2V::SetW(ScalarV_In wVal)
 	row = VectorPermute<VecElem::X1, VecElem::Y1, VecElem::Z1, VecElem::W2>(row, wVal.GetVector());
 }
 
-__forceinline Vec2V Vec2V::operator-() const
+__forceinline Vec2V_Out Vec2V::operator-() const
 {
 	return Vec2V(VectorNegate(row));
 }
@@ -86,7 +86,7 @@ __forceinline Vec2V_Out Vec2V::operator=(Vec2V&& vVector)
 }
 #endif // !_WIN64
 
-__forceinline Vec2V Vec2V::operator+(Vec2V_In vVector) const
+__forceinline Vec2V_Out Vec2V::operator+(Vec2V_In vVector) const
 {
 	return Vec2V(VectorAdd(row, vVector.row));
 }
@@ -97,7 +97,7 @@ __forceinline Vec2V_Out Vec2V::operator+=(Vec2V_In vVector)
 	return *this;
 }
 
-__forceinline Vec2V Vec2V::operator-(Vec2V_In vVector) const
+__forceinline Vec2V_Out Vec2V::operator-(Vec2V_In vVector) const
 {
 	return Vec2V(VectorSubtract(row, vVector.row));
 }
@@ -108,7 +108,7 @@ __forceinline Vec2V_Out Vec2V::operator-=(Vec2V_In vVector)
 	return *this;
 }
 
-__forceinline Vec2V Vec2V::operator*(Vec2V_In vVector) const
+__forceinline Vec2V_Out Vec2V::operator*(Vec2V_In vVector) const
 {
 	return Vec2V(VectorMultiply(row, vVector.row));
 }
@@ -118,7 +118,7 @@ __forceinline Vec2V Vec2V::operator*(ScalarV_In vScalar) const
 	return Vec2V(VectorMultiply(row, vScalar.GetVector()));
 }
 
-__forceinline Vec2V operator*(ScalarV_Ref vScalar, Vec2V_In vVector)
+__forceinline Vec2V_Out operator*(ScalarV_Ref vScalar, Vec2V_In vVector)
 {
 	return Vec2V(VectorMultiply(vVector.row, vScalar.GetVector()));
 }
@@ -135,12 +135,12 @@ __forceinline Vec2V_Out Vec2V::operator*=(Vec2V_In vVector)
 	return *this;
 }
 
-__forceinline Vec2V Vec2V::operator/(Vec2V_In vVector) const
+__forceinline Vec2V_Out Vec2V::operator/(Vec2V_In vVector) const
 {
 	return Vec2V(VectorDivide(row, vVector.row));
 }
 
-__forceinline Vec2V Vec2V::operator/(ScalarV_In vScalar) const
+__forceinline Vec2V_Out Vec2V::operator/(ScalarV_In vScalar) const
 {
 	return Vec2V(VectorDivide(row, vScalar.GetVector()));
 }
@@ -159,12 +159,12 @@ __forceinline Vec2V_Out Vec2V::operator/=(ScalarV_In vScalar)
 
 __forceinline bool Vec2V::operator==(Vec2V_In vVector) const
 {
-	return IsEqualXY(row, vVector.row);
+	return VectorIsEqualXY(row, vVector.row);
 }
 
 __forceinline bool Vec2V::operator!=(Vec2V_In vVector) const
 {
-	return IsNotEqualXY(row, vVector.row);
+	return VectorIsNotEqualXY(row, vVector.row);
 }
 
 __forceinline Vec2V_Out Vec2V::operator&(Vec2V_In vVector) const

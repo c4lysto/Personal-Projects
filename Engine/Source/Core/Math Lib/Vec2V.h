@@ -95,7 +95,7 @@ public:
 	DEFINE_VEC2V_ENUM_CONSTRUCTOR(eHalfInitializer, 0.5f)
 	DEFINE_VEC2V_ENUM_CONSTRUCTOR(ePIInitializer, PI)
 	DEFINE_VEC2V_ENUM_CONSTRUCTOR(eHalfPIInitializer, PI_OVER_2)
-	DEFINE_VEC2V_ENUM_CONSTRUCTOR(eTwoPIInitializer, _2PI)
+	DEFINE_VEC2V_ENUM_CONSTRUCTOR(eTwoPIInitializer, TWO_PI)
 	DEFINE_VEC2V_ENUM_CONSTRUCTOR(eFLTMINInitializer, FLT_MIN)
 	DEFINE_VEC2V_ENUM_CONSTRUCTOR(eFLTMAXInitializer, FLT_MAX)
 	DEFINE_VEC2V_ENUM_VAL_CONSTRUCTOR(eXAxisInitializer, 1.0f, 0.0f)
@@ -145,28 +145,28 @@ public:
 #error VEC2V MUTATORS NOT DEFINED
 #endif
 
-	Vec2V operator-() const;
+	Vec2V_Out operator-() const;
 
 	Vec2V_Out operator=(Vec2V_In vVector);
 #if !_WIN64
 	Vec2V_Out operator=(Vec2V&& vVector);
 #endif // !_WIN64
 
-	Vec2V operator+(Vec2V_In vVector) const;
+	Vec2V_Out operator+(Vec2V_In vVector) const;
 	Vec2V_Out operator+=(Vec2V_In vVector);
 
-	Vec2V operator-(Vec2V_In vVector) const;
+	Vec2V_Out operator-(Vec2V_In vVector) const;
 	Vec2V_Out operator-=(Vec2V_In vVector);
 
-	Vec2V operator*(Vec2V_In vVector) const;
-	Vec2V operator*(ScalarV_In vScalar) const;
-	friend Vec2V operator*(ScalarV_Ref vScalar, Vec2V_In vVector);
+	Vec2V_Out operator*(Vec2V_In vVector) const;
+	Vec2V_Out operator*(ScalarV_In vScalar) const;
+	friend Vec2V_Out operator*(ScalarV_Ref vScalar, Vec2V_In vVector);
 
 	Vec2V_Out operator*=(Vec2V_In vVector);
 	Vec2V_Out operator*=(ScalarV_In vScalar);
 
-	Vec2V operator/(Vec2V_In vVector) const;
-	Vec2V operator/(ScalarV_In fScalar) const;
+	Vec2V_Out operator/(Vec2V_In vVector) const;
+	Vec2V_Out operator/(ScalarV_In fScalar) const;
 
 	Vec2V_Out operator/=(Vec2V_In vVector);
 	Vec2V_Out operator/=(ScalarV_In fScalar);

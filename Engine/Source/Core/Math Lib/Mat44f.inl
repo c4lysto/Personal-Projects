@@ -28,7 +28,7 @@ __forceinline Mat44f::Mat44f(Mat44f&& mMatrix) :
 {
 }
 
-__forceinline Mat44f::Mat44f(eIdentityInitializer eIdentity) :
+__forceinline Mat44f::Mat44f(eIdentityInitializer UNUSED_PARAM(eIdentity)) :
 	xAxis(g_IdentityX4),
 	yAxis(g_IdentityY4),
 	zAxis(g_IdentityZ4),
@@ -36,7 +36,7 @@ __forceinline Mat44f::Mat44f(eIdentityInitializer eIdentity) :
 {
 }
 
-inline Mat44f::Mat44f(eXRotationInitializer eXRotation, const float& fRotationInRadians)
+inline Mat44f::Mat44f(eXRotationInitializer UNUSED_PARAM(eXRotation), const float& fRotationInRadians)
 {
 	float fSinAngle = sin(fRotationInRadians);
 	float fCosAngle = cos(fRotationInRadians);
@@ -46,7 +46,7 @@ inline Mat44f::Mat44f(eXRotationInitializer eXRotation, const float& fRotationIn
 	wAxis = g_IdentityW4;
 }
 
-inline Mat44f::Mat44f(eYRotationInitializer eYRotation, const float& fRotationInRadians)
+inline Mat44f::Mat44f(eYRotationInitializer UNUSED_PARAM(eYRotation), const float& fRotationInRadians)
 {
 	float fSinAngle = sin(fRotationInRadians);
 	float fCosAngle = cos(fRotationInRadians);
@@ -56,7 +56,7 @@ inline Mat44f::Mat44f(eYRotationInitializer eYRotation, const float& fRotationIn
 	wAxis = g_IdentityW4;
 }
 
-inline Mat44f::Mat44f(eZRotationInitializer eZRotation, const float& fRotationInRadians)
+inline Mat44f::Mat44f(eZRotationInitializer UNUSED_PARAM(eZRotation), const float& fRotationInRadians)
 {
 	float fSinAngle = sin(fRotationInRadians);
 	float fCosAngle = cos(fRotationInRadians);
@@ -223,10 +223,10 @@ inline Mat44f_Out Mat44f::operator*(Mat44f_In mMatrix) const
 inline void Mat44f::operator*=(Mat44f_In mMatrix)
 {
 #if SSE_AVAILABLE
-	const Vector otherX = VectorLoadU(xAxis.GetVector());
-	const Vector otherY = VectorLoadU(yAxis.GetVector());
-	const Vector otherZ = VectorLoadU(zAxis.GetVector());
-	const Vector otherW = VectorLoadU(wAxis.GetVector());
+	const Vector otherX = VectorLoadU(mMatrix.xAxis.GetVector());
+	const Vector otherY = VectorLoadU(mMatrix.yAxis.GetVector());
+	const Vector otherZ = VectorLoadU(mMatrix.zAxis.GetVector());
+	const Vector otherW = VectorLoadU(mMatrix.wAxis.GetVector());
 
 	Vector tmp1, tmp2;
 
@@ -374,37 +374,37 @@ __forceinline void Mat44f::operator-=(Mat44f_In rhs)
 // actually faster than DirectX Version :)
 __forceinline void Mat44f::Rotate_GlobalX(const float& fRadians)
 {
-	Mat44f tmp(INIT_ROTATION_X, fRadians);
+	Mat44f tmp(I_ROTATION_X, fRadians);
 	*this *= tmp;
 }
 
 __forceinline void Mat44f::Rotate_GlobalY(const float& fRadians)
 {
-	Mat44f tmp(INIT_ROTATION_Y, fRadians);
+	Mat44f tmp(I_ROTATION_Y, fRadians);
 	*this *= tmp;
 }
 
 __forceinline void Mat44f::Rotate_GlobalZ(const float& fRadians)
 {
-	Mat44f tmp(INIT_ROTATION_Z, fRadians);
+	Mat44f tmp(I_ROTATION_Z, fRadians);
 	*this *= tmp;
 }
 
 __forceinline void Mat44f::Rotate_LocalX(const float& fRadians)
 {
-	Mat44f tmp(INIT_ROTATION_X, fRadians);
+	Mat44f tmp(I_ROTATION_X, fRadians);
 	*this = tmp * (*this);
 }
 
 __forceinline void Mat44f::Rotate_LocalY(const float& fRadians)
 {
-	Mat44f tmp(INIT_ROTATION_Y, fRadians);
+	Mat44f tmp(I_ROTATION_Y, fRadians);
 	*this = tmp * (*this);
 }
 
 __forceinline void Mat44f::Rotate_LocalZ(const float& fRadians)
 {
-	Mat44f tmp(INIT_ROTATION_Z, fRadians);
+	Mat44f tmp(I_ROTATION_Z, fRadians);
 	*this = tmp * (*this);
 }
 

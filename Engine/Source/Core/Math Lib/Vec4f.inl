@@ -88,239 +88,146 @@ __forceinline Vec4f::Vec4f(Vec3f_In vVector, const float& fW) : position(vVector
 
 __forceinline Vec4f Vec4f::operator-()
 {
-	return Vec4f(-x, -y, -z, -w);
+	return Vec4fInt(iX ^ 0x80000000, iY ^ 0x80000000, iZ ^ 0x80000000, iW ^ 0x80000000);
 }
 
 __forceinline Vec4f_Ref Vec4f::operator=(Vec4f_In vVector)
 {
-#if SSE_AVAILABLE && 0
-	VectorStoreU(VectorLoadU(vVector.vector), vector);
-#else
-	x = vVector.x;
-	y = vVector.y;
-	z = vVector.z;
-	w = vVector.w;
-#endif
-
+	x = vVector.x; y = vVector.y; z = vVector.z; w = vVector.w;
 	return *this;
 }
 
 __forceinline Vec4f_Ref Vec4f::operator=(Vec4f&& vVector)
 {
-#if SSE_AVAILABLE && 0
-	VectorStoreU(VectorLoadU(vVector.vector), vector);
-#else
-	x = vVector.x;
-	y = vVector.y;
-	z = vVector.z;
-	w = vVector.w;
-#endif
+	x = vVector.x; y = vVector.y; z = vVector.z; w = vVector.w;
 	return *this;
 }
 
 __forceinline Vec4f Vec4f::operator-(Vec4f_In vVector) const
 {
-#if SSE_AVAILABLE
-	Vec4f result;
-	VectorStoreU(VectorSubtract(VectorLoadU(vector), VectorLoadU(vVector.vector)), result.vector);
-	return result;
-#else
 	return Vec4f(x - vVector.x, y - vVector.y, z - vVector.z, w - vVector.w);
-#endif
 }
 
 __forceinline Vec4f_Ref Vec4f::operator-=(Vec4f_In vVector)
 {
-#if SSE_AVAILABLE
-	VectorStoreU(VectorSubtract(VectorLoadU(vector), VectorLoadU(vVector.vector)), vector);
-#else
-	x -= vVector.x;
-	y -= vVector.y;
-	z -= vVector.z;
-	w -= vVector.w;
-#endif
+	x -= vVector.x; y -= vVector.y; z -= vVector.z; w -= vVector.w;
 	return *this;
 }
 
 __forceinline Vec4f Vec4f::operator+(Vec4f_In vVector) const
 {
-#if SSE_AVAILABLE
-	Vec4f result;
-	VectorStoreU(VectorAdd(VectorLoadU(vector), VectorLoadU(vVector.vector)), result.vector);
-	return result;
-#else
 	return Vec4f(x + vVector.x, y + vVector.y, z + vVector.z, w + vVector.w);
-#endif
 }
 
 __forceinline Vec4f_Ref Vec4f::operator+=(Vec4f_In vVector)
 {
-#if SSE_AVAILABLE
-	VectorStoreU(VectorAdd(VectorLoadU(vector), VectorLoadU(vVector.vector)), vector);
-#else
-	x += vVector.x;
-	y += vVector.y;
-	z += vVector.z;
-	w += vVector.w;
-#endif
-
+	x += vVector.x; y += vVector.y; z += vVector.z; w += vVector.w;
 	return *this;
 }
 
 __forceinline Vec4f Vec4f::operator/(const float& fScalar) const
 {
-#if SSE_AVAILABLE
-	Vec4f result;
-	VectorStoreU(VectorDivide(VectorLoadU(vector), VectorSet(fScalar)), result.vector);
-	return result;
-#else
-	fScalar = 1 / fScalar;
-	return Vec4f(x * fScalar, y * fScalar, z * fScalar, w * fScalar);
-#endif
+	float fInvScalar = 1.0f / fScalar;
+	return Vec4f(x * fInvScalar, y * fInvScalar, z * fInvScalar, w * fInvScalar);
 }
 
 __forceinline Vec4f_Ref Vec4f::operator/=(const float& fScalar)
 {
-#if SSE_AVAILABLE
-	VectorStoreU(VectorDivide(VectorLoadU(vector), VectorSet(fScalar)), vector);
-#else
-	fScalar = 1 / fScalar;
-
-	x *= fScalar;
-	y *= fScalar;
-	z *= fScalar;
-	w *= fScalar;
-#endif
-
+	float fInvScalar = 1.0f / fScalar;
+	x *= fInvScalar; y *= fInvScalar; z *= fInvScalar; w *= fInvScalar;
 	return *this;
 }
 
 __forceinline Vec4f Vec4f::operator*(Vec4f_In vVector) const
 {
-#if SSE_AVAILABLE
-	Vec4f result;
-	VectorStoreU(VectorMultiply(VectorLoadU(vector), VectorLoadU(vVector.vector)), result.vector);
-	return result;
-#else
 	return Vec4f(x * vVector.x, y * vVector.y, z * vVector.z, w * vVector.w);
-#endif
 }
 
 __forceinline Vec4f_Ref Vec4f::operator*=(Vec4f_In vVector)
 {
-#if SSE_AVAILABLE
-	VectorStoreU(VectorMultiply(VectorLoadU(vector), VectorLoadU(vVector.vector)), vector);
-#else
-	x *= vVector.x;
-	y *= vVector.y;
-	z *= vVector.z;
-	w *= vVector.w;
-#endif
-
+	x *= vVector.x;	y *= vVector.y;	z *= vVector.z;	w *= vVector.w;
 	return *this;
 }
 
 __forceinline Vec4f Vec4f::operator*(const float& fScalar) const
 {
-#if SSE_AVAILABLE
-	Vec4f result;
-	VectorStoreU(VectorMultiply(VectorLoadU(vector), VectorSet(fScalar)), result.vector);
-	return result;
-#else
 	return Vec4f(x * fScalar, y * fScalar, z * fScalar, w * fScalar);
-#endif
 }
 
 __forceinline Vec4f_Ref Vec4f::operator*=(const float& fScalar)
 {
-#if SSE_AVAILABLE
-	VectorStoreU(VectorMultiply(VectorLoadU(vector), VectorSet(fScalar)), vector);
-#else
-	x *= fScalar;
-	y *= fScalar;
-	z *= fScalar;
-	w *= fScalar;
-#endif
-
+	x *= fScalar; y *= fScalar; z *= fScalar; w *= fScalar;
 	return *this;
 }
 
 __forceinline Vec4f operator*(const float& fScalar, Vec4f_In vVector)
 {
-#if SSE_AVAILABLE
-	Vec4f result;
-	VectorStoreU(VectorMultiply(VectorLoadU(vVector.vector), VectorSet(fScalar)), result.vector);
-	return result;
-#else
 	return Vec4f(vVector.x * fScalar, vVector.y * fScalar, vVector.z * fScalar, vVector.w * fScalar);
-#endif
+}
+
+
+__forceinline bool Vec4f::operator==(Vec4f_In vVector)
+{
+	if(iX != vVector.iX)
+		return false;
+	if(iY != vVector.iY)
+		return false;
+	if(iZ != vVector.iZ)
+		return false;
+	if(iW != vVector.iW)
+		return false;
+	return true;
+}
+
+__forceinline bool Vec4f::operator!=(Vec4f_In vVector)
+{
+	if(iX != vVector.iX)
+		return true;
+	if(iY != vVector.iY)
+		return true;
+	if(iZ != vVector.iZ)
+		return true;
+	if(iW != vVector.iW)
+		return true;
+	return false;
 }
 
 __forceinline Vec4f_Out Vec4f::operator&(Vec4f_In vVector) const
 {
-	Vec4f retVal;
-	*reinterpret_cast<s32*>(&retVal.x) = *reinterpret_cast<const s32*>(&x) & *reinterpret_cast<const s32*>(&vVector.x);
-	*reinterpret_cast<s32*>(&retVal.y) = *reinterpret_cast<const s32*>(&y) & *reinterpret_cast<const s32*>(&vVector.y);
-	*reinterpret_cast<s32*>(&retVal.z) = *reinterpret_cast<const s32*>(&z) & *reinterpret_cast<const s32*>(&vVector.z);
-	*reinterpret_cast<s32*>(&retVal.w) = *reinterpret_cast<const s32*>(&w) & *reinterpret_cast<const s32*>(&vVector.w);
-	return retVal;
+	return Vec4fInt(iX & vVector.iX, iY & vVector.iY, iZ & vVector.iZ, iW & vVector.iW);
 }
 
 __forceinline Vec4f_Ref Vec4f::operator&=(Vec4f_In vVector)
 {
-	*reinterpret_cast<s32*>(&x) &= *reinterpret_cast<const s32*>(&vVector.x);
-	*reinterpret_cast<s32*>(&y) &= *reinterpret_cast<const s32*>(&vVector.y);
-	*reinterpret_cast<s32*>(&z) &= *reinterpret_cast<const s32*>(&vVector.z);
-	*reinterpret_cast<s32*>(&w) &= *reinterpret_cast<const s32*>(&vVector.w);
+	iX &= vVector.iX; iY &= vVector.iY; iZ &= vVector.iZ; iW &= vVector.iW;
 	return *this;
 }
 
 __forceinline Vec4f_Out Vec4f::operator|(Vec4f_In vVector) const
 {
-	Vec4f retVal;
-	*reinterpret_cast<s32*>(&retVal.x) = *reinterpret_cast<const s32*>(&x) | *reinterpret_cast<const s32*>(&vVector.x);
-	*reinterpret_cast<s32*>(&retVal.y) = *reinterpret_cast<const s32*>(&y) | *reinterpret_cast<const s32*>(&vVector.y);
-	*reinterpret_cast<s32*>(&retVal.z) = *reinterpret_cast<const s32*>(&z) | *reinterpret_cast<const s32*>(&vVector.z);
-	*reinterpret_cast<s32*>(&retVal.w) = *reinterpret_cast<const s32*>(&w) | *reinterpret_cast<const s32*>(&vVector.w);
-	return retVal;
+	return Vec4fInt(iX | vVector.iX, iY | vVector.iY, iZ | vVector.iZ, iW | vVector.iW);
 }
 
 __forceinline Vec4f_Ref Vec4f::operator|=(Vec4f_In vVector)
 {
-	*reinterpret_cast<s32*>(&x) |= *reinterpret_cast<const s32*>(&vVector.x);
-	*reinterpret_cast<s32*>(&y) |= *reinterpret_cast<const s32*>(&vVector.y);
-	*reinterpret_cast<s32*>(&z) |= *reinterpret_cast<const s32*>(&vVector.z);
-	*reinterpret_cast<s32*>(&w) |= *reinterpret_cast<const s32*>(&vVector.w);
+	iX |= vVector.iX; iY |= vVector.iY; iZ |= vVector.iZ; iW |= vVector.iW;
 	return *this;
 }
 
 __forceinline Vec4f_Out Vec4f::operator^(Vec4f_In vVector) const
 {
-	Vec4f retVal;
-	*reinterpret_cast<s32*>(&retVal.x) = *reinterpret_cast<const s32*>(&x) ^ *reinterpret_cast<const s32*>(&vVector.x);
-	*reinterpret_cast<s32*>(&retVal.y) = *reinterpret_cast<const s32*>(&y) ^ *reinterpret_cast<const s32*>(&vVector.y);
-	*reinterpret_cast<s32*>(&retVal.z) = *reinterpret_cast<const s32*>(&z) ^ *reinterpret_cast<const s32*>(&vVector.z);
-	*reinterpret_cast<s32*>(&retVal.w) = *reinterpret_cast<const s32*>(&w) ^ *reinterpret_cast<const s32*>(&vVector.w);
-	return retVal;
+	return Vec4fInt(iX ^ vVector.iX, iY ^ vVector.iY, iZ ^ vVector.iZ, iW ^ vVector.iW);
 }
 
 __forceinline Vec4f_Ref Vec4f::operator^=(Vec4f_In vVector)
 {
-	*reinterpret_cast<s32*>(&x) ^= *reinterpret_cast<const s32*>(&vVector.x);
-	*reinterpret_cast<s32*>(&y) ^= *reinterpret_cast<const s32*>(&vVector.y);
-	*reinterpret_cast<s32*>(&z) ^= *reinterpret_cast<const s32*>(&vVector.z);
-	*reinterpret_cast<s32*>(&w) ^= *reinterpret_cast<const s32*>(&vVector.w);
+	iX ^= vVector.iX; iY ^= vVector.iY; iZ ^= vVector.iZ; iW ^= vVector.iW;
 	return *this;
 }
 
 __forceinline Vec4f_Out Vec4f::operator~() const
 {
-	Vec4f retVal;
-	*reinterpret_cast<s32*>(&retVal.x) = ~*reinterpret_cast<const s32*>(&x);
-	*reinterpret_cast<s32*>(&retVal.y) = ~*reinterpret_cast<const s32*>(&y);
-	*reinterpret_cast<s32*>(&retVal.z) = ~*reinterpret_cast<const s32*>(&z);
-	*reinterpret_cast<s32*>(&retVal.w) = ~*reinterpret_cast<const s32*>(&w);
-	return retVal;
+	return Vec4fInt(~iX, ~iY, ~iZ, ~iW);
 }
 
 __forceinline const float& Vec4f::operator[](int index) const
@@ -331,6 +238,16 @@ __forceinline const float& Vec4f::operator[](int index) const
 __forceinline float& Vec4f::operator[](int index)
 {
 	return vector[index];
+}
+
+__forceinline Vec4f_Out Vec4fInt(const s32& intVal)
+{
+	return Vec4f(*reinterpret_cast<const float*>(&intVal));
+}
+
+__forceinline Vec4f_Out Vec3fInt(const s32& intX, const s32& intY, const s32& intZ, const s32& intW)
+{
+	return Vec4f(*reinterpret_cast<const float*>(&intX), *reinterpret_cast<const float*>(&intY), *reinterpret_cast<const float*>(&intZ), *reinterpret_cast<const float*>(&intW));
 }
 
 //#endif //VEC4_INL

@@ -65,9 +65,7 @@ __forceinline Vec2f Vec2f::operator+(Vec2f_In vVector) const
 
 __forceinline Vec2f_Ref Vec2f::operator+=(Vec2f_In vVector)
 {
-	x += vVector.x;
-	y += vVector.y;
-
+	x += vVector.x;	y += vVector.y;
 	return *this;
 }
 
@@ -78,15 +76,13 @@ __forceinline Vec2f Vec2f::operator-(Vec2f_In vVector) const
 
 __forceinline Vec2f_Ref Vec2f::operator-=(Vec2f_In vVector)
 {
-	x -= vVector.x;
-	y -= vVector.y;
-
+	x -= vVector.x;	y -= vVector.y;
 	return *this;
 }
 
 __forceinline Vec2f Vec2f::operator-() const
 {
-	return Vec2f(-x, -y);
+	return Vec2fInt(iX ^ 0x80000000, iY ^ 0x80000000);
 }
 
 __forceinline Vec2f Vec2f::operator*(const float& fScalar) const
@@ -101,9 +97,7 @@ __forceinline Vec2f operator*(const float& fScalar, Vec2f_In vVector)
 
 __forceinline Vec2f_Ref Vec2f::operator*=(const float& fScalar)
 {
-	x *= fScalar;
-	y *= fScalar;
-
+	x *= fScalar; y *= fScalar;
 	return *this;
 }
 
@@ -116,11 +110,64 @@ __forceinline Vec2f Vec2f::operator/(const float& fScalar) const
 __forceinline Vec2f_Ref Vec2f::operator/=(const float& fScalar)
 {
 	float fInvScalar = 1 / fScalar;
-
-	x *= fInvScalar;
-	y *= fInvScalar;
-
+	x *= fInvScalar; y *= fInvScalar;
 	return *this;
+}
+
+__forceinline bool Vec2f::operator==(Vec2f_In vVector)
+{
+	if(iX != vVector.iX)
+		return false;
+	if(iY != vVector.iY)
+		return false;
+	return true;
+}
+
+__forceinline bool Vec2f::operator!=(Vec2f_In vVector)
+{
+	if(iX != vVector.iX)
+		return true;
+	if(iY != vVector.iY)
+		return true;
+	return false;
+}
+
+__forceinline Vec2f_Out Vec2f::operator&(Vec2f_In vVector) const
+{
+	return Vec2fInt(iX & vVector.iX, iY & vVector.iY);
+}
+
+__forceinline Vec2f_Ref Vec2f::operator&=(Vec2f_In vVector)
+{
+	iX &= vVector.iX; iY &= vVector.iY;
+	return *this;
+}
+
+__forceinline Vec2f_Out Vec2f::operator|(Vec2f_In vVector) const
+{
+	return Vec2fInt(iX | vVector.iX, iY | vVector.iY);
+}
+
+__forceinline Vec2f_Ref Vec2f::operator|=(Vec2f_In vVector)
+{
+	iX |= vVector.iX; iY |= vVector.iY;
+	return *this;
+}
+
+__forceinline Vec2f_Out Vec2f::operator^(Vec2f_In vVector) const
+{
+	return Vec2fInt(iX ^ vVector.iX, iY ^ vVector.iY);
+}
+
+__forceinline Vec2f_Ref Vec2f::operator^=(Vec2f_In vVector)
+{
+	iX ^= vVector.iX; iY ^= vVector.iY;
+	return *this;
+}
+
+__forceinline Vec2f_Out Vec2f::operator~() const
+{
+	return Vec2fInt(~iX, ~iY);
 }
 
 __forceinline const float& Vec2f::operator[](int index) const
@@ -131,6 +178,16 @@ __forceinline const float& Vec2f::operator[](int index) const
 __forceinline float& Vec2f::operator[](int index)
 {
 	return vector[index];
+}
+
+__forceinline Vec2f_Out Vec2fInt(const s32& intVal)
+{
+	return Vec2f(*reinterpret_cast<const float*>(&intVal));
+}
+
+__forceinline Vec2f_Out Vec2fInt(const s32& intX, const s32& intY)
+{
+	return Vec2f(*reinterpret_cast<const float*>(&intX), *reinterpret_cast<const float*>(&intY));
 }
 
 //#endif //VEC2_INL

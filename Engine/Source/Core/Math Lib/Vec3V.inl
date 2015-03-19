@@ -167,12 +167,12 @@ __forceinline Vec3V Vec3V::operator-(Vec3V_In vVector) const
 
 __forceinline bool Vec3V::operator==(Vec3V_In vVector) const
 {
-	return IsEqualXYZ(row, vVector.row);
+	return VectorIsEqualXYZ(row, vVector.row);
 }
 
 __forceinline bool Vec3V::operator!=(Vec3V_In vVector) const
 {
-	return IsNotEqualXYZ(row, vVector.row);
+	return VectorIsNotEqualXYZ(row, vVector.row);
 }
 
 __forceinline Vec3V_Out Vec3V::operator&(Vec3V_In vVector) const
